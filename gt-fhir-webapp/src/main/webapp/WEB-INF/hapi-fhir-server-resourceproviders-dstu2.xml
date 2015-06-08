@@ -1,0 +1,927 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"
+	default-autowire="no" default-lazy-init="false"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+	"
+	>
+
+	<bean id="myFhirContextDstu2" class="ca.uhn.fhir.context.FhirContext" factory-method="forDstu2"/>
+	
+	<bean id="mySystemDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.BaseFhirSystemDao">
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySystemProviderDstu2" class="ca.uhn.fhir.jpa.provider.JpaSystemProviderDstu2">
+		<property name="dao" ref="mySystemDaoDstu2"/>
+	</bean>
+
+ 	<util:list id="myResourceProvidersDstu2">
+		<!-- <ref bean="myAllergyIntoleranceRpDstu2"/>
+		<ref bean="myAppointmentRpDstu2"/>
+		<ref bean="myAppointmentResponseRpDstu2"/>
+		<ref bean="myAuditEventRpDstu2"/>
+		<ref bean="myBasicRpDstu2"/>
+		<ref bean="myBinaryRpDstu2"/>
+		<ref bean="myBodySiteRpDstu2"/>
+		<ref bean="myCarePlanRpDstu2"/>
+		<ref bean="myCarePlan2RpDstu2"/>
+		<ref bean="myClaimRpDstu2"/>
+		<ref bean="myClaimResponseRpDstu2"/>
+		<ref bean="myClinicalImpressionRpDstu2"/>
+		<ref bean="myCommunicationRpDstu2"/>
+		<ref bean="myCommunicationRequestRpDstu2"/>
+		<ref bean="myCompositionRpDstu2"/>
+		<ref bean="myConceptMapRpDstu2"/>
+		<ref bean="myConditionRpDstu2"/>
+		<ref bean="myConformanceRpDstu2"/>
+		<ref bean="myContractRpDstu2"/>
+		<ref bean="myContraindicationRpDstu2"/>
+		<ref bean="myCoverageRpDstu2"/>
+		<ref bean="myDataElementRpDstu2"/>
+		<ref bean="myDeviceRpDstu2"/>
+		<ref bean="myDeviceComponentRpDstu2"/>
+		<ref bean="myDeviceMetricRpDstu2"/>
+		<ref bean="myDeviceUseRequestRpDstu2"/>
+		<ref bean="myDeviceUseStatementRpDstu2"/>
+		<ref bean="myDiagnosticOrderRpDstu2"/>
+		<ref bean="myDiagnosticReportRpDstu2"/>
+		<ref bean="myDocumentManifestRpDstu2"/>
+		<ref bean="myDocumentReferenceRpDstu2"/>
+		<ref bean="myEligibilityRequestRpDstu2"/>
+		<ref bean="myEligibilityResponseRpDstu2"/>
+		<ref bean="myEncounterRpDstu2"/>
+		<ref bean="myEnrollmentRequestRpDstu2"/>
+		<ref bean="myEnrollmentResponseRpDstu2"/>
+		<ref bean="myEpisodeOfCareRpDstu2"/>
+		<ref bean="myExplanationOfBenefitRpDstu2"/>
+		<ref bean="myFamilyMemberHistoryRpDstu2"/>
+		<ref bean="myFlagRpDstu2"/>
+		<ref bean="myGoalRpDstu2"/>
+		<ref bean="myGroupRpDstu2"/>
+		<ref bean="myHealthcareServiceRpDstu2"/>
+		<ref bean="myImagingObjectSelectionRpDstu2"/>
+		<ref bean="myImagingStudyRpDstu2"/>
+		<ref bean="myImmunizationRpDstu2"/>
+		<ref bean="myImmunizationRecommendationRpDstu2"/>
+		<ref bean="myListRpDstu2"/> -->
+		<ref bean="myLocationRpDstu2"/>
+		<!-- <ref bean="myMediaRpDstu2"/>
+		<ref bean="myMedicationRpDstu2"/>
+		<ref bean="myMedicationAdministrationRpDstu2"/>
+		<ref bean="myMedicationDispenseRpDstu2"/>
+		<ref bean="myMedicationPrescriptionRpDstu2"/>
+		<ref bean="myMedicationStatementRpDstu2"/>
+		<ref bean="myMessageHeaderRpDstu2"/>
+		<ref bean="myNamingSystemRpDstu2"/>
+		<ref bean="myNutritionOrderRpDstu2"/>
+		<ref bean="myObservationRpDstu2"/>
+		<ref bean="myOperationDefinitionRpDstu2"/>
+		<ref bean="myOperationOutcomeRpDstu2"/>
+		<ref bean="myOrderRpDstu2"/>
+		<ref bean="myOrderResponseRpDstu2"/>
+		<ref bean="myOrganizationRpDstu2"/>
+		<ref bean="myParametersRpDstu2"/> -->
+		<ref bean="myPatientRpDstu2"/>
+		<!-- <ref bean="myPaymentNoticeRpDstu2"/>
+		<ref bean="myPaymentReconciliationRpDstu2"/>
+		<ref bean="myPersonRpDstu2"/>
+		<ref bean="myPractitionerRpDstu2"/>
+		<ref bean="myProcedureRpDstu2"/>
+		<ref bean="myProcedureRequestRpDstu2"/>
+		<ref bean="myProcessRequestRpDstu2"/>
+		<ref bean="myProcessResponseRpDstu2"/>
+		<ref bean="myProvenanceRpDstu2"/>
+		<ref bean="myQuestionnaireRpDstu2"/>
+		<ref bean="myQuestionnaireAnswersRpDstu2"/>
+		<ref bean="myReferralRequestRpDstu2"/>
+		<ref bean="myRelatedPersonRpDstu2"/>
+		<ref bean="myRiskAssessmentRpDstu2"/>
+		<ref bean="myScheduleRpDstu2"/>
+		<ref bean="mySearchParameterRpDstu2"/>
+		<ref bean="mySlotRpDstu2"/>
+		<ref bean="mySpecimenRpDstu2"/>
+		<ref bean="myStructureDefinitionRpDstu2"/>
+		<ref bean="mySubscriptionRpDstu2"/>
+		<ref bean="mySubstanceRpDstu2"/>
+		<ref bean="mySupplyRpDstu2"/>
+		<ref bean="myValueSetRpDstu2"/>
+		<ref bean="myVisionPrescriptionRpDstu2"/> -->
+	</util:list>
+
+	<!-- <bean id="myAllergyIntoleranceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.AllergyIntolerance"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myAllergyIntoleranceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.AllergyIntoleranceResourceProvider">
+		<property name="dao" ref="myAllergyIntoleranceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myAppointmentDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Appointment"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myAppointmentRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.AppointmentResourceProvider">
+		<property name="dao" ref="myAppointmentDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myAppointmentResponseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.AppointmentResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myAppointmentResponseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.AppointmentResponseResourceProvider">
+		<property name="dao" ref="myAppointmentResponseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myAuditEventDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.AuditEvent"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myAuditEventRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.AuditEventResourceProvider">
+		<property name="dao" ref="myAuditEventDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myBasicDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Basic"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myBasicRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.BasicResourceProvider">
+		<property name="dao" ref="myBasicDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myBinaryDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Binary"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myBinaryRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.BinaryResourceProvider">
+		<property name="dao" ref="myBinaryDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myBodySiteDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.BodySite"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myBodySiteRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.BodySiteResourceProvider">
+		<property name="dao" ref="myBodySiteDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myCarePlanDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.CarePlan"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myCarePlanRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.CarePlanResourceProvider">
+		<property name="dao" ref="myCarePlanDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myCarePlan2DaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.CarePlan2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myCarePlan2RpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.CarePlan2ResourceProvider">
+		<property name="dao" ref="myCarePlan2DaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myClaimDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Claim"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myClaimRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ClaimResourceProvider">
+		<property name="dao" ref="myClaimDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myClaimResponseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ClaimResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myClaimResponseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ClaimResponseResourceProvider">
+		<property name="dao" ref="myClaimResponseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myClinicalImpressionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ClinicalImpression"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myClinicalImpressionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ClinicalImpressionResourceProvider">
+		<property name="dao" ref="myClinicalImpressionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myCommunicationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Communication"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myCommunicationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.CommunicationResourceProvider">
+		<property name="dao" ref="myCommunicationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myCommunicationRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.CommunicationRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myCommunicationRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.CommunicationRequestResourceProvider">
+		<property name="dao" ref="myCommunicationRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myCompositionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Composition"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myCompositionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.CompositionResourceProvider">
+		<property name="dao" ref="myCompositionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myConceptMapDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ConceptMap"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myConceptMapRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ConceptMapResourceProvider">
+		<property name="dao" ref="myConceptMapDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myConditionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Condition"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myConditionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ConditionResourceProvider">
+		<property name="dao" ref="myConditionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myConformanceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Conformance"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myConformanceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ConformanceResourceProvider">
+		<property name="dao" ref="myConformanceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myContractDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Contract"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myContractRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ContractResourceProvider">
+		<property name="dao" ref="myContractDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myContraindicationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Contraindication"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myContraindicationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ContraindicationResourceProvider">
+		<property name="dao" ref="myContraindicationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myCoverageDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Coverage"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myCoverageRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.CoverageResourceProvider">
+		<property name="dao" ref="myCoverageDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDataElementDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DataElement"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDataElementRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DataElementResourceProvider">
+		<property name="dao" ref="myDataElementDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDeviceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Device"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDeviceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DeviceResourceProvider">
+		<property name="dao" ref="myDeviceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDeviceComponentDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DeviceComponent"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDeviceComponentRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DeviceComponentResourceProvider">
+		<property name="dao" ref="myDeviceComponentDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDeviceMetricDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DeviceMetric"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDeviceMetricRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DeviceMetricResourceProvider">
+		<property name="dao" ref="myDeviceMetricDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDeviceUseRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DeviceUseRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDeviceUseRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DeviceUseRequestResourceProvider">
+		<property name="dao" ref="myDeviceUseRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDeviceUseStatementDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DeviceUseStatement"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDeviceUseStatementRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DeviceUseStatementResourceProvider">
+		<property name="dao" ref="myDeviceUseStatementDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDiagnosticOrderDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DiagnosticOrder"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDiagnosticOrderRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DiagnosticOrderResourceProvider">
+		<property name="dao" ref="myDiagnosticOrderDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDiagnosticReportDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DiagnosticReport"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDiagnosticReportRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DiagnosticReportResourceProvider">
+		<property name="dao" ref="myDiagnosticReportDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDocumentManifestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DocumentManifest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDocumentManifestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DocumentManifestResourceProvider">
+		<property name="dao" ref="myDocumentManifestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myDocumentReferenceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.DocumentReference"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myDocumentReferenceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.DocumentReferenceResourceProvider">
+		<property name="dao" ref="myDocumentReferenceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myEligibilityRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.EligibilityRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myEligibilityRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EligibilityRequestResourceProvider">
+		<property name="dao" ref="myEligibilityRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myEligibilityResponseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.EligibilityResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myEligibilityResponseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EligibilityResponseResourceProvider">
+		<property name="dao" ref="myEligibilityResponseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myEncounterDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Encounter"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myEncounterRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EncounterResourceProvider">
+		<property name="dao" ref="myEncounterDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myEnrollmentRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.EnrollmentRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myEnrollmentRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EnrollmentRequestResourceProvider">
+		<property name="dao" ref="myEnrollmentRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myEnrollmentResponseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.EnrollmentResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myEnrollmentResponseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EnrollmentResponseResourceProvider">
+		<property name="dao" ref="myEnrollmentResponseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myEpisodeOfCareDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myEpisodeOfCareRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EpisodeOfCareResourceProvider">
+		<property name="dao" ref="myEpisodeOfCareDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myExplanationOfBenefitDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ExplanationOfBenefit"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myExplanationOfBenefitRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ExplanationOfBenefitResourceProvider">
+		<property name="dao" ref="myExplanationOfBenefitDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myFamilyMemberHistoryDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.FamilyMemberHistory"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myFamilyMemberHistoryRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.FamilyMemberHistoryResourceProvider">
+		<property name="dao" ref="myFamilyMemberHistoryDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myFlagDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Flag"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myFlagRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.FlagResourceProvider">
+		<property name="dao" ref="myFlagDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myGoalDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Goal"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myGoalRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.GoalResourceProvider">
+		<property name="dao" ref="myGoalDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myGroupDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Group"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myGroupRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.GroupResourceProvider">
+		<property name="dao" ref="myGroupDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myHealthcareServiceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.HealthcareService"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myHealthcareServiceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.HealthcareServiceResourceProvider">
+		<property name="dao" ref="myHealthcareServiceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myImagingObjectSelectionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ImagingObjectSelection"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myImagingObjectSelectionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ImagingObjectSelectionResourceProvider">
+		<property name="dao" ref="myImagingObjectSelectionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myImagingStudyDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ImagingStudy"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myImagingStudyRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ImagingStudyResourceProvider">
+		<property name="dao" ref="myImagingStudyDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myImmunizationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Immunization"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myImmunizationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ImmunizationResourceProvider">
+		<property name="dao" ref="myImmunizationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myImmunizationRecommendationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ImmunizationRecommendation"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myImmunizationRecommendationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ImmunizationRecommendationResourceProvider">
+		<property name="dao" ref="myImmunizationRecommendationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myListDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ListResource"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myListRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ListResourceResourceProvider">
+		<property name="dao" ref="myListDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean> -->
+ 
+	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.FhirResourceDao">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myLocationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.LocationResourceProvider">
+		<property name="dao" ref="myLocationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<!-- <bean id="myMediaDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Media"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMediaRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MediaResourceProvider">
+		<property name="dao" ref="myMediaDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myMedicationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Medication"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMedicationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationResourceProvider">
+		<property name="dao" ref="myMedicationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myMedicationAdministrationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationAdministration"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMedicationAdministrationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationAdministrationResourceProvider">
+		<property name="dao" ref="myMedicationAdministrationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myMedicationDispenseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationDispense"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMedicationDispenseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationDispenseResourceProvider">
+		<property name="dao" ref="myMedicationDispenseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myMedicationPrescriptionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationPrescription"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMedicationPrescriptionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationPrescriptionResourceProvider">
+		<property name="dao" ref="myMedicationPrescriptionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myMedicationStatementDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationStatement"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMedicationStatementRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationStatementResourceProvider">
+		<property name="dao" ref="myMedicationStatementDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myMessageHeaderDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MessageHeader"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myMessageHeaderRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MessageHeaderResourceProvider">
+		<property name="dao" ref="myMessageHeaderDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myNamingSystemDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.NamingSystem"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myNamingSystemRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.NamingSystemResourceProvider">
+		<property name="dao" ref="myNamingSystemDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myNutritionOrderDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.NutritionOrder"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myNutritionOrderRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.NutritionOrderResourceProvider">
+		<property name="dao" ref="myNutritionOrderDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myObservationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Observation"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myObservationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ObservationResourceProvider">
+		<property name="dao" ref="myObservationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myOperationDefinitionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.OperationDefinition"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myOperationDefinitionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.OperationDefinitionResourceProvider">
+		<property name="dao" ref="myOperationDefinitionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myOperationOutcomeDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.OperationOutcome"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myOperationOutcomeRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.OperationOutcomeResourceProvider">
+		<property name="dao" ref="myOperationOutcomeDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myOrderDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Order"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myOrderRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.OrderResourceProvider">
+		<property name="dao" ref="myOrderDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myOrderResponseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.OrderResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myOrderResponseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.OrderResponseResourceProvider">
+		<property name="dao" ref="myOrderResponseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myOrganizationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Organization"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myOrganizationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.OrganizationResourceProvider">
+		<property name="dao" ref="myOrganizationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myParametersDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Parameters"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myParametersRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ParametersResourceProvider">
+		<property name="dao" ref="myParametersDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean> -->
+ 
+	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.FhirResourceDao">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Patient"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myPatientRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.PatientResourceProvider">
+		<property name="dao" ref="myPatientDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<!-- <bean id="myPaymentNoticeDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.PaymentNotice"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myPaymentNoticeRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.PaymentNoticeResourceProvider">
+		<property name="dao" ref="myPaymentNoticeDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myPaymentReconciliationDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.PaymentReconciliation"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myPaymentReconciliationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.PaymentReconciliationResourceProvider">
+		<property name="dao" ref="myPaymentReconciliationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myPersonDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.FhirResourceDao">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Person"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myPersonRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.PersonResourceProvider">
+		<property name="dao" ref="myPersonDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myPractitionerDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Practitioner"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myPractitionerRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.PractitionerResourceProvider">
+		<property name="dao" ref="myPractitionerDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myProcedureDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Procedure"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myProcedureRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ProcedureResourceProvider">
+		<property name="dao" ref="myProcedureDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myProcedureRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ProcedureRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myProcedureRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ProcedureRequestResourceProvider">
+		<property name="dao" ref="myProcedureRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myProcessRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ProcessRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myProcessRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ProcessRequestResourceProvider">
+		<property name="dao" ref="myProcessRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myProcessResponseDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ProcessResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myProcessResponseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ProcessResponseResourceProvider">
+		<property name="dao" ref="myProcessResponseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myProvenanceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Provenance"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myProvenanceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ProvenanceResourceProvider">
+		<property name="dao" ref="myProvenanceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myQuestionnaireDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Questionnaire"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myQuestionnaireRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.QuestionnaireResourceProvider">
+		<property name="dao" ref="myQuestionnaireDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myQuestionnaireAnswersDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.QuestionnaireAnswers"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myQuestionnaireAnswersRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.QuestionnaireAnswersResourceProvider">
+		<property name="dao" ref="myQuestionnaireAnswersDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myReferralRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ReferralRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myReferralRequestRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ReferralRequestResourceProvider">
+		<property name="dao" ref="myReferralRequestDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myRelatedPersonDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.RelatedPerson"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myRelatedPersonRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.RelatedPersonResourceProvider">
+		<property name="dao" ref="myRelatedPersonDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myRiskAssessmentDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.RiskAssessment"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myRiskAssessmentRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.RiskAssessmentResourceProvider">
+		<property name="dao" ref="myRiskAssessmentDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myScheduleDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Schedule"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myScheduleRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ScheduleResourceProvider">
+		<property name="dao" ref="myScheduleDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="mySearchParameterDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.SearchParameter"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySearchParameterRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.SearchParameterResourceProvider">
+		<property name="dao" ref="mySearchParameterDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="mySlotDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Slot"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySlotRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.SlotResourceProvider">
+		<property name="dao" ref="mySlotDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="mySpecimenDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Specimen"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySpecimenRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.SpecimenResourceProvider">
+		<property name="dao" ref="mySpecimenDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myStructureDefinitionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.StructureDefinition"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myStructureDefinitionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.StructureDefinitionResourceProvider">
+		<property name="dao" ref="myStructureDefinitionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="mySubscriptionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Subscription"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySubscriptionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.SubscriptionResourceProvider">
+		<property name="dao" ref="mySubscriptionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="mySubstanceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Substance"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySubstanceRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.SubstanceResourceProvider">
+		<property name="dao" ref="mySubstanceDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="mySupplyDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Supply"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySupplyRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.SupplyResourceProvider">
+		<property name="dao" ref="mySupplyDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myValueSetDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ValueSet"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myValueSetRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ValueSetResourceProvider">
+		<property name="dao" ref="myValueSetDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ 
+	<bean id="myVisionPrescriptionDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.VisionPrescription"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="myVisionPrescriptionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.VisionPrescriptionResourceProvider">
+		<property name="dao" ref="myVisionPrescriptionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+ --> 
+
+</beans>
