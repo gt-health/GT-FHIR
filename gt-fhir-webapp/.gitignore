@@ -1,6 +1,6 @@
-/target
-/jpaserver_derby_files
-*.log
+target/
+/bin
+nohup.out
 
 # Created by https://www.gitignore.io
 
@@ -127,3 +127,5 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+/target/
+/target/
