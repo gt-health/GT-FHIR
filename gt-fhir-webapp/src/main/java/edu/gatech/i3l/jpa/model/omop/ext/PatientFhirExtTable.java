@@ -120,9 +120,9 @@ public class PatientFhirExtTable extends Person{
 	public <T extends IResource> T getRelatedResource() {
 		Patient patient = super.getRelatedResource();
 		
-		patient.addName().addFamily(this.getFamilyName());
-        patient.getName().get(0).addGiven(this.getGivenName1());
-        patient.getName().get(1).addGiven(this.getGivenName2());
+		patient.addName().addFamily(this.getFamilyName()).addGiven(this.getGivenName1());
+		if(this.getGivenName2() != null)
+			patient.addName().addFamily(this.getFamilyName()).addGiven(this.getGivenName2());
 		
 		return (T)patient;
 	}
