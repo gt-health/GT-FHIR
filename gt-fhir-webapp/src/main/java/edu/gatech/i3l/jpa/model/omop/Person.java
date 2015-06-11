@@ -163,9 +163,7 @@ public class Person extends BaseHasResource implements IResourceTable{
 	@Override
 	public <T extends IResource> T getRelatedResource() {
 		Patient patient = new Patient();
-		patient.addIdentifier();
-//        patient.getIdentifier().get(0).setSystem(new UriDt("urn:hapitest:mrns"));
-        patient.getIdentifier().get(0).setValue(this.getId().toString());
+		patient.setId(new IdDt(this.getId()));
 		
 		Location location = this.getLocation();
 		if(location != null){
@@ -227,6 +225,10 @@ public class Person extends BaseHasResource implements IResourceTable{
 	public long getVersion() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	public Class<? extends IResource> getRelatedResourceType() {
+		return Patient.class;
 	}
 
 
