@@ -1,6 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -8,8 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -17,8 +18,10 @@ import javax.persistence.PersistenceContextType;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -31,17 +34,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import ca.uhn.fhir.context.RuntimeSearchParam;
 import ca.uhn.fhir.jpa.dao.BaseFhirDao;
+import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
 import ca.uhn.fhir.jpa.dao.IDaoListener;
 import ca.uhn.fhir.jpa.dao.IFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.SearchParameterMap;
 import ca.uhn.fhir.jpa.entity.BaseHasResource;
-import ca.uhn.fhir.jpa.entity.ResourceHistoryTable;
-import ca.uhn.fhir.jpa.entity.ResourceLink;
+import ca.uhn.fhir.jpa.entity.BaseResourceIndexedSearchParam;
+import ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamDate;
 import ca.uhn.fhir.jpa.entity.ResourceTable;
 import ca.uhn.fhir.jpa.entity.TagTypeEnum;
 import ca.uhn.fhir.jpa.util.StopWatch;
@@ -57,6 +60,8 @@ import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
+import ca.uhn.fhir.rest.param.DateParam;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
@@ -75,8 +80,6 @@ public class PatientFhirResourceDao<T extends IResource> extends BaseFhirDao imp
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
 	private EntityManager myEntityManager;
 
-	private FhirContext myContext;
-	
 	@Autowired
 	private PlatformTransactionManager myPlatformTransactionManager;
 
@@ -526,7 +529,7 @@ public class PatientFhirResourceDao<T extends IResource> extends BaseFhirDao imp
 			params = new SearchParameterMap();
 		}
 
-//		RuntimeResourceDefinition resourceDef = getContext().getResourceDefinition(myResourceType);
+		RuntimeResourceDefinition resourceDef = getContext().getResourceDefinition(myResourceType);
 
 		Set<Long> pids = new HashSet<Long>();
 
@@ -575,74 +578,74 @@ public class PatientFhirResourceDao<T extends IResource> extends BaseFhirDao imp
 				}
 
 			} 
-//			else if (nextParamName.equals("_language")) {
-//
-//				pids = addPredicateLanguage(pids, nextParamEntry.getValue());
-//
-//			} else {
-//
-//				RuntimeSearchParam nextParamDef = resourceDef.getSearchParam(nextParamName);
-//				if (nextParamDef != null) {
-//					switch (nextParamDef.getParamType()) {
-//					case DATE:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateDate(nextParamName, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					case QUANTITY:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateQuantity(nextParamName, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					case REFERENCE:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateReference(nextParamName, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					case STRING:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateString(nextParamName, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					case TOKEN:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateToken(nextParamName, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					case NUMBER:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateNumber(nextParamName, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					case COMPOSITE:
-//						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-//							pids = addPredicateComposite(nextParamDef, pids, nextAnd);
-//							if (pids.isEmpty()) {
-//								return new HashSet<Long>();
-//							}
-//						}
-//						break;
-//					}
-//				}
-//			}
+			else if (nextParamName.equals("_language")) {
+
+				//pids = addPredicateLanguage(pids, nextParamEntry.getValue());
+
+			} else {
+
+				RuntimeSearchParam nextParamDef = resourceDef.getSearchParam(nextParamName);
+				if (nextParamDef != null) {
+					switch (nextParamDef.getParamType()) {
+					case DATE:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = addPredicateDate(nextParamName, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					case QUANTITY:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = addPredicateQuantity(nextParamName, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					case REFERENCE:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = addPredicateReference(nextParamName, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					case STRING:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = addPredicateString(nextParamName, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					case TOKEN:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = addPredicateToken(nextParamName, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					case NUMBER:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = addPredicateNumber(nextParamName, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					case COMPOSITE:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = addPredicateComposite(nextParamDef, pids, nextAnd);
+							if (pids.isEmpty()) {
+								return new HashSet<Long>();
+							}
+						}
+						break;
+					}
+				}
+			}
 		}
 
 		return pids;
@@ -670,6 +673,162 @@ public class PatientFhirResourceDao<T extends IResource> extends BaseFhirDao imp
 		}
 
 		return found;
+	}
+	
+	private Set<Long> addPredicateDate(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+		if (theList == null || theList.isEmpty()) {
+			return thePids;
+		}
+
+//		if (Boolean.TRUE.equals(theList.get(0).getMissing())) {
+//			return addPredicateParamMissing(thePids, "myParamsDate", theParamName, ResourceIndexedSearchParamDate.class);
+//		}
+
+		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
+		Root<Person> from = cq.from(Person.class);
+		cq.select(from.get("id").as(Long.class));
+		
+//		Root<ResourceIndexedSearchParamDate> from = cq.from(ResourceIndexedSearchParamDate.class);
+//		cq.select(from.get("myResourcePid").as(Long.class));
+//
+		List<Predicate> codePredicates = new ArrayList<Predicate>();
+		for (IQueryParameterType nextOr : theList) {
+			
+			if (addPredicateMissingFalseIfPresent(builder, theParamName, from, codePredicates, nextOr)) {
+				continue;
+			}
+
+			IQueryParameterType params = nextOr;
+			Predicate p = createPredicateDate(builder, from, theParamName, params);
+			codePredicates.add(p);
+		}
+
+		Predicate masterCodePredicate = builder.or(codePredicates.toArray(new Predicate[0]));
+
+//		Predicate type = builder.equal(from.get("myResourceType"), myResourceType);
+//		Predicate name = builder.equal(from.get("myParamName"), theParamName);
+		if (thePids.size() > 0) {
+			Predicate inPids = (from.get("id").in(thePids));//WARNING included previously 'name' 'type' and 'masterCodePredicate'
+			cq.where(builder.and(inPids, masterCodePredicate));
+		} else {
+			cq.where(builder.and(masterCodePredicate));
+		}
+
+		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		return new HashSet<Long>(q.getResultList());
+	}
+	
+	private Predicate createPredicateDate(CriteriaBuilder theBuilder, Root<? extends IResourceTable> from, String theParamName, IQueryParameterType theParam) {
+		Predicate p;
+		if (theParam instanceof DateParam) {
+			DateParam date = (DateParam) theParam;
+			if (!date.isEmpty()) {
+				DateRangeParam range = new DateRangeParam(date);
+				p = createPredicateDateFromRange(theBuilder, from, range, theParamName, theParam);
+			} else {
+				// From original method: TODO: handle missing date param?
+				p = null;
+			}
+		} else if (theParam instanceof DateRangeParam) {
+			DateRangeParam range = (DateRangeParam) theParam;
+			p = createPredicateDateFromRange(theBuilder, from, range, theParamName, theParam);
+		} else {
+			throw new IllegalArgumentException("Invalid token type: " + theParam.getClass());
+		}
+		return p;
+	}
+	
+	private Predicate createPredicateDateFromRange(CriteriaBuilder theBuilder, Root<? extends IResourceTable> from, DateRangeParam theRange, String theParamName, IQueryParameterType theParam) {
+		Calendar c = Calendar.getInstance();
+		Date lowerBound = theRange.getLowerBoundAsInstant();
+		Date upperBound = theRange.getUpperBoundAsInstant();
+
+		Predicate lb = null;
+		if (lowerBound != null) {
+			c.setTime(lowerBound);
+			Predicate gt1 = theBuilder.greaterThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
+			Predicate gt2 = theBuilder.and( theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+											theBuilder.greaterThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
+			Predicate gt3 = theBuilder.and( theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+											theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)),
+											theBuilder.greaterThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH)));
+			lb = theBuilder.or(gt1, gt2, gt3);
+			
+//			Predicate gt = theBuilder.greaterThanOrEqualTo(from.get("myValueLow"), lowerBound);
+//			Predicate lt = theBuilder.greaterThanOrEqualTo(from.get("myValueHigh"), lowerBound);
+//			lb = theBuilder.or(gt, lt);
+		}
+
+		Predicate ub = null;
+		if (upperBound != null) {
+			c.setTime(upperBound);
+			Predicate lt1 = theBuilder.lessThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
+			Predicate lt2 = theBuilder.and( theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+											theBuilder.lessThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
+			Predicate lt3 = theBuilder.and( theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+											theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)),
+											theBuilder.lessThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH)));
+			ub = theBuilder.or(lt1, lt2, lt3);
+//			Predicate gt = theBuilder.lessThanOrEqualTo(from.<Date> get("myValueLow"), upperBound);
+//			Predicate lt = theBuilder.lessThanOrEqualTo(from.<Date> get("myValueHigh"), upperBound);
+//			ub = theBuilder.or(gt, lt);
+		}
+
+		if (lb != null && ub != null) {
+			return (theBuilder.and(lb, ub));
+		} else if (lb != null) {
+			return (lb);
+		} else {
+			return (ub);
+		}
+	}
+	
+	private Set<Long> addPredicateParamMissing(Set<Long> thePids, String joinName, String theParamName, Class<? extends BaseResourceIndexedSearchParam> theParamTable) {
+		String resourceType = getContext().getResourceDefinition(getResourceType()).getName();
+
+		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
+		Root<ResourceTable> from = cq.from(ResourceTable.class);
+		cq.select(from.get("myId").as(Long.class));
+
+		Subquery<Long> subQ = cq.subquery(Long.class);
+		Root<? extends BaseResourceIndexedSearchParam> subQfrom = subQ.from(theParamTable); 
+		subQ.select(subQfrom.get("myResourcePid").as(Long.class));
+		Predicate subQname = builder.equal(subQfrom.get("myParamName"), theParamName);
+		Predicate subQtype = builder.equal(subQfrom.get("myResourceType"), resourceType);
+		subQ.where(builder.and(subQtype, subQname));
+
+		Predicate joinPredicate = builder.not(builder.in(from.get("myId")).value(subQ));
+		Predicate typePredicate = builder.equal(from.get("myResourceType"), resourceType);
+		
+		if (thePids.size() > 0) {
+			Predicate inPids = (from.get("myId").in(thePids));
+			cq.where(builder.and(inPids, typePredicate, joinPredicate));
+		} else {
+			cq.where(builder.and(typePredicate, joinPredicate));
+		}
+		
+		ourLog.info("Adding :missing qualifier for parameter '{}'", theParamName);
+		
+		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		List<Long> resultList = q.getResultList();
+		HashSet<Long> retVal = new HashSet<Long>(resultList);
+		return retVal;
+	}
+	
+	private boolean addPredicateMissingFalseIfPresent(CriteriaBuilder theBuilder, String theParamName, Root<? extends IResourceTable> from, List<Predicate> codePredicates, IQueryParameterType nextOr) {
+		boolean missingFalse = false;
+		if (nextOr.getMissing() != null) {
+			if (nextOr.getMissing().booleanValue() == true) {
+				throw new InvalidRequestException(getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "multipleParamsWithSameNameOneIsMissingTrue", theParamName));
+			}
+			Predicate singleCode = from.get("myId").isNotNull();
+			Predicate name = theBuilder.equal(from.get("myParamName"), theParamName);
+			codePredicates.add(theBuilder.and(name, singleCode));
+			missingFalse = true;
+		}
+		return missingFalse;
 	}
 
 	@Override
@@ -713,9 +872,5 @@ public class PatientFhirResourceDao<T extends IResource> extends BaseFhirDao imp
 	public MetaDt metaAddOperation(IdDt theId1, MetaDt theMetaAdd) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	public FhirContext getContext() {
-		return myContext;
 	}
 }
