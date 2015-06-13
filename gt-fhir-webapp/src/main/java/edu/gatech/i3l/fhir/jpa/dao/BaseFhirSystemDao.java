@@ -101,6 +101,9 @@ public class BaseFhirSystemDao<T> extends FhirSystemDaoDstu2 {
 		return retVal;
 	}
 
+	/**
+	 * @return A map with the provided resource types and how many registries are stored in the database for each resource.
+	 */
 	@Override
 	public Map<String, Long> getResourceCounts() {
 		Map<String, Long> retVal = new HashMap<String, Long>();
