@@ -181,7 +181,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
 			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-			CriteriaQuery<Long> criteria = builder.createQuery(Long.class); //TODO this should be a base dao and not a specific one
+			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 			Root<? extends BaseResourceTable> from = criteria.from(getResourceTable());
 			criteria.select(from.get("id").as(Long.class));
 			List<Long> resultList = myEntityManager.createQuery(criteria).getResultList();
@@ -428,6 +428,59 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 
 		return pids;
 	}
+	
+//	protected void loadReverseIncludes(List<Long> theMatches, Set<Include> theRevIncludes) {
+//	if (theMatches.size() == 0) {
+//		return;
+//	}
+//
+//	HashSet<Long> pidsToInclude = new HashSet<Long>();
+//
+//	for (Include nextInclude : theRevIncludes) {
+//		boolean matchAll = "*".equals(nextInclude.getValue());
+//		if (matchAll) {
+//			String sql = "SELECT r FROM ResourceLink r WHERE r.myTargetResourcePid IN (:target_pids)";
+//			TypedQuery<ResourceLink> q = myEntityManager.createQuery(sql, ResourceLink.class);
+//			q.setParameter("target_pids", theMatches);
+//			List<ResourceLink> results = q.getResultList();
+//			for (ResourceLink resourceLink : results) {
+//				pidsToInclude.add(resourceLink.getSourceResourcePid());
+//			}
+//		} else {
+//			int colonIdx = nextInclude.getValue().indexOf(':');
+//			if (colonIdx < 2) {
+//				continue;
+//			}
+//			String resType = nextInclude.getValue().substring(0, colonIdx);
+//			RuntimeResourceDefinition def = getContext().getResourceDefinition(resType);
+//			if (def == null) {
+//				ourLog.warn("Unknown resource type in _revinclude=" + nextInclude.getValue());
+//				continue;
+//			}
+//
+//			String paramName = nextInclude.getValue().substring(colonIdx + 1);
+//			RuntimeSearchParam param = def.getSearchParam(paramName);
+//			if (param == null) {
+//				ourLog.warn("Unknown param name in _revinclude=" + nextInclude.getValue());
+//				continue;
+//			}
+//
+//			for (String nextPath : param.getPathsSplit()) {
+//				String sql = "SELECT r FROM ResourceLink r WHERE r.mySourcePath = :src_path AND r.myTargetResourcePid IN (:target_pids)";
+//				TypedQuery<ResourceLink> q = myEntityManager.createQuery(sql, ResourceLink.class);
+//				q.setParameter("src_path", nextPath);
+//				q.setParameter("target_pids", theMatches);
+//				List<ResourceLink> results = q.getResultList();
+//				for (ResourceLink resourceLink : results) {
+//					pidsToInclude.add(resourceLink.getSourceResourcePid());
+//				}
+//			}
+//		}
+//	}
+//
+//	theMatches.addAll(pidsToInclude);
+//}
+
 	
 	protected List<Object> getIncludeValues(FhirTerser theTerser, Include theInclude, IBaseResource theResource, RuntimeResourceDefinition theResourceDef) {
 		List<Object> values;
