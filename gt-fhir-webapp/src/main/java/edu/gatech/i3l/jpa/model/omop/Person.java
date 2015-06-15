@@ -3,7 +3,6 @@ package edu.gatech.i3l.jpa.model.omop;
 import java.util.Calendar;
 import java.util.Collection;
 
-import ca.uhn.fhir.jpa.entity.BaseHasResource;
 import ca.uhn.fhir.jpa.entity.BaseTag;
 import ca.uhn.fhir.jpa.entity.TagDefinition;
 import ca.uhn.fhir.model.api.IResource;
@@ -11,7 +10,7 @@ import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 
-public class Person extends BaseHasResource implements IResourceTable{
+public class Person extends BaseResourceTable{
 
 	private Long id;
 	private Integer yearOfBirth;
