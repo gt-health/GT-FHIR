@@ -160,7 +160,7 @@ public class Person extends BaseResourceTable{
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IResource> T getRelatedResource() {
+	public Patient getRelatedResource() {
 		Patient patient = new Patient();
 		patient.setId(new IdDt(this.getId()));
 		
@@ -194,7 +194,7 @@ public class Person extends BaseResourceTable{
 //			patient.setGender(admGender);
 //		}
 		
-		return (T)patient;
+		return patient;
 	}
 	
 	@Override

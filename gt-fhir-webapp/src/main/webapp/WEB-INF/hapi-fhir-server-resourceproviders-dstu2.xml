@@ -545,7 +545,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean> -->
  
-	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
+	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>

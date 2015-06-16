@@ -1,6 +1,13 @@
 package edu.gatech.i3l.jpa.model.omop;
 
-public class Location {
+import java.util.Collection;
+
+import ca.uhn.fhir.jpa.entity.BaseTag;
+import ca.uhn.fhir.jpa.entity.TagDefinition;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.primitive.IdDt;
+
+public class Location extends BaseResourceTable{
 
 	private Long id;
 	private String address1;
@@ -90,6 +97,52 @@ public class Location {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ca.uhn.fhir.model.dstu2.resource.Location getRelatedResource() {
+		ca.uhn.fhir.model.dstu2.resource.Location location =  new ca.uhn.fhir.model.dstu2.resource.Location();
+		location.setId(new IdDt(this.getId()));
+		location.getAddress().addLine(this.getAddress1()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
+		if(this.getAddress2() != null)
+			location.getAddress().addLine(this.getAddress2()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
+		return location;
+	}
+
+	@Override
+	public Class<? extends IResource> getRelatedResourceType() {
+		return ca.uhn.fhir.model.dstu2.resource.Location.class;
+	}
+
+	@Override
+	public BaseTag addTag(TagDefinition theDef) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IdDt getIdDt() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getResourceType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<? extends BaseTag> getTags() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public long getVersion() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
