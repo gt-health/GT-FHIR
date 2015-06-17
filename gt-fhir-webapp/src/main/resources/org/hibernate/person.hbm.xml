@@ -28,6 +28,7 @@
 		<many-to-one name="raceConcept" class="edu.gatech.i3l.jpa.model.omop.Concept">
 			<column name="race_concept_id"/>
 		</many-to-one>	
+		<one-to-one name="death" class="edu.gatech.i3l.jpa.model.omop.Death" constrained="true"/>
 		
 		<joined-subclass name="edu.gatech.i3l.jpa.model.omop.ext.PatientFhirExtTable" table="f_person">
 			<key column="person_id" />

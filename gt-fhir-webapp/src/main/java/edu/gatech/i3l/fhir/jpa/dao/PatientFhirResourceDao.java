@@ -2,8 +2,6 @@ package edu.gatech.i3l.fhir.jpa.dao;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
 import ca.uhn.fhir.jpa.dao.IDaoListener;
 import ca.uhn.fhir.jpa.entity.TagTypeEnum;
-import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.api.TagList;
 import ca.uhn.fhir.model.dstu2.composite.MetaDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
@@ -106,35 +103,7 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 	}
 
 	@Override
-	public IBundleProvider search(Map<String, IQueryParameterType> theParams) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	
-	
-
-	@Override
-	public IBundleProvider search(String theParameterName,
-			IQueryParameterType theValue) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> searchForIds(Map<String, IQueryParameterType> theParams) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> searchForIds(String theParameterName,
-			IQueryParameterType theValue) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public MetaDt metaGetOperation() {
 		// TODO Auto-generated method stub
 		return null;
@@ -244,5 +213,25 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 			break;
 		}
 		return lb;
+	}
+
+	@Override
+	public Predicate translatePredicateString(String theParamName, String likeExpression, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder) {
+		Predicate singleCode = null;
+		switch (theParamName) {
+		case Patient.SP_ADDRESS:
+			Predicate p1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
+			Predicate p2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
+			Predicate p3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
+			Predicate p4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
+			Predicate p5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
+			Predicate p6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
+			singleCode = theBuilder.or(p1, p2, p3, p4, p5, p6);
+			break;
+
+		default:
+			break;
+		}
+		return singleCode;
 	}
 }
