@@ -28,6 +28,8 @@ public class Person extends BaseResourceTable{
 	private Concept ethnicityConcept;
 	private String raceSourceValue;
 	private Concept raceConcept;
+	
+	private Death death;
 
 	public Person() {
 		super();
@@ -157,10 +159,18 @@ public class Person extends BaseResourceTable{
 	public void setRaceConcept(Concept raceConcept) {
 		this.raceConcept = raceConcept;
 	}
+	
+	public Death getDeath() {
+		return death;
+	}
+	
+	public void setDeath(Death death) {
+		this.death = death;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IResource> T getRelatedResource() {
+	public Patient getRelatedResource() {
 		Patient patient = new Patient();
 		patient.setId(new IdDt(this.getId()));
 		
@@ -194,7 +204,7 @@ public class Person extends BaseResourceTable{
 //			patient.setGender(admGender);
 //		}
 		
-		return (T)patient;
+		return patient;
 	}
 	
 	@Override

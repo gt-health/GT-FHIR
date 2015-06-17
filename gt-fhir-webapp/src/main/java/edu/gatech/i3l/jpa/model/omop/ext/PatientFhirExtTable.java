@@ -1,6 +1,5 @@
 package edu.gatech.i3l.jpa.model.omop.ext;
 
-import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.Location;
@@ -115,15 +114,14 @@ public class PatientFhirExtTable extends Person{
 		this.maritalStatusConceptValue = maritalStatusConceptValue;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IResource> T getRelatedResource() {
-		Patient patient = super.getRelatedResource();
+	public Patient getRelatedResource() {
+		Patient patient = (Patient) super.getRelatedResource();
 		
 		patient.addName().addFamily(this.getFamilyName()).addGiven(this.getGivenName1());
 		if(this.getGivenName2() != null)
 			patient.addName().addFamily(this.getFamilyName()).addGiven(this.getGivenName2());
 		
-		return (T)patient;
+		return patient;
 	}
 }
