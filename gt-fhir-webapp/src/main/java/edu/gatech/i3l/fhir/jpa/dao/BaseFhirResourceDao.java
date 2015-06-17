@@ -19,7 +19,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -38,9 +37,9 @@ import ca.uhn.fhir.jpa.dao.BaseFhirDao;
 import ca.uhn.fhir.jpa.dao.IFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.SearchParameterMap;
 import ca.uhn.fhir.jpa.entity.BaseHasResource;
-import ca.uhn.fhir.jpa.entity.BaseResourceIndexedSearchParam;
-import ca.uhn.fhir.jpa.entity.ResourceTable;
+import ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamString;
 import ca.uhn.fhir.jpa.util.StopWatch;
+import ca.uhn.fhir.model.api.IPrimitiveDatatype;
 import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
@@ -53,6 +52,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.DateRangeParam;
+import ca.uhn.fhir.rest.param.StringParam;
+import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
@@ -173,6 +174,33 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 	 * COMMON METHODS
 	 * ********************
 	 */
+	@Override
+	public IBundleProvider search(Map<String, IQueryParameterType> theParams) {
+		SearchParameterMap map = new SearchParameterMap();
+		for (Entry<String, IQueryParameterType> nextEntry : theParams.entrySet()) {
+			map.add(nextEntry.getKey(), (nextEntry.getValue()));
+		}
+		return search(map);
+	}
+	
+	public IBundleProvider search(String theParameterName, IQueryParameterType theValue) {
+		return search(Collections.singletonMap(theParameterName, theValue));
+	}
+
+	@Override
+	public Set<Long> searchForIds(Map<String, IQueryParameterType> theParams) {
+		SearchParameterMap map = new SearchParameterMap();
+		for (Entry<String, IQueryParameterType> nextEntry : theParams.entrySet()) {
+			map.add(nextEntry.getKey(), (nextEntry.getValue()));
+		}
+		return searchForIdsWithAndOr(map);
+	}
+
+	@Override
+	public Set<Long> searchForIds(String theParameterName, IQueryParameterType theValue) {
+		return searchForIds(Collections.singletonMap(theParameterName, theValue));
+	}
+	
 	@Override
 	public IBundleProvider search(final SearchParameterMap theParams) {
 		StopWatch w = new StopWatch();
@@ -389,7 +417,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 						break;
 					case STRING:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							//pids = addPredicateString(nextParamName, pids, nextAnd);
+							pids = addPredicateString(nextParamName, pids, nextAnd);
 							if (pids.isEmpty()) {
 								return new HashSet<Long>();
 							}
@@ -658,41 +686,121 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 		}
 	}
 	
+	private Predicate createPredicateString(IQueryParameterType theParameter, String theParamName, CriteriaBuilder theBuilder,
+			Root<? extends BaseResourceTable> from) {
+		String rawSearchTerm;
+		if (theParameter instanceof TokenParam) {
+			TokenParam id = (TokenParam) theParameter;
+			if (!id.isText()) {
+				throw new IllegalStateException("Trying to process a text search on a non-text token parameter");
+			}
+			rawSearchTerm = id.getValue();
+		} else if (theParameter instanceof StringParam) {
+			StringParam id = (StringParam) theParameter;
+			rawSearchTerm = id.getValue();
+		} else if (theParameter instanceof IPrimitiveDatatype<?>) {
+			IPrimitiveDatatype<?> id = (IPrimitiveDatatype<?>) theParameter;
+			rawSearchTerm = id.getValueAsString();
+		} else {
+			throw new IllegalArgumentException("Invalid token type: " + theParameter.getClass());
+		}
+
+		if (rawSearchTerm.length() > ResourceIndexedSearchParamString.MAX_LENGTH) {
+			throw new InvalidRequestException("Parameter[" + theParamName + "] has length (" + rawSearchTerm.length() + ") that is longer than maximum allowed ("
+					+ ResourceIndexedSearchParamString.MAX_LENGTH + "): " + rawSearchTerm);
+		}
+
+		String likeExpression = normalizeString(rawSearchTerm);
+		likeExpression = likeExpression.replace("%", "[%]") + "%";
+		Predicate singleCode = translatePredicateString(theParamName, likeExpression, from, theBuilder);
+//		Predicate singleCode = theBuilder.like(from.get("myValueNormalized").as(String.class), likeExpression);
+//		Predicate singleCode = theBuilder.like(from.get("myValueNormalized").as(String.class), likeExpression);
+//		if (theParameter instanceof StringParam && ((StringParam) theParameter).isExact()) {
+//			Predicate exactCode = theBuilder.equal(from.get("myValueExact"), rawSearchTerm);
+//			singleCode = theBuilder.and(singleCode, exactCode);
+//		}
+		return singleCode;
+	}
+	
+	public abstract Predicate translatePredicateString(String theParamName, String likeExpression, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder);
 	public abstract Predicate translatePredicateDateLessThan(String theParamName, Date upperBound, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder);
 	public abstract Predicate translatePredicateDateGreaterThan(String theParamName, Date lowerBound, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder);
 	
-	protected Set<Long> addPredicateParamMissing(Set<Long> thePids, String joinName, String theParamName, Class<? extends BaseResourceIndexedSearchParam> theParamTable) {
-		String resourceType = getContext().getResourceDefinition(getResourceType()).getName();
+	private Set<Long> addPredicateString(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+		if (theList == null || theList.isEmpty()) {
+			return thePids;
+		}
+
+		if (Boolean.TRUE.equals(theList.get(0).getMissing())) {
+//			return addPredicateParamMissing(thePids, "myParamsString", theParamName, getResourceTable());
+			System.err.println(); //WARNING
+		}
 
 		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
-		Root<ResourceTable> from = cq.from(ResourceTable.class);
-		cq.select(from.get("myId").as(Long.class));
+		Root<? extends BaseResourceTable> from = cq.from(getResourceTable());
+		cq.select(from.get("id").as(Long.class));
 
-		Subquery<Long> subQ = cq.subquery(Long.class);
-		Root<? extends BaseResourceIndexedSearchParam> subQfrom = subQ.from(theParamTable); 
-		subQ.select(subQfrom.get("myResourcePid").as(Long.class));
-		Predicate subQname = builder.equal(subQfrom.get("myParamName"), theParamName);
-		Predicate subQtype = builder.equal(subQfrom.get("myResourceType"), resourceType);
-		subQ.where(builder.and(subQtype, subQname));
-
-		Predicate joinPredicate = builder.not(builder.in(from.get("myId")).value(subQ));
-		Predicate typePredicate = builder.equal(from.get("myResourceType"), resourceType);
-		
-		if (thePids.size() > 0) {
-			Predicate inPids = (from.get("myId").in(thePids));
-			cq.where(builder.and(inPids, typePredicate, joinPredicate));
-		} else {
-			cq.where(builder.and(typePredicate, joinPredicate));
+		List<Predicate> codePredicates = new ArrayList<Predicate>();
+		for (IQueryParameterType nextOr : theList) {
+			IQueryParameterType theParameter = nextOr;
+			if (addPredicateMissingFalseIfPresent(builder, theParamName, from, codePredicates, nextOr)) {
+				continue;
+			}
+			
+			Predicate singleCode = createPredicateString(theParameter, theParamName, builder, from);
+			codePredicates.add(singleCode);
 		}
-		
-		ourLog.info("Adding :missing qualifier for parameter '{}'", theParamName);
-		
+
+		Predicate masterCodePredicate = builder.or(codePredicates.toArray(new Predicate[0]));
+
+//		Predicate type = builder.equal(from.get("myResourceType"), myResourceName);
+//		Predicate name = builder.equal(from.get("myParamName"), theParamName);
+		if (thePids.size() > 0) {
+			Predicate inPids = (from.get("myResourcePid").in(thePids));
+			cq.where(builder.and(//type, name, 
+					masterCodePredicate, inPids));
+		} else {
+			cq.where(builder.and(//type, name, 
+					masterCodePredicate));
+		}
+
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
-		List<Long> resultList = q.getResultList();
-		HashSet<Long> retVal = new HashSet<Long>(resultList);
-		return retVal;
+		return new HashSet<Long>(q.getResultList());
 	}
+	
+//	protected Set<Long> addPredicateParamMissing(Set<Long> thePids, String joinName, String theParamName, Class<? extends BaseResourceIndexedSearchParam> theParamTable) {
+//		String resourceType = getContext().getResourceDefinition(getResourceType()).getName();
+//
+//		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+//		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
+//		Root<ResourceTable> from = cq.from(ResourceTable.class);
+//		cq.select(from.get("myId").as(Long.class));
+//
+//		Subquery<Long> subQ = cq.subquery(Long.class);
+//		Root<? extends BaseResourceIndexedSearchParam> subQfrom = subQ.from(theParamTable); 
+//		subQ.select(subQfrom.get("myResourcePid").as(Long.class));
+//		Predicate subQname = builder.equal(subQfrom.get("myParamName"), theParamName);
+//		Predicate subQtype = builder.equal(subQfrom.get("myResourceType"), resourceType);
+//		subQ.where(builder.and(subQtype, subQname));
+//
+//		Predicate joinPredicate = builder.not(builder.in(from.get("myId")).value(subQ));
+//		Predicate typePredicate = builder.equal(from.get("myResourceType"), resourceType);
+//		
+//		if (thePids.size() > 0) {
+//			Predicate inPids = (from.get("myId").in(thePids));
+//			cq.where(builder.and(inPids, typePredicate, joinPredicate));
+//		} else {
+//			cq.where(builder.and(typePredicate, joinPredicate));
+//		}
+//		
+//		ourLog.info("Adding :missing qualifier for parameter '{}'", theParamName);
+//		
+//		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+//		List<Long> resultList = q.getResultList();
+//		HashSet<Long> retVal = new HashSet<Long>(resultList);
+//		return retVal;
+//	}
 	
 	protected boolean addPredicateMissingFalseIfPresent(CriteriaBuilder theBuilder, String theParamName, Root<? extends IResourceTable> from, List<Predicate> codePredicates, IQueryParameterType nextOr) {
 		boolean missingFalse = false;

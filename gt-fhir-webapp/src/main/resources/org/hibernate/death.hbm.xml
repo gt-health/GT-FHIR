@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="edu.gatech.i3l.jpa.model.omop">
+
+	<class name="Death" table="death">
+		<id></id>
+		<one-to-one name="person" class="edu.gatech.i3l.jpa.model.omop.Person"/>
+		<property name="deathType" type="edu.gatech.i3l.jpa.model.omop.Concept" column="death_type_concept_id"/>
+		<property name="causeOfDeath" type="edu.gatech.i3l.jpa.model.omop.Concept" column="cause_of_death_concept_id"/>
+		<property name="causeOfDeathSourceValue" type="string" column="cause_of_death_source_value"/>
+	</class>
+
+</hibernate-mapping>

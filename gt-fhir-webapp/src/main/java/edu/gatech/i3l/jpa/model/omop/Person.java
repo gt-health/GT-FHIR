@@ -28,6 +28,8 @@ public class Person extends BaseResourceTable{
 	private Concept ethnicityConcept;
 	private String raceSourceValue;
 	private Concept raceConcept;
+	
+	private Death death;
 
 	public Person() {
 		super();
@@ -156,6 +158,14 @@ public class Person extends BaseResourceTable{
 
 	public void setRaceConcept(Concept raceConcept) {
 		this.raceConcept = raceConcept;
+	}
+	
+	public Death getDeath() {
+		return death;
+	}
+	
+	public void setDeath(Death death) {
+		this.death = death;
 	}
 
 	@SuppressWarnings("unchecked")
