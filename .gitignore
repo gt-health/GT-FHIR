@@ -1,0 +1,26 @@
+# Local configuration files
+gt-fhir-webapp/src/main/webapp/WEB-INF/hapi-fhir-server-database-config.xml
+
+# Other dependent source packages
+examples
+hapi-deployable-pom
+hapi-fhir-android
+hapi-fhir-base
+hapi-fhir-dist
+hapi-fhir-jpaserver-base
+hapi-fhir-jpaserver-example
+hapi-fhir-jpaserver-uhnfhirtest
+hapi-fhir-oauth2
+hapi-fhir-structures-dev
+hapi-fhir-structures-dstu
+hapi-fhir-structures-dstu2
+hapi-fhir-structures-hl7org-dstu2
+hapi-fhir-testpage-interceptor
+hapi-fhir-testpage-overlay
+hapi-fhir-tutorial
+hapi-tinder-test
+hapi-tinder-plugin
+restful-server-example
+restful-server-example-test
+src
+vagrant
