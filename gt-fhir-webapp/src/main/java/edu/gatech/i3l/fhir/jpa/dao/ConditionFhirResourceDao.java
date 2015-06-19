@@ -135,30 +135,6 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 	}
 
 	@Override
-	public IBundleProvider search(Map<String, IQueryParameterType> arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IBundleProvider search(String arg0, IQueryParameterType arg1) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> searchForIds(Map<String, IQueryParameterType> arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> searchForIds(String arg0, IQueryParameterType arg1) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public DaoMethodOutcome update(Condition arg0) {
 		// TODO Auto-generated method stub
 		return null;

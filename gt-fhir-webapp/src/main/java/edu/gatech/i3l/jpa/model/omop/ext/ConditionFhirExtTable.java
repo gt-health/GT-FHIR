@@ -12,6 +12,8 @@ import ca.uhn.fhir.model.dstu2.valueset.ConditionClinicalStatusEnum;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.ConditionOccurrence;
 import edu.gatech.i3l.jpa.model.omop.Person;
+import edu.gatech.i3l.jpa.model.omop.Provider;
+import edu.gatech.i3l.jpa.model.omop.VisitOccurrence;
 
 /**
  * @author MC142
@@ -29,10 +31,10 @@ public class ConditionFhirExtTable extends ConditionOccurrence {
 				
 	public ConditionFhirExtTable(Long id, Person person, Concept conditionConcept,
 			Date startDate, Date endDate, Concept conditionTypeConcept, String stopReason,
-			Long providerIdFix, Long encounterFix, String sourceValue,
+			Provider provider, VisitOccurrence encounter, String sourceValue,
 			String statusCode, String display, Concept severityConcept) {
 		super(id, person, conditionConcept, startDate, endDate, conditionTypeConcept, stopReason,
-				providerIdFix, encounterFix, sourceValue);
+				provider, encounter, sourceValue);
 		
 		this.statusCode = statusCode;
 		this.display = display;
