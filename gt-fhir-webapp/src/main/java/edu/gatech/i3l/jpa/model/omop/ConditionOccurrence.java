@@ -31,8 +31,8 @@ public class ConditionOccurrence extends BaseResourceTable {
 	private Date endDate;
 	private Concept conditionTypeConcept;
 	private String stopReason;
-	private Long providerIdFix;
-	private Long encounterFix;
+	private Provider provider;
+	private VisitOccurrence encounter;
 	private String sourceValue;
 	
 	public ConditionOccurrence() {
@@ -41,7 +41,7 @@ public class ConditionOccurrence extends BaseResourceTable {
 	
 	public ConditionOccurrence(Long id, Person person, Concept conditionConcept,
 			Date startDate, Date endDate, Concept conditionTypeConcept, String stopReason,
-			Long providerIdFix, Long encounterFix, String sourceValue) {
+			Provider provider, VisitOccurrence encounter, String sourceValue) {
 		super();
 		
 		this.id = id;
@@ -51,8 +51,8 @@ public class ConditionOccurrence extends BaseResourceTable {
 		this.endDate = endDate;
 		this.conditionTypeConcept = conditionTypeConcept;
 		this.stopReason = stopReason;
-		this.providerIdFix = providerIdFix;
-		this.encounterFix = encounterFix;
+		this.provider = provider;
+		this.encounter = encounter;
 		this.sourceValue = sourceValue;
 	}
 	
@@ -75,19 +75,19 @@ public class ConditionOccurrence extends BaseResourceTable {
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists. 
-		if (encounterFix != null && encounterFix > 0) {
+		if (encounter != null && encounter.getId() > 0) {
 			// FIXME: encounter resource not yet implemented.
 			//        we just create this reference resource manually. When encounter is implemented, we
 			//        will get it from visit_occurrence class.
-			ResourceReferenceDt encounterReference = new ResourceReferenceDt("Encounter/"+encounterFix);
+			ResourceReferenceDt encounterReference = new ResourceReferenceDt(encounter.getIdDt());
 			condition.setEncounter(encounterReference);
 		}
 		
 		// Set asserter if exists
 		// This can be either Patient or Practitioner. 
-		if (providerIdFix != null && providerIdFix > 0) {
+		if (provider != null && provider.getId() > 0) {
 			// FIXME: Practitioner resource not yet implemented.
-			ResourceReferenceDt practitionerReference = new ResourceReferenceDt("Practitioner/"+providerIdFix);
+			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(provider.getIdDt());
 			condition.setAsserter(practitionerReference);
 		}
 
@@ -257,22 +257,20 @@ public class ConditionOccurrence extends BaseResourceTable {
 		this.stopReason = stopReason;
 	}
 	
-	public Long getProviderIdFix() {
-		return providerIdFix;
+	public Provider getProvider() {
+		return provider;
 	}
 	
-	// FIXME Provider and Encounter need to created. Revisit this after Provider and Encounter
-	//       are implmented.
-	public void setProviderIdFix(Long providerIdFix) {
-		this.providerIdFix = providerIdFix;
+	public void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 	
-	public Long getEncounterFix() {
-		return encounterFix;
+	public VisitOccurrence getEncounter() {
+		return encounter;
 	}
 	
-	public void setEncounterFix(Long encounterFix) {
-		this.encounterFix = encounterFix;
+	public void setEncounter(VisitOccurrence encounter) {
+		this.encounter = encounter;
 	}
 	
 	public String getSourceValue() {
