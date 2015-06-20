@@ -1,8 +1,9 @@
+/**
+ * 
+ */
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import java.util.Date;
-import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -17,25 +18,28 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
 import ca.uhn.fhir.jpa.dao.IDaoListener;
 import ca.uhn.fhir.jpa.entity.TagTypeEnum;
-import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.api.TagList;
 import ca.uhn.fhir.model.dstu2.composite.MetaDt;
-import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.server.IBundleProvider;
 import edu.gatech.i3l.jpa.model.omop.IResourceTable;
-import edu.gatech.i3l.jpa.model.omop.ext.ConditionFhirExtTable;
+import edu.gatech.i3l.jpa.model.omop.ext.PatientFhirExtTable;
+import edu.gatech.i3l.jpa.model.omop.ext.VisitOccurrenceFhirExtTable;
 
+/**
+ * @author MC142
+ *
+ */
 @Transactional(propagation = Propagation.REQUIRED)
-public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
-
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ConditionFhirResourceDao.class);
+public class EncounterFhirResourceDao extends BaseFhirResourceDao<Encounter> {
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(EncounterFhirResourceDao.class);
 
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
 	private EntityManager myEntityManager;
 
-	public ConditionFhirResourceDao() {
-		setResourceTable(ConditionFhirExtTable.class);
+	public EncounterFhirResourceDao() {
+		setResourceTable(VisitOccurrenceFhirExtTable.class);
 	}
 	
 	@Override
@@ -52,19 +56,19 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 	}
 
 	@Override
-	public DaoMethodOutcome create(Condition arg0) {
+	public DaoMethodOutcome create(Encounter arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public DaoMethodOutcome create(Condition arg0, String arg1) {
+	public DaoMethodOutcome create(Encounter arg0, String arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public DaoMethodOutcome create(Condition arg0, String arg1, boolean arg2) {
+	public DaoMethodOutcome create(Encounter arg0, String arg1, boolean arg2) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -142,19 +146,27 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 	}
 
 	@Override
-	public DaoMethodOutcome update(Condition arg0) {
+	public DaoMethodOutcome update(Encounter arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public DaoMethodOutcome update(Condition arg0, String arg1) {
+	public DaoMethodOutcome update(Encounter arg0, String arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public DaoMethodOutcome update(Condition arg0, String arg1, boolean arg2) {
+	public DaoMethodOutcome update(Encounter arg0, String arg1, boolean arg2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Predicate translatePredicateString(String theParamName,
+			String likeExpression, Root<? extends IResourceTable> from,
+			CriteriaBuilder theBuilder) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -170,14 +182,6 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 	@Override
 	public Predicate translatePredicateDateGreaterThan(String theParamName,
 			Date lowerBound, Root<? extends IResourceTable> from,
-			CriteriaBuilder theBuilder) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Predicate translatePredicateString(String theParamName,
-			String likeExpression, Root<? extends IResourceTable> from,
 			CriteriaBuilder theBuilder) {
 		// TODO Auto-generated method stub
 		return null;

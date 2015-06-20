@@ -9,7 +9,7 @@
 		<many-to-one name="person" class="edu.gatech.i3l.jpa.model.omop.Person">
 			<column name="person_id"/>
 		</many-to-one>
-		<many-to-one name="conditionConcept" class="edu.gatech.i3l.jpa.model.omop.Concept" fetch="select">
+		<many-to-one name="conditionConcept" class="edu.gatech.i3l.jpa.model.omop.Concept">
 			<column name="condition_concept_id"/>
 		</many-to-one>	
 		<property name="startDate" type="date" not-null="true" column="condition_start_date"/>

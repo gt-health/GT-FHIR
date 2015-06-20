@@ -92,13 +92,13 @@ public class ConditionOccurrence extends BaseResourceTable {
 		}
 
 		// Set Code
-		System.out.println("ConceptID:"+this.getConditionConcept().getId().toString());
-		System.out.println("ConceptName:"+this.getConditionConcept().getName());
-
-		Vocabulary myVoc = this.getConditionConcept().getVocabulary();
-		
-		System.out.println("VocabularyID:"+myVoc.getId());
-		System.out.println("VocabularyName:"+myVoc.getName());
+//		System.out.println("ConceptID:"+this.getConditionConcept().getId().toString());
+//		System.out.println("ConceptName:"+this.getConditionConcept().getName());
+//
+//		Vocabulary myVoc = this.getConditionConcept().getVocabulary();
+//		
+//		System.out.println("VocabularyID:"+myVoc.getId());
+//		System.out.println("VocabularyName:"+myVoc.getName());
 
 		String theSystem = this.getConditionConcept().getVocabulary().getSystemUri();
 		String theCode = this.getConditionConcept().getConceptCode();
