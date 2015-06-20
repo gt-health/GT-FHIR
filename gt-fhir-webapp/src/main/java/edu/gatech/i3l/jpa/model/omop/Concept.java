@@ -12,7 +12,7 @@ public class Concept {
 	private String conceptCode;
 	private Date validStartDate;
 	private Date validEndDate;
-	private Character invalidReason;
+	private String invalidReason;
 
 	public Concept() {
 		super();
@@ -20,7 +20,7 @@ public class Concept {
 
 	public Concept(Long id, String name, Integer level, String klass,
 			Vocabulary vocabulary, String conceptCode, Date validStartDate,
-			Date validEndDate, Character invalidReason) {
+			Date validEndDate, String invalidReason) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -97,11 +97,11 @@ public class Concept {
 		this.validEndDate = validEndDate;
 	}
 
-	public Character getInvalidReason() {
+	public String getInvalidReason() {
 		return invalidReason;
 	}
 
-	public void setInvalidReason(Character invalidReason) {
+	public void setInvalidReason(String invalidReason) {
 		this.invalidReason = invalidReason;
 	}
 

@@ -216,7 +216,7 @@ public class Person extends BaseResourceTable{
 	@Override
 	public IdDt getIdDt() {
 		// TODO Auto-generated method stub
-		return null;
+		return new IdDt(getResourceType(), getId());
 	}
 
 	@Override
