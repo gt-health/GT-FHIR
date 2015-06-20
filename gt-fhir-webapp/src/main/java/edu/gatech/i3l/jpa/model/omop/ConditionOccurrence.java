@@ -86,7 +86,6 @@ public class ConditionOccurrence extends BaseResourceTable {
 		// Set asserter if exists
 		// This can be either Patient or Practitioner. 
 		if (provider != null && provider.getId() > 0) {
-			// FIXME: Practitioner resource not yet implemented.
 			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(provider.getIdDt());
 			condition.setAsserter(practitionerReference);
 		}
@@ -100,8 +99,8 @@ public class ConditionOccurrence extends BaseResourceTable {
 //		System.out.println("VocabularyID:"+myVoc.getId());
 //		System.out.println("VocabularyName:"+myVoc.getName());
 
-		String theSystem = this.getConditionConcept().getVocabulary().getSystemUri();
-		String theCode = this.getConditionConcept().getConceptCode();
+		String theSystem = conditionConcept.getVocabulary().getSystemUri();
+		String theCode = conditionConcept.getConceptCode();
 		
 		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
