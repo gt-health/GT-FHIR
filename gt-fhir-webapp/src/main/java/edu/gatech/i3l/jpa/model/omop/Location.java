@@ -1,9 +1,5 @@
 package edu.gatech.i3l.jpa.model.omop;
 
-import java.util.Collection;
-
-import ca.uhn.fhir.jpa.entity.BaseTag;
-import ca.uhn.fhir.jpa.entity.TagDefinition;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
 
@@ -116,12 +112,6 @@ public class Location extends BaseResourceTable{
 	}
 
 	@Override
-	public BaseTag addTag(TagDefinition theDef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public IdDt getIdDt() {
 		// TODO Auto-generated method stub
 		return null;
@@ -129,12 +119,6 @@ public class Location extends BaseResourceTable{
 
 	@Override
 	public String getResourceType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<? extends BaseTag> getTags() {
 		// TODO Auto-generated method stub
 		return null;
 	}
