@@ -2,8 +2,6 @@ package edu.gatech.i3l.fhir.jpa.dao;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
 import ca.uhn.fhir.jpa.dao.IDaoListener;
 import ca.uhn.fhir.jpa.entity.TagTypeEnum;
-import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.api.TagList;
 import ca.uhn.fhir.model.dstu2.composite.MetaDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
@@ -106,35 +103,7 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 	}
 
 	@Override
-	public IBundleProvider search(Map<String, IQueryParameterType> theParams) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	
-	
-
-	@Override
-	public IBundleProvider search(String theParameterName,
-			IQueryParameterType theValue) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> searchForIds(Map<String, IQueryParameterType> theParams) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> searchForIds(String theParameterName,
-			IQueryParameterType theValue) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public MetaDt metaGetOperation() {
 		// TODO Auto-generated method stub
 		return null;
@@ -154,25 +123,6 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 
 	@Override
 	public MetaDt metaAddOperation(IdDt theId1, MetaDt theMetaAdd) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome create(Patient theResource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome create(Patient theResource, String theIfNoneExist) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome create(Patient theResource, String theIfNoneExist,
-			boolean thePerformIndexing) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -244,5 +194,40 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 			break;
 		}
 		return lb;
+	}
+
+	@Override
+	public Predicate translatePredicateString(String theParamName, String likeExpression, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder) {
+		Predicate singleCode = null;
+		switch (theParamName) {
+		case Patient.SP_ADDRESS:
+			Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
+			Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
+			Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
+			Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
+			Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
+			Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
+			singleCode = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
+			break;
+		case Patient.SP_GIVEN :
+			Predicate gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
+			Predicate gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
+			singleCode = theBuilder.or(gn1, gn2);
+			break;
+		case Patient.SP_FAMILY:
+			singleCode = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+			break;
+		case Patient.SP_NAME:
+			gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
+			gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
+			Predicate fn1 = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+			Predicate n1 = theBuilder.like(from.get("prefixName").as(String.class), likeExpression);
+			Predicate n2 = theBuilder.like(from.get("suffixName").as(String.class), likeExpression);
+			singleCode = theBuilder.or(gn1, gn2, fn1, n1, n2);
+			break;
+		default:
+			break;
+		}
+		return singleCode;
 	}
 }
