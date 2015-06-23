@@ -1,5 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +22,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import net.vidageek.mirror.dsl.Mirror;
+
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +38,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import ca.uhn.fhir.context.RuntimeSearchParam;
 import ca.uhn.fhir.jpa.dao.BaseFhirDao;
+import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
 import ca.uhn.fhir.jpa.dao.IFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.SearchParameterMap;
 import ca.uhn.fhir.jpa.entity.BaseHasResource;
@@ -57,8 +62,10 @@ import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import ca.uhn.fhir.rest.server.exceptions.PreconditionFailedException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.util.FhirTerser;
 import edu.gatech.i3l.jpa.model.omop.BaseResourceTable;
 import edu.gatech.i3l.jpa.model.omop.IResourceTable;
@@ -79,7 +86,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 	private PlatformTransactionManager myPlatformTransactionManager;
 	
 	private Class<T> myResourceType;
-	private Class<? extends BaseResourceTable> resourceTable;
+	private Class<? extends BaseResourceTable> myResourceTable;
 
 	@Override
 	public Class<T> getResourceType() {
@@ -90,6 +97,93 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 	@Required
 	public void setResourceType(Class<? extends IResource> theTableType) {
 		myResourceType = (Class<T>) theTableType;
+	}
+
+	public Class<? extends BaseResourceTable> getResourceTable() {
+		return myResourceTable;
+	}
+
+	public void setResourceTable(Class<? extends BaseResourceTable> resourceTable) {
+		this.myResourceTable = resourceTable;
+	}
+	
+	/*
+	 ****************************** 
+	 * METHODS WITH STRUCTURE OF ca.uhn.BaseFhirResourceDao
+	 *****************************/
+	
+	@Override
+	public DaoMethodOutcome create(final T theResource) {
+		return create(theResource, null, true);
+	}
+
+	@Override
+	public DaoMethodOutcome create(final T theResource, String theIfNoneExist) {
+		return create(theResource, theIfNoneExist, true);
+	}
+
+	@Override
+	public DaoMethodOutcome create(T theResource, String theIfNoneExist, boolean thePerformIndexing) {
+		if (isNotBlank(theResource.getId().getIdPart())) {
+			throw new InvalidRequestException(getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedId", theResource.getId().getIdPart()));
+		}
+
+		return doCreate(theResource, theIfNoneExist, thePerformIndexing);
+	}
+	
+	private DaoMethodOutcome doCreate(T theResource, String theIfNoneExist, boolean thePerformIndexing) {
+		StopWatch w = new StopWatch();
+		BaseResourceTable entity = new Mirror().on(myResourceTable).invoke().constructor().withoutArgs();
+		//entity.setResourceType(toResourceName(theResource));
+
+		if (isNotBlank(theIfNoneExist)) {
+			Set<Long> match = processMatchUrl(theIfNoneExist, myResourceType);
+			if (match.size() > 1) {
+				String msg = getContext().getLocalizer().getMessage(BaseFhirDao.class, "transactionOperationWithMultipleMatchFailure", "CREATE", theIfNoneExist, match.size());
+				throw new PreconditionFailedException(msg);
+			} else if (match.size() == 1) {
+				Long pid = match.iterator().next();
+				entity = myEntityManager.find(BaseResourceTable.class, pid);
+				return toMethodOutcome(entity, theResource).setCreated(false);
+			}
+		}
+
+		if (theResource.getId().isEmpty() == false) {
+			if (isValidPid(theResource.getId())) {
+				throw new UnprocessableEntityException(
+						"This server cannot create an entity with a user-specified numeric ID - Client should not specify an ID when creating a new resource, or should include at least one letter in the ID to force a client-defined ID");
+			}
+			//createForcedIdIfNeeded(entity, theResource.getId()); //WARNING should force id
+
+			if (entity.getForcedId() != null) {
+				try {
+					translateForcedIdToPid(theResource.getId());
+					throw new UnprocessableEntityException(getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "duplicateCreateForcedId", theResource.getId().getIdPart()));
+				} catch (ResourceNotFoundException e) {
+					// good, this ID doesn't exist so we can create it
+				}
+			}
+
+		}
+
+		//updateEntity(theResource, entity, false, null, thePerformIndexing, true);
+
+		DaoMethodOutcome outcome = toMethodOutcome(entity, theResource).setCreated(true);
+
+		notifyWriteCompleted();
+		ourLog.info("Processed create on {} in {}ms", myResourceType, w.getMillisAndRestart());//WARNING once it was resource name
+		return outcome;
+	}
+	
+	private DaoMethodOutcome toMethodOutcome(final BaseResourceTable theEntity, IResource theResource) {
+		DaoMethodOutcome outcome = new DaoMethodOutcome();
+		outcome.setId(theEntity.getIdDt());
+		//outcome.setEntity(theEntity); //WARNING ignored statement
+		outcome.setResource(theResource);
+		if (theResource != null) {
+			theResource.setId(theEntity.getIdDt());
+		}
+		return outcome;
 	}
 	
 	@Override
@@ -169,11 +263,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 	}
 	
 	
-	/*
-	 * ********************
-	 * COMMON METHODS
-	 * ********************
-	 */
 	@Override
 	public IBundleProvider search(Map<String, IQueryParameterType> theParams) {
 		SearchParameterMap map = new SearchParameterMap();
@@ -574,6 +663,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 		return resources;
 	}
 	
+	
+	
 	/*
 	 * **********************
 	 * PREDICATES
@@ -816,12 +907,5 @@ public abstract class BaseFhirResourceDao<T extends IResource> extends BaseFhirD
 		return missingFalse;
 	}
 
-	public Class<? extends BaseResourceTable> getResourceTable() {
-		return resourceTable;
-	}
-
-	public void setResourceTable(Class<? extends BaseResourceTable> resourceTable) {
-		this.resourceTable = resourceTable;
-	}
 
 }

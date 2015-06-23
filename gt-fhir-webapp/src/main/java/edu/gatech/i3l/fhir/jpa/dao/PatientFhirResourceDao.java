@@ -128,25 +128,6 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 	}
 
 	@Override
-	public DaoMethodOutcome create(Patient theResource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome create(Patient theResource, String theIfNoneExist) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome create(Patient theResource, String theIfNoneExist,
-			boolean thePerformIndexing) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public DaoMethodOutcome update(Patient theResource) {
 		// TODO Auto-generated method stub
 		return null;
@@ -220,15 +201,30 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 		Predicate singleCode = null;
 		switch (theParamName) {
 		case Patient.SP_ADDRESS:
-			Predicate p1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
-			Predicate p2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
-			Predicate p3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
-			Predicate p4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
-			Predicate p5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
-			Predicate p6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
-			singleCode = theBuilder.or(p1, p2, p3, p4, p5, p6);
+			Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
+			Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
+			Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
+			Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
+			Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
+			Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
+			singleCode = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
 			break;
-
+		case Patient.SP_GIVEN :
+			Predicate gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
+			Predicate gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
+			singleCode = theBuilder.or(gn1, gn2);
+			break;
+		case Patient.SP_FAMILY:
+			singleCode = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+			break;
+		case Patient.SP_NAME:
+			gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
+			gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
+			Predicate fn1 = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+			Predicate n1 = theBuilder.like(from.get("prefixName").as(String.class), likeExpression);
+			Predicate n2 = theBuilder.like(from.get("suffixName").as(String.class), likeExpression);
+			singleCode = theBuilder.or(gn1, gn2, fn1, n1, n2);
+			break;
 		default:
 			break;
 		}
