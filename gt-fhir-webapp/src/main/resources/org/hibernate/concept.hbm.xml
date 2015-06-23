@@ -15,6 +15,6 @@
 		<property name="conceptCode" column="concept_code" type="string"/>	
 		<property name="validStartDate" column="valid_start_date" type="date"/>
 		<property name="validEndDate" column="valid_end_date" type="date"/>
-		<property name="invalidReason" column="invalid_reason" type="char"/>
+		<property name="invalidReason" column="invalid_reason" type="string"/>
 	</class>
 </hibernate-mapping>

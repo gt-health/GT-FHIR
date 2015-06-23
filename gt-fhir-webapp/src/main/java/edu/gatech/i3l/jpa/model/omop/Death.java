@@ -1,20 +1,31 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import java.sql.Date;
+
 
 public class Death {
 
-	private Long id;
-	private Person person;
+	private Long person;
+//	private Person person;
+	private Date deathDate;
 	private Concept deathType;
 	private Concept causeOfDeath;
 	private String causeOfDeathSourceValue;
 
-	public Person getPerson() {
+	public Long getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(Long person) {
 		this.person = person;
+	}
+	
+	public Date getDeathDate() {
+		return deathDate;
+	}
+	
+	public void setDeathDate(Date deathDate) {
+		this.deathDate = deathDate;
 	}
 
 	public Concept getDeathType() {
