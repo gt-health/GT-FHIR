@@ -1,10 +1,7 @@
 package edu.gatech.i3l.jpa.model.omop;
 
 import java.util.Calendar;
-import java.util.Collection;
 
-import ca.uhn.fhir.jpa.entity.BaseTag;
-import ca.uhn.fhir.jpa.entity.TagDefinition;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.DateDt;
@@ -206,12 +203,6 @@ public class Person extends BaseResourceTable{
 		
 		return patient;
 	}
-	
-	@Override
-	public BaseTag addTag(TagDefinition theDef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public IdDt getIdDt() {
@@ -222,12 +213,6 @@ public class Person extends BaseResourceTable{
 	@Override
 	public String getResourceType() {
 		return "Patient";
-	}
-
-	@Override
-	public Collection<? extends BaseTag> getTags() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
