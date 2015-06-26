@@ -13,15 +13,9 @@ import javax.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
-import ca.uhn.fhir.jpa.dao.IDaoListener;
-import ca.uhn.fhir.jpa.entity.TagTypeEnum;
-import ca.uhn.fhir.model.api.TagList;
-import ca.uhn.fhir.model.dstu2.composite.MetaDt;
+import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.rest.server.IBundleProvider;
-import edu.gatech.i3l.jpa.model.omop.IResourceTable;
 import edu.gatech.i3l.jpa.model.omop.ext.PatientFhirExtTable;
 
 @Transactional(propagation = Propagation.REQUIRED)
@@ -36,118 +30,14 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 //	private Class<Patient> myResourceType;
 
 	public PatientFhirResourceDao() {
-		setResourceTable(PatientFhirExtTable.class);
+		setResourceEntity(PatientFhirExtTable.class);
 	}
 	
+	
 	@Override
-	public void registerDaoListener(IDaoListener theListener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void addTag(IdDt theId, TagTypeEnum theTagType, String theScheme,
-			String theTerm, String theLabel) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public DaoMethodOutcome delete(IdDt theResource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome deleteByUrl(String theString) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public TagList getAllResourceTags() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public TagList getTags(IdDt theResourceId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IBundleProvider history(Date theSince) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IBundleProvider history(IdDt theId, Date theSince) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IBundleProvider history(Long theId, Date theSince) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public void removeTag(IdDt theId, TagTypeEnum theTagType, String theScheme,
-			String theTerm) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-
-	public MetaDt metaGetOperation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MetaDt metaGetOperation(IdDt theId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MetaDt metaDeleteOperation(IdDt theId1, MetaDt theMetaDel) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MetaDt metaAddOperation(IdDt theId1, MetaDt theMetaAdd) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome update(Patient theResource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome update(Patient theResource, String theMatchUrl) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DaoMethodOutcome update(Patient theResource, String theMatchUrl,
-			boolean thePerformIndexing) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Predicate translatePredicateDateLessThan(String theParamName, Date upperBound, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder) {
+	public Predicate translatePredicateDateLessThan(String theParamName,
+			Date upperBound, Root<? extends IResourceEntity> from,
+			CriteriaBuilder theBuilder) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(upperBound);
 		Predicate ub = null;
@@ -173,7 +63,8 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 
 	@Override
 	public Predicate translatePredicateDateGreaterThan(String theParamName,
-			Date lowerBound, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder) {
+			Date lowerBound, Root<? extends IResourceEntity> from,
+			CriteriaBuilder theBuilder) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(lowerBound);
 		Predicate lb = null;
@@ -197,7 +88,9 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 	}
 
 	@Override
-	public Predicate translatePredicateString(String theParamName, String likeExpression, Root<? extends IResourceTable> from, CriteriaBuilder theBuilder) {
+	public Predicate translatePredicateString(String theParamName,
+			String likeExpression, Root<? extends IResourceEntity> from,
+			CriteriaBuilder theBuilder) {
 		Predicate singleCode = null;
 		switch (theParamName) {
 		case Patient.SP_ADDRESS:
@@ -230,4 +123,5 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 		}
 		return singleCode;
 	}
+
 }

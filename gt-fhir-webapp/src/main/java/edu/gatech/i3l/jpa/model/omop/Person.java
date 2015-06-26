@@ -2,13 +2,19 @@ package edu.gatech.i3l.jpa.model.omop;
 
 import java.util.Calendar;
 
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
 
-public class Person extends BaseResourceTable{
+public class Person extends BaseResourceEntity{
 
+	public static final String RESOURCE_TYPE = "Patient";
 	private Long id;
 	private Integer yearOfBirth;
 	private Integer monthOfBirth;
@@ -205,24 +211,54 @@ public class Person extends BaseResourceTable{
 	}
 
 	@Override
-	public IdDt getIdDt() {
-		// TODO Auto-generated method stub
-		return new IdDt(getResourceType(), getId());
-	}
-
-	@Override
 	public String getResourceType() {
-		return "Patient";
-	}
-
-	@Override
-	public long getVersion() {
-		// TODO Auto-generated method stub
-		return 0;
+		return RESOURCE_TYPE;
 	}
 
 	public Class<? extends IResource> getRelatedResourceType() {
 		return Patient.class;
+	}
+
+	@Override
+	public FhirVersionEnum getFhirVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InstantDt getUpdated() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		if(resource instanceof Patient){
+			Patient patient = (Patient) resource;
+			Calendar c = Calendar.getInstance();
+			c.setTime(patient.getBirthDate());
+			this.yearOfBirth = c.get(Calendar.YEAR);
+			this.monthOfBirth = c.get(Calendar.MONTH);
+			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
+			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
+//			this.death = patient.getDeceased(); 
+			this.genderSourceValue = patient.getGender();
+			
+			Location location = new Location();
+			AddressDt address = patient.getAddress().get(0);
+			location.setAddress1(address.getLine().iterator().next().getValue());
+			if(address.getLine().iterator().hasNext())
+				location.setAddress2(address.getLine().iterator().next().getValue());
+			location.setZipCode(address.getPostalCode());
+			location.setCity(address.getCity());
+			location.setState(address.getState());
+			location.setCountry(address.getCountry());
+			this.location = location;
+			
+			//TODO complete mapping
+		}
+		
+		return this;
 	}
 
 
