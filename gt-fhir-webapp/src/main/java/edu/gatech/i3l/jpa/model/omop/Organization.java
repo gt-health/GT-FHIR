@@ -3,18 +3,17 @@
  */
 package edu.gatech.i3l.jpa.model.omop;
 
-import java.util.Collection;
-
-import ca.uhn.fhir.jpa.entity.BaseTag;
-import ca.uhn.fhir.jpa.entity.TagDefinition;
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
  * @author MC142
  *
  */
-public class Organization extends BaseResourceTable {
+public class Organization extends BaseResourceEntity {
 
 	private Long id;
 	private Concept placeOfServiceConcept;
@@ -81,24 +80,7 @@ public class Organization extends BaseResourceTable {
 	}
 
 	/* (non-Javadoc)
-	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResourceType()
-	 */
-	@Override
-	public Class<? extends IResource> getRelatedResourceType() {
-		return ca.uhn.fhir.model.dstu2.resource.Organization.class;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#addTag(ca.uhn.fhir.jpa.entity.TagDefinition)
-	 */
-	@Override
-	public BaseTag addTag(TagDefinition arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getId()
+	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getId()
 	 */
 	@Override
 	public Long getId() {
@@ -110,15 +92,7 @@ public class Organization extends BaseResourceTable {
 	}
 	
 	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getIdDt()
-	 */
-	@Override
-	public IdDt getIdDt() {
-		return new IdDt(getResourceType(), id);
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getResourceType()
+	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
 	 */
 	@Override
 	public String getResourceType() {
@@ -126,22 +100,22 @@ public class Organization extends BaseResourceTable {
 		return "Organization";
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getTags()
-	 */
 	@Override
-	public Collection<? extends BaseTag> getTags() {
+	public FhirVersionEnum getFhirVersion() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getVersion()
-	 */
 	@Override
-	public long getVersion() {
+	public InstantDt getUpdated() {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

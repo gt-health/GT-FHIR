@@ -12,10 +12,15 @@
 	>
 
 	<bean id="myFhirContextDstu2" class="ca.uhn.fhir.context.FhirContext" factory-method="forDstu2"/>
-	
-	<bean id="mySystemDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.BaseFhirSystemDao">
+	<bean id="myBaseDao" class="ca.uhn.fhir.jpa.dao.BaseFhirDao">
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
+	<bean id="mySystemDaoDstu2" class="ca.uhn.fhir.jpa.dao.BaseFhirSystemDao">
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<!-- <bean id="myResourceDaoDstu2" class="ca.uhn.fhir.jpa.dao.BaseFhirResourceDao<T>">
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean> -->
 	<bean id="mySystemProviderDstu2" class="ca.uhn.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
@@ -37,7 +42,7 @@
 		<ref bean="myCommunicationRequestRpDstu2"/>
 		<ref bean="myCompositionRpDstu2"/>
 		<ref bean="myConceptMapRpDstu2"/> -->
-		<ref bean="myConditionRpDstu2"/>
+		<!-- <ref bean="myConditionRpDstu2"/> -->
 		<!--  <ref bean="myConformanceRpDstu2"/>
 		<ref bean="myContractRpDstu2"/>
 		<ref bean="myContraindicationRpDstu2"/>
@@ -54,7 +59,7 @@
 		<ref bean="myDocumentReferenceRpDstu2"/>
 		<ref bean="myEligibilityRequestRpDstu2"/>
 		<ref bean="myEligibilityResponseRpDstu2"/> -->
-		<ref bean="myEncounterRpDstu2"/>
+		<!-- <ref bean="myEncounterRpDstu2"/> -->
 		<!-- 
 		<ref bean="myEnrollmentRequestRpDstu2"/>
 		<ref bean="myEnrollmentResponseRpDstu2"/>
@@ -259,14 +264,14 @@
 	</bean>
 	
     -->
-	<bean id="myConditionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ConditionFhirResourceDao">
+	<!-- <bean id="myConditionDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.ConditionFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Condition"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	<bean id="myConditionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ConditionResourceProvider">
 		<property name="dao" ref="myConditionDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
-	</bean>
+	</bean> -->
  
 	<!-- 
 	<bean id="myConformanceDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
@@ -414,14 +419,14 @@
 	</bean>
  -->
  
-	<bean id="myEncounterDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.EncounterFhirResourceDao">
+	<!-- <bean id="myEncounterDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.EncounterFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Encounter"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	<bean id="myEncounterRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EncounterResourceProvider">
 		<property name="dao" ref="myEncounterDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
-	</bean>
+	</bean> -->
  
 <!-- 
 	<bean id="myEnrollmentRequestDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
@@ -550,13 +555,14 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean> -->
  
-	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
+	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.LocationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<!-- <property name="context" ref="myFhirContextDstu2"/> -->
+		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myLocationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.LocationResourceProvider">
 		<property name="dao" ref="myLocationDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<!-- <property name="context" ref="myFhirContextDstu2"/> -->
 	</bean>
  
 	<!-- <bean id="myMediaDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
@@ -703,13 +709,14 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean> -->
  
-	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
+	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.PatientFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Patient"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<!-- <property name="context" ref="myFhirContextDstu2"/> -->
+		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myPatientRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.PatientResourceProvider">
 		<property name="dao" ref="myPatientDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<!-- <property name="context" ref="myFhirContextDstu2"/> -->
 	</bean>
  
 	<!-- <bean id="myPaymentNoticeDaoDstu2" class="ca.uhn.fhir.jpa.dao.FhirResourceDaoDstu2">
@@ -730,7 +737,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
-	<bean id="myPersonDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
+	<bean id="myPersonDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.PatientFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Person"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>

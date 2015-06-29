@@ -9,7 +9,7 @@
 		<property name="yearOfBirth" type="integer" column="year_of_birth"/>
 		<property name="monthOfBirth" type="integer" not-null="true" column="month_of_birth"/>
 		<property name="dayOfBirth" type="integer" not-null="true" column="day_of_birth"/>
-		<many-to-one name="location" class="edu.gatech.i3l.jpa.model.omop.Location">
+		<many-to-one name="location" class="edu.gatech.i3l.jpa.model.omop.Location" cascade="all">
 			<column name="location_id"/>
 		</many-to-one>
 		<!-- <many-to-one name="provider" class="edu.gatech.i3l.jpa.model.omop.Provider">

@@ -6,7 +6,7 @@ import ca.uhn.fhir.model.api.IResource;
  * This interface is used to mapping properties of an Entity to a given Resource.
  * @author Ismael Sarmento
  */
-public interface IResourceTable {
+public interface _IResourceTable {
 
 	/**
 	 * Creates an object of the Resource type related to this entity and sets each property accordingly.
