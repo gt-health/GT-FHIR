@@ -1,14 +1,13 @@
 package edu.gatech.i3l.jpa.model.omop;
 
-import java.util.Collection;
-
-import ca.uhn.fhir.jpa.entity.BaseTag;
-import ca.uhn.fhir.jpa.entity.TagDefinition;
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
 
-public class Provider extends BaseResourceTable {
+public class Provider extends BaseResourceEntity {
 
 	private Long id;
 	private String npi;
@@ -92,18 +91,6 @@ public class Provider extends BaseResourceTable {
 	}
 
 	@Override
-	public Class<? extends IResource> getRelatedResourceType() {
-		// TODO Auto-generated method stub
-		return Practitioner.class;
-	}
-
-	@Override
-	public BaseTag addTag(TagDefinition arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Long getId() {
 		return id;
 	}
@@ -113,26 +100,27 @@ public class Provider extends BaseResourceTable {
 	}
 
 	@Override
-	public IdDt getIdDt() {
-		return new IdDt(getResourceType(), id);
-	}
-
-	@Override
 	public String getResourceType() {
 		// TODO Auto-generated method stub
 		return "Practitioner";
 	}
 
 	@Override
-	public Collection<? extends BaseTag> getTags() {
+	public FhirVersionEnum getFhirVersion() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public long getVersion() {
+	public InstantDt getUpdated() {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

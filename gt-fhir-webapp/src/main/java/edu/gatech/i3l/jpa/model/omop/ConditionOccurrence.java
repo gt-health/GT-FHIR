@@ -4,11 +4,10 @@
 package edu.gatech.i3l.jpa.model.omop;
 
 import java.sql.Date;
-import java.util.Collection;
 
-
-import ca.uhn.fhir.jpa.entity.BaseTag;
-import ca.uhn.fhir.jpa.entity.TagDefinition;
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
@@ -17,12 +16,13 @@ import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
  * @author MC142
  *
  */
-public class ConditionOccurrence extends BaseResourceTable {
+public class ConditionOccurrence extends BaseResourceEntity {
 
 	private Long id;
 	private Person person;
@@ -98,6 +98,28 @@ public class ConditionOccurrence extends BaseResourceTable {
 //		
 //		System.out.println("VocabularyID:"+myVoc.getId());
 //		System.out.println("VocabularyName:"+myVoc.getName());
+
+		String theSystem = conditionConcept.getVocabulary().getSystemUri();
+		String theCode = conditionConcept.getConceptCode();
+		
+		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
+		if (theSystem != "") {
+			// Create coding here. We have one coding in this condition as OMOP allows one coding concept per condition.
+			// In the future, if we want to allow multiple coding concepts here, we need to do it here.
+			CodingDt coding = new CodingDt(theSystem, theCode);
+			coding.setDisplay(conditionConcept.getName());
+			conditionCodeConcept.addCoding(coding);
+		}
+
+		// FHIR does not require the coding. If our System URI is not mappable from
+		// OMOP database, then coding would be empty. Set Text here. Even text is not
+		// required in FHIR. But, then no reason to have this condition, I think...
+		String theText = conditionConcept.getName() + ", "
+				+ conditionConcept.getVocabulary().getName() + ", "
+				+ conditionConcept.getConceptCode();
+		
+		System.out.println("VocabularyID:"+myVoc.getId());
+		System.out.println("VocabularyName:"+myVoc.getName());
 
 		String theSystem = conditionConcept.getVocabulary().getSystemUri();
 		String theCode = conditionConcept.getConceptCode();
@@ -261,5 +283,23 @@ public class ConditionOccurrence extends BaseResourceTable {
 	
 	public void setSourceValue(String sourceValue) {
 		this.sourceValue = sourceValue;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public FhirVersionEnum getFhirVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InstantDt getUpdated() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

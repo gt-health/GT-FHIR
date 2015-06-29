@@ -1,9 +1,13 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
 
-public class Location extends BaseResourceTable{
+public class Location extends BaseResourceEntity{
 
 	private Long id;
 	private String address1;
@@ -107,26 +111,27 @@ public class Location extends BaseResourceTable{
 	}
 
 	@Override
-	public Class<? extends IResource> getRelatedResourceType() {
-		return ca.uhn.fhir.model.dstu2.resource.Location.class;
-	}
-
-	@Override
-	public IdDt getIdDt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String getResourceType() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public long getVersion() {
+	public FhirVersionEnum getFhirVersion() {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
+	}
+
+	@Override
+	public InstantDt getUpdated() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

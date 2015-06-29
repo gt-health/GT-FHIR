@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.jpa.dao;
+package edu.gatech.i3l.hl7.fhir.jpa.dao;
 
 import java.util.Date;
 

@@ -17,6 +17,11 @@ public class Concept {
 	public Concept() {
 		super();
 	}
+	
+	public Concept(Long id, String name){
+		this.id = id;
+		this.name = name;
+	}
 
 	public Concept(Long id, String name, Integer level, String klass,
 			Vocabulary vocabulary, String conceptCode, Date validStartDate,

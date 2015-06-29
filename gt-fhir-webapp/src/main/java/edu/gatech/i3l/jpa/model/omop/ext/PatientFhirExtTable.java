@@ -1,6 +1,13 @@
 package edu.gatech.i3l.jpa.model.omop.ext;
 
+import java.util.Iterator;
+
+import ca.uhn.fhir.jpa.dao.BaseFhirDao;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.Location;
 import edu.gatech.i3l.jpa.model.omop.Person;
@@ -13,6 +20,7 @@ import edu.gatech.i3l.jpa.model.omop.Provider;
  */
 public class PatientFhirExtTable extends Person{
 
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PatientFhirExtTable.class);
 	private String familyName;
 	private String givenName1;
 	private String givenName2;
@@ -124,4 +132,35 @@ public class PatientFhirExtTable extends Person{
 		
 		return patient;
 	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		super.constructEntityFromResource(resource);
+		if(resource instanceof Patient){
+			Patient patient = (Patient)resource;
+			Iterator<HumanNameDt> iterator = patient.getName().iterator();
+			//while(iterator.hasNext()){
+				HumanNameDt next = iterator.next();
+				this.givenName1 = next.getGiven().iterator().next().getValue();
+				if(next.getGiven().iterator().hasNext()) //WARNING check handle of case for omop where there are more than two given names 
+					this.givenName2 = next.getGiven().iterator().next().getValue();
+				Iterator<StringDt> family = next.getFamily().iterator();
+				this.familyName = "";
+				while(family.hasNext()){
+					this.familyName = this.familyName.concat(family.next().getValue()+" ");
+				}
+				if(next.getSuffix().iterator().hasNext())
+					this.suffixName = next.getSuffix().iterator().next().getValue();
+				if(next.getPrefix().iterator().hasNext())
+					this.prefixName = next.getPrefix().iterator().next().getValue();
+			//}
+			this.maritalStatusConceptValue = patient.getMaritalStatus().getText();
+		} else {
+			ourLog.error("There was not possible to construct the entity ? using the resource ?. It should be used the resource ?.",
+					this.getClass().getSimpleName(), resource.getResourceName(), getResourceType());
+		}
+		return this;
+	}
+	
+	
 }
