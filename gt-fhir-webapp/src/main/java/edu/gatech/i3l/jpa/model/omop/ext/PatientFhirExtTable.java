@@ -141,12 +141,13 @@ public class PatientFhirExtTable extends Person{
 			Iterator<HumanNameDt> iterator = patient.getName().iterator();
 			//while(iterator.hasNext()){
 				HumanNameDt next = iterator.next();
-				this.givenName1 = next.getGiven().get(0).getValue();
-				this.givenName2 = next.getGiven().get(1).getValue();
+				this.givenName1 = next.getGiven().iterator().next().getValue();
+				if(next.getGiven().iterator().hasNext()) //WARNING check handle of case for omop where there are more than two given names 
+					this.givenName2 = next.getGiven().iterator().next().getValue();
 				Iterator<StringDt> family = next.getFamily().iterator();
 				this.familyName = "";
 				while(family.hasNext()){
-					this.familyName = this.familyName.concat(family.next().getValue());
+					this.familyName = this.familyName.concat(family.next().getValue()+" ");
 				}
 				if(next.getSuffix().iterator().hasNext())
 					this.suffixName = next.getSuffix().iterator().next().getValue();

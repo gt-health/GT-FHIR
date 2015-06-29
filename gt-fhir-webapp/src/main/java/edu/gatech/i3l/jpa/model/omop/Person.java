@@ -8,6 +8,7 @@ import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -15,6 +16,7 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 public class Person extends BaseResourceEntity{
 
 	public static final String RESOURCE_TYPE = "Patient";
+	
 	private Long id;
 	private Integer yearOfBirth;
 	private Integer monthOfBirth;
@@ -191,21 +193,18 @@ public class Person extends BaseResourceEntity{
 		calendar.set(this.getYearOfBirth(), this.getMonthOfBirth(), this.getDayOfBirth());
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
-//		Concept gender = this.getGenderConcept(); //FIXME
-//		if(gender != null){
-//			AdministrativeGenderEnum admGender = null;
-//			String gName = gender.getName(); 
-//			if("MALE".equals(gName)){
-//				admGender = AdministrativeGenderEnum.MALE;
-//			}else if("FEMALE".equals(gName)){
-//				admGender = AdministrativeGenderEnum.FEMALE;
-//			}else if("OTHER".equals(gName)){
-//				admGender = AdministrativeGenderEnum.OTHER;
-//			}else if("UNKNOWN".equals(gName)){
-//				admGender = AdministrativeGenderEnum.UNKNOWN;
-//			}
-//			patient.setGender(admGender);
-//		}
+		Concept gender = this.getGenderConcept();
+		if(gender != null){
+			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
+			String gName = gender.getName(); 
+			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
+			for (int i = 0; i < values.length; i++) {
+				if(gName.equalsIgnoreCase(values[i].getCode())){
+					admGender = values[i];
+				}
+			}
+			patient.setGender(admGender);
+		}
 		
 		return patient;
 	}
@@ -242,7 +241,9 @@ public class Person extends BaseResourceEntity{
 			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
-			this.genderSourceValue = patient.getGender();
+			String gender = patient.getGender();
+			this.genderSourceValue = gender;
+			this.genderConcept = OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender());
 			
 			Location location = new Location();
 			AddressDt address = patient.getAddress().get(0);
