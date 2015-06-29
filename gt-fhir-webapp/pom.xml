@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.gatech.i3l</groupId>
 	<artifactId>gt-fhir-webapp</artifactId>
@@ -12,6 +13,14 @@
 				<enabled>true</enabled>
 			</snapshots>
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>libs-release</name>
+			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-release</url>
 		</repository>
 	</repositories>
 
@@ -29,10 +38,8 @@
 			<version>1.1-SNAPSHOT</version>
 		</dependency>
 
-		<!-- 
-		This dependency includes the JPA server itself, which is packaged
-		separately from the rest of HAPI FHIR 
-		-->
+		<!-- This dependency includes the JPA server itself, which is packaged 
+			separately from the rest of HAPI FHIR -->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jpaserver-base</artifactId>
@@ -45,15 +52,13 @@
 			<artifactId>gt-fhir-overlay</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<type>war</type>
-			<scope>provided</scope>		
+			<scope>provided</scope>
 		</dependency>
 
-		<!-- 
-		HAPI-FHIR uses Logback for logging support. The logback library is included 
-		automatically by Maven as a part of the hapi-fhir-base dependency, but you 
-		also need to include a logging library. Logback is used here, but log4j
-		would also be fine. 
-		-->
+		<!-- HAPI-FHIR uses Logback for logging support. The logback library is 
+			included automatically by Maven as a part of the hapi-fhir-base dependency, 
+			but you also need to include a logging library. Logback is used here, but 
+			log4j would also be fine. -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -68,10 +73,8 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- 
-		If you are using HAPI narrative generation, you will need to include Thymeleaf
-		as well. Otherwise the following can be omitted.
-		 -->
+		<!-- If you are using HAPI narrative generation, you will need to include 
+			Thymeleaf as well. Otherwise the following can be omitted. -->
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf</artifactId>
@@ -90,11 +93,8 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
-		<!-- 
-		Spring Web is used to deploy the server to a
-		web container.
-		-->
+
+		<!-- Spring Web is used to deploy the server to a web container. -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
@@ -102,10 +102,8 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!--
-		You may not need this if you are deploying to an application server which
-		provides database connection pools itself.
-		-->
+		<!-- You may not need this if you are deploying to an application server 
+			which provides database connection pools itself. -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
@@ -117,43 +115,28 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.6</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>net.vidageek</groupId>
 			<artifactId>mirror</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-				
+
 	</dependencies>
 
 	<build>
-		
+
 		<finalName>gt-fhir-webapp</finalName>
-		
-		<!-- 
-		The following is not required for the application to build, but
-		allows you to test it by issuing "mvn jetty:run" from the command
-		line. 
-		-->
-		<!-- <pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.jetty</groupId>
-					<artifactId>jetty-maven-plugin</artifactId>
-					<version>9.1.1.v20140108</version>
-					<configuration>
-						<webApp>
-							<contextPath>/gt-fhir-webapp</contextPath>
-						</webApp>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement> -->
-	
+
+		<!-- The following is not required for the application to build, but allows 
+			you to test it by issuing "mvn jetty:run" from the command line. -->
+		<!-- <pluginManagement> <plugins> <plugin> <groupId>org.eclipse.jetty</groupId> 
+			<artifactId>jetty-maven-plugin</artifactId> <version>9.1.1.v20140108</version> 
+			<configuration> <webApp> <contextPath>/gt-fhir-webapp</contextPath> </webApp> 
+			</configuration> </plugin> </plugins> </pluginManagement> -->
+
 		<plugins>
-			<!-- 
-			Tell Maven which Java source version you want to use
-			-->
+			<!-- Tell Maven which Java source version you want to use -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -163,11 +146,9 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			
-			<!-- 
-			The configuration here tells the WAR plugin to include the FHIR Tester
-			overlay. You can omit it if you are not using that feature.
-			-->
+
+			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
+				overlay. You can omit it if you are not using that feature. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
@@ -180,11 +161,9 @@
 					</overlays>
 				</configuration>
 			</plugin>
-			
-			<!-- 
-			This plugin is just a part of the HAPI internal build process, you do not
-			need to incude it in your own projects
-			-->
+
+			<!-- This plugin is just a part of the HAPI internal build process, you 
+				do not need to incude it in your own projects -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
@@ -192,7 +171,7 @@
 					<skip>true</skip>
 				</configuration>
 			</plugin>
-    		
+
 		</plugins>
 	</build>
 

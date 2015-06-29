@@ -156,15 +156,6 @@ public class ConditionOccurrence extends BaseResourceTable {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#addTag(ca.uhn.fhir.jpa.entity.TagDefinition)
-	 */
-	@Override
-	public BaseTag addTag(TagDefinition arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
 	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getId()
 	 */
 	@Override
@@ -190,14 +181,6 @@ public class ConditionOccurrence extends BaseResourceTable {
 	@Override
 	public String getResourceType() {
 		return "Condition";
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getTags()
-	 */
-	@Override
-	public Collection<? extends BaseTag> getTags() {
-		return null;
 	}
 
 	/* (non-Javadoc)
