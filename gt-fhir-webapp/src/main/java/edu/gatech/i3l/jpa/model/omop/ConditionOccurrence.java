@@ -24,6 +24,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
  */
 public class ConditionOccurrence extends BaseResourceEntity {
 
+	public static final String RESOURCE_TYPE = "Condition";
+
 	private Long id;
 	private Person person;
 	private Concept conditionConcept;
@@ -118,28 +120,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				+ conditionConcept.getVocabulary().getName() + ", "
 				+ conditionConcept.getConceptCode();
 		
-		System.out.println("VocabularyID:"+myVoc.getId());
-		System.out.println("VocabularyName:"+myVoc.getName());
-
-		String theSystem = conditionConcept.getVocabulary().getSystemUri();
-		String theCode = conditionConcept.getConceptCode();
-		
-		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
-		if (theSystem != "") {
-			// Create coding here. We have one coding in this condition as OMOP allows one coding concept per condition.
-			// In the future, if we want to allow multiple coding concepts here, we need to do it here.
-			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(conditionConcept.getName());
-			conditionCodeConcept.addCoding(coding);
-		}
-
-		// FHIR does not require the coding. If our System URI is not mappable from
-		// OMOP database, then coding would be empty. Set Text here. Even text is not
-		// required in FHIR. But, then no reason to have this condition, I think...
-		String theText = conditionConcept.getName() + ", "
-				+ conditionConcept.getVocabulary().getName() + ", "
-				+ conditionConcept.getConceptCode();
-		
 		conditionCodeConcept.setText(theText);
 		condition.setCode(conditionCodeConcept);
 		
@@ -169,10 +149,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return condition;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResourceType()
-	 */
-	@Override
 	public Class<? extends IResource> getRelatedResourceType() {
 		return Condition.class;
 	}
@@ -189,10 +165,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		this.id = id;
 	}
 	
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getIdDt()
-	 */
-	@Override
 	public IdDt getIdDt() {
 		return new IdDt(getResourceType(), id);
 	}
@@ -202,15 +174,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 */
 	@Override
 	public String getResourceType() {
-		return "Condition";
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getVersion()
-	 */
-	@Override
-	public long getVersion() {
-		return 0;
+		return RESOURCE_TYPE;
 	}
 
 	public Person getPerson() {

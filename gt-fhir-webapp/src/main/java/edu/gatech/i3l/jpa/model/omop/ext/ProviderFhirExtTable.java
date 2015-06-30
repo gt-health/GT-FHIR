@@ -75,7 +75,6 @@ public class ProviderFhirExtTable extends Provider {
 		this.genderConcept = genderConcept;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Practitioner getRelatedResource() {
 		Practitioner practitioner = super.getRelatedResource();

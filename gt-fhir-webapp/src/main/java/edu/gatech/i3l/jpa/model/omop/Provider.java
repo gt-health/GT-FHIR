@@ -5,9 +5,12 @@ import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 public class Provider extends BaseResourceEntity {
+
+	public static final String RESOURCE_TYPE = "Practitioner";
 
 	private Long id;
 	private String npi;
@@ -98,11 +101,14 @@ public class Provider extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
 
 	@Override
 	public String getResourceType() {
-		// TODO Auto-generated method stub
-		return "Practitioner";
+		return RESOURCE_TYPE;
 	}
 
 	@Override

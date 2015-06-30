@@ -69,6 +69,10 @@ public class Person extends BaseResourceEntity{
 		this.id = id;
 	}
 
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
+
 	public Integer getYearOfBirth() {
 		return yearOfBirth;
 	}
