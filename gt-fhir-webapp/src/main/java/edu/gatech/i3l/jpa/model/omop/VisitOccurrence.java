@@ -10,6 +10,7 @@ import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -17,6 +18,9 @@ import ca.uhn.fhir.model.primitive.InstantDt;
  *
  */
 public class VisitOccurrence extends BaseResourceEntity {
+	
+	public static final String RESOURCE_TYPE = "Encounter";
+
 	private Long id;
 	private Person person;
 	private Date startDate;
@@ -115,13 +119,17 @@ public class VisitOccurrence extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
 
 	/* (non-Javadoc)
 	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
 	 */
 	@Override
 	public String getResourceType() {
-		return "Encounter";
+		return RESOURCE_TYPE;
 	}
 
 	@Override
