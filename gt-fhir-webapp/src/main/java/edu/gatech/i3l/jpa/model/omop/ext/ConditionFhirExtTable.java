@@ -3,7 +3,7 @@
  */
 package edu.gatech.i3l.jpa.model.omop.ext;
 
-import java.sql.Date;
+import java.util.Date;
 
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
