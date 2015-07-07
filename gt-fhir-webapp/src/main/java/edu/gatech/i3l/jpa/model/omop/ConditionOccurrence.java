@@ -321,4 +321,10 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String translateLink(String arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
