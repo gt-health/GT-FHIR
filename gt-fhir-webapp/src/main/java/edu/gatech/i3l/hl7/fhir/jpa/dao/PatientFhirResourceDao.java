@@ -37,7 +37,7 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 	@Override
 	public Predicate translatePredicateDateLessThan(String theParamName,
 			Date upperBound, Root<? extends IResourceEntity> from,
-			CriteriaBuilder theBuilder) {
+			CriteriaBuilder theBuilder, boolean inclusive) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(upperBound);
 		Predicate ub = null;
@@ -64,7 +64,7 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient>{
 	@Override
 	public Predicate translatePredicateDateGreaterThan(String theParamName,
 			Date lowerBound, Root<? extends IResourceEntity> from,
-			CriteriaBuilder theBuilder) {
+			CriteriaBuilder theBuilder, boolean inclusive) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(lowerBound);
 		Predicate lb = null;

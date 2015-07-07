@@ -14,7 +14,7 @@
 		<mapping-file>org/hibernate/conditionoccurence.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/provider.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/visitoccurrence.hbm.xml</mapping-file>
-		<mapping-file>org/hibernate/episodeofcare.hbm.xml</mapping-file> 
+		<mapping-file>org/hibernate/episodeofcare.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/organization.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/caresite.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/death.hbm.xml</mapping-file>

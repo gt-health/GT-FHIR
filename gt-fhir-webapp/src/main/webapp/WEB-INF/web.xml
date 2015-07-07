@@ -35,7 +35,7 @@
 
 	<servlet>
 		<servlet-name>fhirServlet</servlet-name>
-		<servlet-class>edu.gatech.i3l.servlet.DefaultServer</servlet-class>
+		<servlet-class>edu.gatech.i3l.hl7.fhir.servlet.DefaultServer</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 

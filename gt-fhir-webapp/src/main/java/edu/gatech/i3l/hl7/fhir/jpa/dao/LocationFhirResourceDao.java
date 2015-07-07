@@ -27,7 +27,7 @@ public class LocationFhirResourceDao extends BaseFhirResourceDao<Location>{
 	@Override
 	public Predicate translatePredicateDateLessThan(String theParamName,
 			Date upperBound, Root<? extends IResourceEntity> from,
-			CriteriaBuilder theBuilder) {
+			CriteriaBuilder theBuilder, boolean inclusive) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -35,7 +35,7 @@ public class LocationFhirResourceDao extends BaseFhirResourceDao<Location>{
 	@Override
 	public Predicate translatePredicateDateGreaterThan(String theParamName,
 			Date lowerBound, Root<? extends IResourceEntity> from,
-			CriteriaBuilder theBuilder) {
+			CriteriaBuilder theBuilder, boolean inclusive) {
 		// TODO Auto-generated method stub
 		return null;
 	}

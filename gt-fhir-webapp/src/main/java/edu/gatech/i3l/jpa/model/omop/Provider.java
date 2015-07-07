@@ -4,13 +4,14 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 public class Provider extends BaseResourceEntity {
 
-	public static final String RESOURCE_TYPE = "Practitioner";
+	public static final String RESOURCE_TYPE = "Practitioner|Organization";
 
 	private Long id;
 	private String npi;
@@ -113,8 +114,7 @@ public class Provider extends BaseResourceEntity {
 
 	@Override
 	public FhirVersionEnum getFhirVersion() {
-		// TODO Auto-generated method stub
-		return null;
+		return FhirVersionEnum.DSTU2;
 	}
 
 	@Override
@@ -127,6 +127,28 @@ public class Provider extends BaseResourceEntity {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String translateLink(String chain) {
+		String translatedChain = "";
+		if(chain.isEmpty())
+			return translatedChain;
+		String head = "";
+		if(chain.contains(".")){
+			head = chain.substring(0, chain.indexOf("."));
+			chain = chain.substring(chain.indexOf(".") + 1, chain.length());
+		} else {
+			head = chain;
+		}
+		switch (head) {
+		case Patient.SP_ORGANIZATION:
+			translatedChain = translatedChain.concat("careSite");
+			break;
+		default:
+			break;
+		}
+		return translatedChain;
 	}
 
 }
