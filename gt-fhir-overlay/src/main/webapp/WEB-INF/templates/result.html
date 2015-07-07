@@ -192,7 +192,6 @@
 																<td style="white-space: nowrap;">
 																	<th:block th:if="${entry.resource} != null">
 																		<button class="btn btn-primary btn-xs" th:onclick="'readFromEntriesTable(this, \'' + ${entry.resource.id.resourceType} + '\', \'' + ${entry.resource.id.idPart} + '\', \'' + ${#strings.defaultString(entry.resource.id.versionIdPart,'')} + '\');'" type="submit" name="action" value="read" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ><i class="fa fa-book"></i> Read</button>
-																		<button class="btn btn-primary btn-xs" th:onclick="'updateFromEntriesTable(this, \'' + ${entry.resource.id.resourceType} + '\', \'' + ${entry.resource.id.idPart} + '\', \'' + ${#strings.defaultString(entry.resource.id.versionIdPart, '')} + '\');'" type="submit" name="action" value="home"><i class="fa fa-pencil" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ></i> Update</button>
 																	</th:block>
 																</td>
 																<td>
@@ -209,18 +208,45 @@
 														</table>
 													</div>
 												</div>
-												<script type="text/javascript">
-													$('#collapseOne').on('hidden.bs.collapse', function () {
-													   $("#collapseOneIcon").removeClass("fa-minus-square-o").addClass("fa-plus-square-o");
-													});
-	
-													$('#collapseOne').on('shown.bs.collapse', function () {
-													   $("#collapseOneIcon").removeClass("fa-plus-square-o").addClass("fa-minus-square-o");
-													});
-												</script>
+												
 											</div>
 										</div>										
-										<div class="panel-heading" sstyle="margin: 5px;">
+										<div th:if="${!#strings.isEmpty(narrative)}" class="panel-group" style="margin-bottom: 0px;">
+														<div class="panel-group"  id="accordion" style="margin-bottom: 0px;">
+															<h4>
+																<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+																	<i id="collapseOneIcon" class="fa fa-plus-square-o"></i>
+																	Manage Resource
+																</a>
+															</h4>
+															<div id="collapseOne" class="panel-collapse collapse">
+																<div class="panel-body" style="padding-bottom: 0px;">
+																	<table class="table table-condensed" style="padding-bottom: 0px; margin-bottom: 0px;">
+																		<colgroup>
+																			<col style="width: 100px;"/>
+																			<col/>
+																			<col/>
+																			<col style="width: 100px;"/>
+																		</colgroup>
+																		<thead>
+																			<tr>
+																				<td style="white-space: nowrap;">
+																					<th:block>
+																						<button class="btn btn-primary" th:onclick="'updateTableEntry(this, \'' + ${resource.id.resourceType} + '\', \'' + ${resource.id.toUnqualified()} + '\', \'' + ${#strings.defaultString(version, '')} + '\');'" type="submit" name="action" value="update"><i class="fa fa-pencil" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ></i> Update</button>
+																						<button class="btn btn-primary" th:onclick="'deleteTableEntry(this, \'' + ${resource.id.resourceType} + '\', \'' + ${resource.id.toUnqualified()} + '\');'" type="submit" name="action" value="delete" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ><i class="fa fa-trash-o"></i> Delete</button>
+																					</th:block>
+																				</td>
+																			</tr>
+																		</thead>
+																	</table>
+																	<div th:if="${resourceName} == 'Patient'">
+																		<div th:include="forms/tmpl-patient :: form-frgmt" />
+																	</div>
+																</div>
+															</div>
+														</div>
+										</div>
+										<div class="panel-heading" style="margin: 5px;">
 											<h4 class="panel-title">
 												Raw Message
 											</h4>										
@@ -242,7 +268,15 @@
 							</tbody>
 						</table>
 						
-						<script type="text/javascript"><!--
+						<script type="text/javascript">
+							$('#collapseOne').on('hidden.bs.collapse', function () {
+							   $("#collapseOneIcon").removeClass("fa-minus-square-o").addClass("fa-plus-square-o");
+							});
+	
+							$('#collapseOne').on('shown.bs.collapse', function () {
+							   $("#collapseOneIcon").removeClass("fa-plus-square-o").addClass("fa-minus-square-o");
+							});
+						<!--
 							$( document ).ready(function() {
 								var reswidth = $('#resultBodyPlaceholder').outerWidth(true);
 								var reqwidth = 0;

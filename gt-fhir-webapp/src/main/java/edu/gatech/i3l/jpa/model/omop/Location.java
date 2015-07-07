@@ -134,4 +134,16 @@ public class Location extends BaseResourceEntity{
 		return null;
 	}
 
+	@Override
+	public IdDt getIdDt() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String translateLink(String chain) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

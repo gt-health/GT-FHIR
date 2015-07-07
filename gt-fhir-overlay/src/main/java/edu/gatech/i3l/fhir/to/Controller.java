@@ -1232,9 +1232,8 @@ public class Controller {
 		return "[server=" + theModel.get("serverId") + "] - ";
 	}
 
-	private String parseNarrative(HomeRequest theRequest, EncodingEnum theCtEnum, String theResultBody) {
+	private String parseNarrative(IResource resource) {
 		try {
-			IResource resource = (IResource) theCtEnum.newParser(getContext(theRequest)).parseResource(theResultBody);
 			String retVal = resource.getText().getDiv().getValueAsString();
 			return StringUtils.defaultString(retVal);
 		} catch (Exception e) {
@@ -1296,14 +1295,15 @@ public class Controller {
 
 			StringBuilder resultDescription = new StringBuilder();
 			Bundle bundle = null;
-
+			IResource resource = null;
 			if (ctEnum == null) {
 				resultDescription.append("Non-FHIR response");
 			} else {
 				switch (ctEnum) {
 				case JSON:
 					if (theResultType == ResultType.RESOURCE) {
-						narrativeString = parseNarrative(theRequest, ctEnum, resultBody);
+						resource = (IResource) ctEnum.newParser(getContext(theRequest)).parseResource(resultBody);
+						narrativeString = parseNarrative(resource);
 						resultDescription.append("JSON resource");
 					} else if (theResultType == ResultType.BUNDLE) {
 						resultDescription.append("JSON bundle");
@@ -1313,7 +1313,8 @@ public class Controller {
 				case XML:
 				default:
 					if (theResultType == ResultType.RESOURCE) {
-						narrativeString = parseNarrative(theRequest, ctEnum, resultBody);
+						resource =  (IResource) ctEnum.newParser(getContext(theRequest)).parseResource(resultBody);
+						narrativeString = parseNarrative(resource);
 						resultDescription.append("XML resource");
 					} else if (theResultType == ResultType.BUNDLE) {
 						resultDescription.append("XML bundle");
@@ -1357,7 +1358,7 @@ public class Controller {
 
 			String resultBodyText = format(resultBody, ctEnum);
 			theModelMap.put("resultBody", resultBodyText);
-
+			theModelMap.put("resource", resource);
 			theModelMap.put("resultBodyIsLong", resultBodyText.length() > 1000);
 			theModelMap.put("requestHeaders", requestHeaders);
 			theModelMap.put("responseHeaders", responseHeaders);

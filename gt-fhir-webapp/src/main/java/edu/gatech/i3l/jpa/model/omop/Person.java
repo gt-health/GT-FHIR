@@ -1,6 +1,7 @@
 package edu.gatech.i3l.jpa.model.omop;
 
 import java.util.Calendar;
+import java.util.Set;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
@@ -34,6 +35,8 @@ public class Person extends BaseResourceEntity{
 	private String raceSourceValue;
 	private Concept raceConcept;
 	
+	private Set<ConditionOccurrence> conditions;
+
 	private Death death;
 
 	public Person() {
@@ -67,6 +70,14 @@ public class Person extends BaseResourceEntity{
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Set<ConditionOccurrence> getConditions() {
+		return conditions;
+	}
+	
+	public void setConditions(Set<ConditionOccurrence> conditions) {
+		this.conditions = conditions;
 	}
 
 	public IdDt getIdDt() {
@@ -177,7 +188,6 @@ public class Person extends BaseResourceEntity{
 		this.death = death;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Patient getRelatedResource() {
 		Patient patient = new Patient();
@@ -264,6 +274,32 @@ public class Person extends BaseResourceEntity{
 		}
 		
 		return this;
+	}
+
+	@Override
+	public String translateLink(String chain) {
+		String translatedChain = "";
+		if(chain.isEmpty())
+			return translatedChain;
+		String head = "";
+		if(chain.contains(".")){
+			head = chain.substring(0, chain.indexOf("."));
+			chain = chain.substring(chain.indexOf(".") + 1, chain.length());
+		} else {
+			head = chain;
+		}
+		switch (head) {
+		case Patient.SP_ORGANIZATION:
+			translatedChain = translatedChain.concat(this.provider.translateLink(head));
+			break;
+		case Patient.SP_CAREPROVIDER:
+			translatedChain = translatedChain.concat("provider").concat("." + provider.translateLink(chain));
+			break;
+		default:
+			break;
+		}
+		
+		return translatedChain;
 	}
 
 

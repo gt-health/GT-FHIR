@@ -29,7 +29,10 @@
 			<column name="race_concept_id"/>
 		</many-to-one>	
 		<!-- <one-to-one name="death" class="edu.gatech.i3l.jpa.model.omop.Death" constrained="true"/> -->
-		
+		<set name="conditions" inverse="true">
+			<key column="person_id" on-delete="cascade"/>
+			<one-to-many class="edu.gatech.i3l.jpa.model.omop.ConditionOccurrence"/>
+		</set>
 		<joined-subclass name="edu.gatech.i3l.jpa.model.omop.ext.PatientFhirExtTable" table="f_person">
 			<key column="person_id" />
 			<property name="familyName" type="string" column="family_name"/>
