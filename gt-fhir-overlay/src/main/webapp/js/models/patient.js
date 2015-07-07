@@ -53,5 +53,41 @@ function Patient(){
         fhirType: String,
     }];
     active: Boolean;
-       
+   
+    
+    this.buildFromJSON = function(params) {
+	    
+	    var names = [];
+	    var given = params.given.split(" ");
+	    var family = params.family.split(" ");
+	    names.push({"given":given,"family":family});
+	    this.name = names;
+	    var addresses = [];
+	    var line = [];
+	    line.push(params.address);
+	    var address = {"use":params.address_use,
+				"line":line,
+				"city":params.city,
+				"state":params.state,
+				"postalCode":params.postal_code,
+				"country":params.country};
+	    var period = {};
+	    if(params.address_period_start != ""){//TODO fix JsonParser 1110 in hapi-fhir-base
+	    	period.start = params.address_period_start;
+	    }
+	    if(params.address_period_end != ""){
+	    	period.end = params.address_period_end;
+	    }
+	    if(!jQuery.isEmptyObject(period)){
+	    	address.period = period;
+	    }
+	    addresses.push(address);
+	    this.address = addresses;
+	    
+	    this.birthDate = params.birthDate;
+	    this.active = params.active;
+	    this.gender = params.gender;
+	    
+	    return this;
+	}
 }

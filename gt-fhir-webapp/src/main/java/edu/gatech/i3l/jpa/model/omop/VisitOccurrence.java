@@ -10,6 +10,7 @@ import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -138,6 +139,18 @@ public class VisitOccurrence extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IdDt getIdDt() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String translateLink(String chain) {
 		// TODO Auto-generated method stub
 		return null;
 	}

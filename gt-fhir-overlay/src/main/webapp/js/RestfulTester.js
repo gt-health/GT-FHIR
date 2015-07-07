@@ -376,25 +376,28 @@ function readFromEntriesTable(source, type, id, vid) {
 	}
 	setResource(btn, type);
 	$("#outerForm").attr("action", "read").submit();
-}															
+}
 
-/*
- * Handler for "update" button which appears on each entry in the
- * summary at the top of a Bundle response view 
- */
-function updateFromEntriesTable(source, type, id, vid) {
+/*$('#resource-update-btn').click(
+		function() {
+			var btn = $(this);
+			btn.button('loading');
+			var id = $('#resource-update-id').val();
+			// Note we're using resource-create-id even though this is an update because
+			// the controller expects that...
+			if (id != null) btn.append($('<input />', { type: 'hidden', name: 'resource-create-id', value: id }));
+			var body = $('#resource-update-body').val();
+			btn.append($('<input />', { type: 'hidden', name: 'resource-create-body', value: body }));
+			$("#outerForm").attr("action", "update").attr("method", "POST").submit();
+		});*/	
+
+function deleteTableEntry(source, type, id){
+	
 	var btn = $(source);
 	btn.button('loading');
-	var resId = source.resourceid;
-	btn.append($('<input />', { type: 'hidden', name: 'updateId', value: id }));
-	var resVid = source.resourcevid;
-	if (resVid != '') {
-		btn.append($('<input />', { type: 'hidden', name: 'updateVid', value: vid }));
-	}	
-	setResource(btn, type);
-	$("#outerForm").attr("action", "resource").submit();
-}															
-
+	if (id != null) btn.append($('<input />', { type: 'hidden', name: 'resource-delete-id', value: id }));
+	$("#outerForm").attr("action", "delete").submit();
+}
 
 /**
  * http://stackoverflow.com/a/10997390/11236

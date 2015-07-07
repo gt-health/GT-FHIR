@@ -18,9 +18,6 @@
 	<bean id="mySystemDaoDstu2" class="ca.uhn.fhir.jpa.dao.BaseFhirSystemDao">
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<!-- <bean id="myResourceDaoDstu2" class="ca.uhn.fhir.jpa.dao.BaseFhirResourceDao<T>">
-		<property name="baseFhirDao" ref="myBaseDao"></property>
-	</bean> -->
 	<bean id="mySystemProviderDstu2" class="ca.uhn.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
