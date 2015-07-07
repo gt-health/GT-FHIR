@@ -24,6 +24,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
  */
 public class ConditionOccurrence extends BaseResourceEntity {
 
+	public static final String RESOURCE_TYPE = "Condition";
+
 	private Long id;
 	private Person person;
 	private Concept conditionConcept;
@@ -147,15 +149,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return condition;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResourceType()
-	 */
 	public Class<? extends IResource> getRelatedResourceType() {
 		return Condition.class;
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getId()
+	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getId()
 	 */
 	@Override
 	public Long getId() {
@@ -166,27 +165,16 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		this.id = id;
 	}
 	
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getIdDt()
-	 */
-	@Override
 	public IdDt getIdDt() {
 		return new IdDt(getResourceType(), id);
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
+	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getResourceType()
 	 */
 	@Override
 	public String getResourceType() {
-		return "Condition";
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getVersion()
-	 */
-	public long getVersion() {
-		return 0;
+		return RESOURCE_TYPE;
 	}
 
 	public Person getPerson() {
@@ -262,6 +250,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
+	public IResourceEntity constructEntityFromResource(IResource arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public FhirVersionEnum getFhirVersion() {
 		// TODO Auto-generated method stub
 		return null;
@@ -269,18 +263,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 	@Override
 	public InstantDt getUpdated() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String translateLink(String chain) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -18,6 +18,9 @@ import ca.uhn.fhir.model.primitive.InstantDt;
  *
  */
 public class VisitOccurrence extends BaseResourceEntity {
+	
+	public static final String RESOURCE_TYPE = "Encounter";
+
 	private Long id;
 	private Person person;
 	private Date startDate;
@@ -116,13 +119,17 @@ public class VisitOccurrence extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
 
 	/* (non-Javadoc)
 	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
 	 */
 	@Override
 	public String getResourceType() {
-		return "Encounter";
+		return RESOURCE_TYPE;
 	}
 
 	@Override
@@ -139,18 +146,6 @@ public class VisitOccurrence extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IdDt getIdDt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String translateLink(String chain) {
 		// TODO Auto-generated method stub
 		return null;
 	}

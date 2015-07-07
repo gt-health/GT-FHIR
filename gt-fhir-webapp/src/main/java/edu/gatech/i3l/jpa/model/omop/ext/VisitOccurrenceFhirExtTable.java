@@ -50,7 +50,6 @@ public class VisitOccurrenceFhirExtTable extends VisitOccurrence {
 		this.note = note;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Encounter getRelatedResource() {
 		Encounter encounter = super.getRelatedResource();

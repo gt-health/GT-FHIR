@@ -3,13 +3,9 @@
  */
 package edu.gatech.i3l.jpa.model.omop;
 
-import java.util.Collection;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-import ca.uhn.fhir.jpa.entity.BaseTag;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
-import ca.uhn.fhir.jpa.entity.TagDefinition;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -54,7 +50,6 @@ public class EpisodeOfCare extends BaseResourceEntity {
 	/* (non-Javadoc)
 	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResource()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare episodeOfCare = new ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare();
@@ -64,9 +59,6 @@ public class EpisodeOfCare extends BaseResourceEntity {
 		return episodeOfCare;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResourceType()
-	 */
 	public Class<? extends IResource> getRelatedResourceType() {
 		return ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare.class;
 	}
@@ -83,10 +75,6 @@ public class EpisodeOfCare extends BaseResourceEntity {
 		this.id = id;
 	}
 	
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getIdDt()
-	 */
-	@Override
 	public IdDt getIdDt() {
 		return new IdDt(getResourceType(), id);
 	}
@@ -99,12 +87,10 @@ public class EpisodeOfCare extends BaseResourceEntity {
 		return "EpisodeOfCare";
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getVersion()
-	 */
-	public long getVersion() {
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource arg0) {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
 	}
 
 	@Override
@@ -115,18 +101,6 @@ public class EpisodeOfCare extends BaseResourceEntity {
 
 	@Override
 	public InstantDt getUpdated() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String translateLink(String chain) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
 		// TODO Auto-generated method stub
 		return null;
 	}

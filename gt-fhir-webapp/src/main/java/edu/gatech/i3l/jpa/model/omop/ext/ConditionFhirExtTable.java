@@ -67,7 +67,6 @@ public class ConditionFhirExtTable extends ConditionOccurrence {
 		this.severityConcept = severityConcept;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Condition getRelatedResource() {
 		Condition condition = super.getRelatedResource();

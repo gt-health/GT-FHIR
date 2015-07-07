@@ -11,6 +11,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 
 public class Provider extends BaseResourceEntity {
 
+	public static final String RESOURCE_TYPE = "Practitioner|Organization";
+
 	private Long id;
 	private String npi;
 	private String dea;
@@ -100,10 +102,14 @@ public class Provider extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
 
 	@Override
 	public String getResourceType() {
-		return "Practitioner|Organization";
+		return RESOURCE_TYPE;
 	}
 
 	@Override
@@ -119,12 +125,6 @@ public class Provider extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IdDt getIdDt() {
 		// TODO Auto-generated method stub
 		return null;
 	}

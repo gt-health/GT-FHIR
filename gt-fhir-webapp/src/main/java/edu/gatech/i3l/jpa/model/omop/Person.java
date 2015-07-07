@@ -80,6 +80,10 @@ public class Person extends BaseResourceEntity{
 		this.conditions = conditions;
 	}
 
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
+
 	public Integer getYearOfBirth() {
 		return yearOfBirth;
 	}
@@ -270,12 +274,6 @@ public class Person extends BaseResourceEntity{
 		}
 		
 		return this;
-	}
-
-	@Override
-	public IdDt getIdDt() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
