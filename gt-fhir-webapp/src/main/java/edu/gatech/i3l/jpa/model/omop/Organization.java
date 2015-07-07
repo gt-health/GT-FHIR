@@ -7,6 +7,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -14,6 +15,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
  *
  */
 public class Organization extends BaseResourceEntity {
+
+	public static final String RESOURCE_TYPE = "Organization";
 
 	private Long id;
 	private Concept placeOfServiceConcept;
@@ -71,7 +74,6 @@ public class Organization extends BaseResourceEntity {
 	/* (non-Javadoc)
 	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResource()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public ca.uhn.fhir.model.dstu2.resource.Organization getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Organization organization = new ca.uhn.fhir.model.dstu2.resource.Organization();
@@ -91,13 +93,16 @@ public class Organization extends BaseResourceEntity {
 		this.id = id;
 	}
 	
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
+	
 	/* (non-Javadoc)
 	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
 	 */
 	@Override
 	public String getResourceType() {
-		// TODO Auto-generated method stub
-		return "Organization";
+		return RESOURCE_TYPE;
 	}
 
 	@Override

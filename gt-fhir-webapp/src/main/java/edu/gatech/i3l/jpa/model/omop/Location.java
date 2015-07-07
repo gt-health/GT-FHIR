@@ -9,6 +9,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 
 public class Location extends BaseResourceEntity{
 
+	public static final String RESOURCE_TYPE = "Location";
+
 	private Long id;
 	private String address1;
 	private String address2;
@@ -99,7 +101,10 @@ public class Location extends BaseResourceEntity{
 		this.id = id;
 	}
 
-	@SuppressWarnings("unchecked")
+	public IdDt getIdDt() {
+		return new IdDt(getResourceType(), id);
+	}
+
 	@Override
 	public ca.uhn.fhir.model.dstu2.resource.Location getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Location location =  new ca.uhn.fhir.model.dstu2.resource.Location();
@@ -112,8 +117,7 @@ public class Location extends BaseResourceEntity{
 
 	@Override
 	public String getResourceType() {
-		// TODO Auto-generated method stub
-		return null;
+		return RESOURCE_TYPE;
 	}
 
 	@Override
