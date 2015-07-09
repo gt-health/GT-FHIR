@@ -99,7 +99,6 @@ public class Location extends BaseResourceEntity{
 		this.id = id;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ca.uhn.fhir.model.dstu2.resource.Location getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Location location =  new ca.uhn.fhir.model.dstu2.resource.Location();

@@ -1,6 +1,5 @@
 package edu.gatech.i3l.fhir.jpa.test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -9,7 +8,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -24,7 +23,6 @@ import ca.uhn.fhir.model.dstu.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu.resource.DiagnosticReport;
 import ca.uhn.fhir.model.dstu.resource.Organization;
 import ca.uhn.fhir.model.dstu.resource.Patient;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
@@ -121,7 +119,7 @@ public class OverlayTestApp {
 			Organization o1 = new Organization();
 			o1.getName().setValue("Some Org");
 			MethodOutcome create = client.create(o1);
-			IdDt orgId = create.getId();
+			IIdType orgId = create.getId();
 
 			Patient p1 = new Patient();
 			p1.addIdentifier("foo:bar", "12345");
