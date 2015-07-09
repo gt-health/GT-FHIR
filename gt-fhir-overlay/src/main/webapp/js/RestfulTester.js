@@ -378,18 +378,49 @@ function readFromEntriesTable(source, type, id, vid) {
 	$("#outerForm").attr("action", "read").submit();
 }
 
-/*$('#resource-update-btn').click(
-		function() {
-			var btn = $(this);
+$.fn.serializeResourceObject = function()
+{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
+
+$.getScript('js/models/patient.js');
+
+function buildFromJSON(params) {
+	var createResource;
+	if(resourceName == 'Patient'){
+		createResource = new Patient();
+	}
+	createResource.buildFromJSON(params);
+    
+    return createResource;
+}
+
+/*function updateTableEntry(source, type, id, vid){
+			var btn = $(source);
 			btn.button('loading');
 			var id = $('#resource-update-id').val();
 			// Note we're using resource-create-id even though this is an update because
 			// the controller expects that...
 			if (id != null) btn.append($('<input />', { type: 'hidden', name: 'resource-create-id', value: id }));
-			var body = $('#resource-update-body').val();
+			var json = $('#outerForm').serializeResourceObject();
+			var myResource = buildFromJSON(json);
+			myResource.resourceType = json.resource;
+			var body = JSON.stringify(myResource);
 			btn.append($('<input />', { type: 'hidden', name: 'resource-create-body', value: body }));
 			$("#outerForm").attr("action", "update").attr("method", "POST").submit();
-		});*/	
+		}*/
 
 function deleteTableEntry(source, type, id){
 	

@@ -39,6 +39,5 @@ public class LocationFhirResourceDao extends BaseFhirResourceDao<Location>{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
+
 }

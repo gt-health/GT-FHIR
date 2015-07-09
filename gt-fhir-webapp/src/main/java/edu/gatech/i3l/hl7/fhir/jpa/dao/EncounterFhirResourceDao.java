@@ -1,4 +1,3 @@
-package edu.gatech.i3l.hl7.fhir.jpa.dao;
 ///**
 // * 
 // */
@@ -16,16 +15,16 @@ package edu.gatech.i3l.hl7.fhir.jpa.dao;
 //import org.springframework.transaction.annotation.Propagation;
 //import org.springframework.transaction.annotation.Transactional;
 //
-//import ca.uhn.fhir.jpa.dao.HapiDaoMethodOutcome;
+//import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
+//import ca.uhn.fhir.jpa.dao.DaoMethodOutcome;
 //import ca.uhn.fhir.jpa.dao.IDaoListener;
+//import ca.uhn.fhir.jpa.entity.IResourceEntity;
 //import ca.uhn.fhir.jpa.entity.TagTypeEnum;
 //import ca.uhn.fhir.model.api.TagList;
 //import ca.uhn.fhir.model.dstu2.composite.MetaDt;
 //import ca.uhn.fhir.model.dstu2.resource.Encounter;
 //import ca.uhn.fhir.model.primitive.IdDt;
 //import ca.uhn.fhir.rest.server.IBundleProvider;
-//import edu.gatech.i3l.jpa.model.omop.IResourceTable;
-//import edu.gatech.i3l.jpa.model.omop.ext.PatientFhirExtTable;
 //import edu.gatech.i3l.jpa.model.omop.ext.VisitOccurrenceFhirExtTable;
 //
 ///**
@@ -40,7 +39,7 @@ package edu.gatech.i3l.hl7.fhir.jpa.dao;
 //	private EntityManager myEntityManager;
 //
 //	public EncounterFhirResourceDao() {
-//		setResourceTable(VisitOccurrenceFhirExtTable.class);
+//		setResourceEntity(VisitOccurrenceFhirExtTable.class);
 //	}
 //	
 //	@Override
@@ -57,31 +56,31 @@ package edu.gatech.i3l.hl7.fhir.jpa.dao;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome create(Encounter arg0) {
+//	public DaoMethodOutcome create(Encounter arg0) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome create(Encounter arg0, String arg1) {
+//	public DaoMethodOutcome create(Encounter arg0, String arg1) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome create(Encounter arg0, String arg1, boolean arg2) {
+//	public DaoMethodOutcome create(Encounter arg0, String arg1, boolean arg2) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome delete(IdDt arg0) {
+//	public DaoMethodOutcome delete(IdDt arg0) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome deleteByUrl(String arg0) {
+//	public DaoMethodOutcome deleteByUrl(String arg0) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
@@ -147,26 +146,27 @@ package edu.gatech.i3l.hl7.fhir.jpa.dao;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome update(Encounter arg0) {
+//	public DaoMethodOutcome update(Encounter arg0) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome update(Encounter arg0, String arg1) {
+//	public DaoMethodOutcome update(Encounter arg0, String arg1) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public HapiDaoMethodOutcome update(Encounter arg0, String arg1, boolean arg2) {
+//	public DaoMethodOutcome update(Encounter arg0, String arg1, boolean arg2) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
+//
 //
 //	@Override
 //	public Predicate translatePredicateString(String theParamName,
-//			String likeExpression, Root<? extends IResourceTable> from,
+//			String likeExpression, Root<? extends IResourceEntity> from,
 //			CriteriaBuilder theBuilder) {
 //		// TODO Auto-generated method stub
 //		return null;
@@ -174,16 +174,16 @@ package edu.gatech.i3l.hl7.fhir.jpa.dao;
 //
 //	@Override
 //	public Predicate translatePredicateDateLessThan(String theParamName,
-//			Date upperBound, Root<? extends IResourceTable> from,
-//			CriteriaBuilder theBuilder) {
+//			Date upperBound, Root<? extends IResourceEntity> from,
+//			CriteriaBuilder theBuilder, boolean inclusive) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
 //	public Predicate translatePredicateDateGreaterThan(String theParamName,
-//			Date lowerBound, Root<? extends IResourceTable> from,
-//			CriteriaBuilder theBuilder) {
+//			Date lowerBound, Root<? extends IResourceEntity> from,
+//			CriteriaBuilder theBuilder, boolean inclusive) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}

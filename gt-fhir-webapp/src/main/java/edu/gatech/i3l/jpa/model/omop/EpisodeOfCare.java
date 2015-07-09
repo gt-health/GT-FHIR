@@ -105,4 +105,10 @@ public class EpisodeOfCare extends BaseResourceEntity {
 		return null;
 	}
 
+	@Override
+	public String translateLink(String arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

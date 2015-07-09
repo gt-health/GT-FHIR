@@ -2,11 +2,14 @@ package edu.gatech.i3l.jpa.model.omop.ext;
 
 import java.util.Iterator;
 
-import ca.uhn.fhir.jpa.dao.BaseFhirDao;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.Location;
@@ -29,34 +32,35 @@ public class PatientFhirExtTable extends Person{
 	private String preferredLanguage;
 	private String ssn;
 	private String maritalStatusConceptValue;
+	private Boolean active;
 	
 	public PatientFhirExtTable() {
 		super();
 	}
 
-	public PatientFhirExtTable(Long id, Integer yearOfBirth,
-			Integer monthOfBirth, Integer dayOfBirth, Location location,
-			Provider provider, String personSourceValue,
-			String genderSourceValue, Concept genderConcept,
-			String ethnicitySourceValue, Concept ethnicityConcept,
-			String raceSourceValue, Concept raceConcept,
-			String familyName, String givenName1,
-			String givenName2, String prefixName, String suffixName,
-			String preferredLanguage, String ssn,
-			String maritalStatusConceptValue) {
-		super(id, yearOfBirth, monthOfBirth, dayOfBirth, location, provider,
-				personSourceValue, genderSourceValue, genderConcept,
-				ethnicitySourceValue, ethnicityConcept, raceSourceValue,
-				raceConcept);
-		this.familyName = familyName;
-		this.givenName1 = givenName1;
-		this.givenName2 = givenName2;
-		this.prefixName = prefixName;
-		this.suffixName = suffixName;
-		this.preferredLanguage = preferredLanguage;
-		this.ssn = ssn;
-		this.maritalStatusConceptValue = maritalStatusConceptValue;
-	}
+//	public PatientFhirExtTable(Long id, Integer yearOfBirth,
+//			Integer monthOfBirth, Integer dayOfBirth, Location location,
+//			Provider provider, String personSourceValue,
+//			String genderSourceValue, Concept genderConcept,
+//			String ethnicitySourceValue, Concept ethnicityConcept,
+//			String raceSourceValue, Concept raceConcept,
+//			String familyName, String givenName1,
+//			String givenName2, String prefixName, String suffixName,
+//			String preferredLanguage, String ssn,
+//			String maritalStatusConceptValue) {
+//		super(id, yearOfBirth, monthOfBirth, dayOfBirth, location, provider,
+//				personSourceValue, genderSourceValue, genderConcept,
+//				ethnicitySourceValue, ethnicityConcept, raceSourceValue,
+//				raceConcept);
+//		this.familyName = familyName;
+//		this.givenName1 = givenName1;
+//		this.givenName2 = givenName2;
+//		this.prefixName = prefixName;
+//		this.suffixName = suffixName;
+//		this.preferredLanguage = preferredLanguage;
+//		this.ssn = ssn;
+//		this.maritalStatusConceptValue = maritalStatusConceptValue;
+//	}
 
 	public String getFamilyName() {
 		return familyName;
@@ -122,14 +126,22 @@ public class PatientFhirExtTable extends Person{
 		this.maritalStatusConceptValue = maritalStatusConceptValue;
 	}
 	
+	public Boolean getActive() {
+		return active;
+	}
+	
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+	
 	@Override
 	public Patient getRelatedResource() {
 		Patient patient = (Patient) super.getRelatedResource();
-		
-		patient.addName().addFamily(this.getFamilyName()).addGiven(this.getGivenName1());
-		if(this.getGivenName2() != null)
-			patient.addName().addFamily(this.getFamilyName()).addGiven(this.getGivenName2());
-		
+		patient.addName().addFamily(this.familyName).addGiven(this.givenName1);
+		if(this.givenName2 != null)
+			patient.getName().get(0).addGiven(this.givenName2);
+		boolean active = this.active != null ? this.active : false;
+		patient.setActive(active);
 		return patient;
 	}
 
@@ -138,11 +150,12 @@ public class PatientFhirExtTable extends Person{
 		super.constructEntityFromResource(resource);
 		if(resource instanceof Patient){
 			Patient patient = (Patient)resource;
+			
 			Iterator<HumanNameDt> iterator = patient.getName().iterator();
 			//while(iterator.hasNext()){
 				HumanNameDt next = iterator.next();
 				this.givenName1 = next.getGiven().iterator().next().getValue();
-				if(next.getGiven().iterator().hasNext()) //WARNING check handle of case for omop where there are more than two given names 
+				if(next.getGiven().iterator().hasNext())  
 					this.givenName2 = next.getGiven().iterator().next().getValue();
 				Iterator<StringDt> family = next.getFamily().iterator();
 				this.familyName = "";
@@ -154,6 +167,8 @@ public class PatientFhirExtTable extends Person{
 				if(next.getPrefix().iterator().hasNext())
 					this.prefixName = next.getPrefix().iterator().next().getValue();
 			//}
+			
+			this.active = patient.getActive();
 			this.maritalStatusConceptValue = patient.getMaritalStatus().getText();
 		} else {
 			ourLog.error("There was not possible to construct the entity ? using the resource ?. It should be used the resource ?.",
