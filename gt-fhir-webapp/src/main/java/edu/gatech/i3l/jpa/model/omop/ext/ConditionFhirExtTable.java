@@ -4,16 +4,21 @@
 package edu.gatech.i3l.jpa.model.omop.ext;
 
 import java.util.Date;
+import java.util.List;
 
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionClinicalStatusEnum;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.ConditionOccurrence;
 import edu.gatech.i3l.jpa.model.omop.Person;
 import edu.gatech.i3l.jpa.model.omop.Provider;
 import edu.gatech.i3l.jpa.model.omop.VisitOccurrence;
+import edu.gatech.i3l.jpa.model.omop.Vocabulary;
 
 /**
  * @author MC142
@@ -107,9 +112,49 @@ public class ConditionFhirExtTable extends ConditionOccurrence {
 			condition.setSeverity(severityCodeConcept);
 		}
 
-		// Add note
+		// Add note - this is a courtesy entry in case that we don't get things written in the 
+		// structured data for any reason.
 		condition.setNotes(getDisplay());
 
 		return condition;
+	}
+	
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		super.constructEntityFromResource(resource);
+		if(resource instanceof Condition){
+			Condition condition = (Condition)resource;
+			
+			// Set Clinical Status. This, we just use string in our database as FHIR concept is
+			// not available in the OMOP concept table.
+			String clinicalStatus = condition.getClinicalStatus();
+			setStatusCode(clinicalStatus);
+		
+			// Set Severity 
+			CodeableConceptDt severityCodeable = condition.getSeverity();
+			if (severityCodeable != null) {
+				List<CodingDt> severityCodes = severityCodeable.getCoding();
+				if (severityCodes != null && severityCodes.size() > 0) {
+					//FHIR spec says we have 0 or 1 severity coding
+					CodingDt severityCode = severityCodes.get(0);
+					severityConcept = new Concept();
+					
+					String codeString = severityCode.getCode();
+					String uri = severityCode.getSystem();
+					if (codeString != null && uri != null && !codeString.isEmpty() && !uri.isEmpty()) {
+						severityConcept.setConceptCode(severityCode.getCode());
+					
+						Vocabulary vocabularyCode = new Vocabulary();
+						vocabularyCode.setIdNameBySystemUri(uri);
+						severityConcept.setVocabulary(vocabularyCode);
+					} 
+					
+					String display = severityCode.getDisplay();
+					setDisplay(display);
+				}
+			}
+		}
+		
+		return this;
 	}
 }

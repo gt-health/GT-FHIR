@@ -1,7 +1,6 @@
 package edu.gatech.i3l.jpa.model.omop;
 
 public class Vocabulary {
-
 	private Long id;
 	private String name;
 
