@@ -366,7 +366,7 @@
 										<b>Create</b> an instance of the resource. Generally you do not need to specify an ID
 										but you may force the server to use a specific ID by including one. 
 									</div>
-									<div id="create-resource" class="row-fluid top-buffer">
+									<div th:with="resource=null" id="create-resource" class="row-fluid top-buffer">
 										<div class="col-sm-2">
 											<button type="button" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;"
 												class="btn btn-primary btn-block resource-create-btn">
@@ -387,7 +387,6 @@
 											</button>
 										</div>
 										<script type="text/javascript">
-											$.getScript('js/models/patient.js');	
 										
 											$('.date-group').datetimepicker({
 										    	pickTime: false,
@@ -397,33 +396,6 @@
 												pickTime: true,
 										    	showToday: true
 											});
-											
-											$.fn.serializeResourceObject = function()
-											{
-											    var o = {};
-											    var a = this.serializeArray();
-											    $.each(a, function() {
-											        if (o[this.name] !== undefined) {
-											            if (!o[this.name].push) {
-											                o[this.name] = [o[this.name]];
-											            }
-											            o[this.name].push(this.value || '');
-											        } else {
-											            o[this.name] = this.value || '';
-											        }
-											    });
-											    return o;
-											};
-											
-											function buildFromJSON(params) {
-												var createResource;
-												if(resourceName == 'Patient'){
-													createResource = new Patient();
-												}
-												createResource.buildFromJSON(params);
-											    
-											    return createResource;
-											}
 											
 											$('.resource-create-btn').click(function(){
 												var btn = $(this);

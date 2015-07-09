@@ -69,4 +69,3 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 	}
 
 }
-

@@ -84,7 +84,9 @@ function Patient(){
 	    addresses.push(address);
 	    this.address = addresses;
 	    
-	    this.birthDate = params.birthDate;
+	    if(params.birthDate != ""){
+	    	this.birthDate = params.birthDate;
+	    }
 	    this.active = params.active;
 	    this.gender = params.gender;
 	    

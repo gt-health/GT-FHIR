@@ -8,11 +8,15 @@ import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.jpa.model.omop.ext.LocationFhirExtTable;
 
 public class Person extends BaseResourceEntity{
 
@@ -22,7 +26,7 @@ public class Person extends BaseResourceEntity{
 	private Integer yearOfBirth;
 	private Integer monthOfBirth;
 	private Integer dayOfBirth;
-	private Location location;
+	private LocationFhirExtTable location;
 	/**
 	 * Makes the indirect relationship between the person and the Care Site.
 	 */
@@ -36,7 +40,6 @@ public class Person extends BaseResourceEntity{
 	private Concept raceConcept;
 	
 	private Set<ConditionOccurrence> conditions;
-
 	private Death death;
 
 	public Person() {
@@ -44,7 +47,7 @@ public class Person extends BaseResourceEntity{
 	}
 
 	public Person(Long id, Integer yearOfBirth, Integer monthOfBirth,
-			Integer dayOfBirth, Location location, Provider provider, String personSourceValue,
+			Integer dayOfBirth, LocationFhirExtTable location, Provider provider, String personSourceValue,
 			String genderSourceValue, Concept genderConcept,
 			String ethnicitySourceValue, Concept ethnicityConcept,
 			String raceSourceValue, Concept raceConcept) {
@@ -108,11 +111,11 @@ public class Person extends BaseResourceEntity{
 		this.dayOfBirth = dayOfBirth;
 	}
 
-	public Location getLocation() {
+	public LocationFhirExtTable getLocation() {
 		return location;
 	}
 
-	public void setLocation(Location location) {
+	public void setLocation(LocationFhirExtTable location) {
 		this.location = location;
 	}
 
@@ -193,19 +196,24 @@ public class Person extends BaseResourceEntity{
 		Patient patient = new Patient();
 		patient.setId(new IdDt(this.getId()));
 		
-		Location location = this.getLocation();
-		if(location != null){
-			patient.addAddress()
-				.addLine(location.getAddress1())
-				.addLine(location.getAddress2())//WARNING check if mapping for lines are correct
-				.setCity(location.getCity())
-				.setPostalCode(location.getZipCode())
-				.setCountry(location.getCountry());
-		}
-		
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(this.getYearOfBirth(), this.getMonthOfBirth(), this.getDayOfBirth());
+		calendar.set(this.yearOfBirth, this.monthOfBirth, this.dayOfBirth);
 		patient.setBirthDate(new DateDt(calendar.getTime()));
+		
+		if(this.location != null){
+			PeriodDt period = new PeriodDt();
+			period.setStart(new DateTimeDt(this.location.getStartDate()));
+			period.setEnd(new DateTimeDt(this.location.getEndDate()));
+			patient.addAddress()
+				.setUse(AddressUseEnum.HOME)
+				.addLine(this.location.getAddress1())
+				.addLine(this.location.getAddress2())//WARNING check if mapping for lines are correct
+				.setCity(this.location.getCity())
+				.setPostalCode(this.location.getZipCode())
+				.setState(this.location.getState())
+				.setCountry(this.location.getCountry())
+				.setPeriod(period);
+		}
 		
 		Concept gender = this.getGenderConcept();
 		if(gender != null){
@@ -215,6 +223,7 @@ public class Person extends BaseResourceEntity{
 			for (int i = 0; i < values.length; i++) {
 				if(gName.equalsIgnoreCase(values[i].getCode())){
 					admGender = values[i];
+					break;
 				}
 			}
 			patient.setGender(admGender);
@@ -259,18 +268,24 @@ public class Person extends BaseResourceEntity{
 			this.genderSourceValue = gender;
 			this.genderConcept = OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender());
 			
-			Location location = new Location();
+			LocationFhirExtTable location;
+			if(this.location != null){
+				location = this.location;
+			}else {
+				location = new LocationFhirExtTable();
+			}
 			AddressDt address = patient.getAddress().get(0);
+			location.setAddressUse(address.getUseElement().getValueAsEnum());
 			location.setAddress1(address.getLine().iterator().next().getValue());
-			if(address.getLine().iterator().hasNext())
+			if (address.getLine().iterator().hasNext())
 				location.setAddress2(address.getLine().iterator().next().getValue());
 			location.setZipCode(address.getPostalCode());
 			location.setCity(address.getCity());
 			location.setState(address.getState());
 			location.setCountry(address.getCountry());
+			location.setEndDate(address.getPeriod().getEnd());
+			location.setStartDate(address.getPeriod().getStart());
 			this.location = location;
-			
-			//TODO complete mapping
 		}
 		
 		return this;
