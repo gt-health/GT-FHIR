@@ -23,6 +23,7 @@
 			<many-to-one name="episodeOfCare" class="edu.gatech.i3l.jpa.model.omop.EpisodeOfCare">
 				<column name="episode_of_care_id"/>
 			</many-to-one>	
+			<property name="status" type="string" column="status"/>
 			<property name="note" type="string" column="note"/>
 		</joined-subclass>
 	</class>

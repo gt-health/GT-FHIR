@@ -15,6 +15,14 @@
 			</snapshots>
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>libs-release</name>
+			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-release</url>
+		</repository>
 	</repositories>
 	
 	<properties>
