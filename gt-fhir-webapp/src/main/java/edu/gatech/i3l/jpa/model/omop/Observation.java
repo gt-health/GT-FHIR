@@ -1,19 +1,35 @@
 package edu.gatech.i3l.jpa.model.omop;
 
 import java.math.BigDecimal;
+import java.sql.Ref;
+import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
+import ca.uhn.fhir.model.primitive.BoundCodeDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.StringDt;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
 
 public class Observation extends BaseResourceEntity{
 
 	private static final String RES_TYPE = "Observation";
+	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
+	
 	private Long id;
 	private Person person;
 	private Concept observationConcept;
@@ -24,7 +40,7 @@ public class Observation extends BaseResourceEntity{
 	private BigDecimal rangeLow;
 
 	private BigDecimal rangeHigh;
-	private Concept observationValueAsConcept;
+	private Concept valueAsConcept;
 	private Concept relevantCondition;
 	private Concept type;
 	private Provider provider;
@@ -40,7 +56,7 @@ public class Observation extends BaseResourceEntity{
 
 	public Observation(Long id, Person person, Concept observationConcept,
 			Date date, String valueAsString, BigDecimal valueAsNumber,
-			Concept observationValueAsConcept, Concept relevantCondition, Concept type,
+			Concept valueAsConcept, Concept relevantCondition, Concept type,
 			Provider provider, VisitOccurrence visitOccurrence,
 			String sourceValue, Concept unit, String unitsSourceValue) {
 		super();
@@ -50,7 +66,7 @@ public class Observation extends BaseResourceEntity{
 		this.date = date;
 		this.valueAsString = valueAsString;
 		this.valueAsNumber = valueAsNumber;
-		this.observationValueAsConcept = observationValueAsConcept;
+		this.valueAsConcept = valueAsConcept;
 		this.relevantCondition = relevantCondition;
 		this.type = type;
 		this.provider = provider;
@@ -132,12 +148,12 @@ public class Observation extends BaseResourceEntity{
 		this.valueAsNumber = valueAsNumber;
 	}
 
-	public Concept getObservationValueAsConcept() {
-		return observationValueAsConcept;
+	public Concept getValueAsConcept() {
+		return valueAsConcept;
 	}
 
-	public void setObservationValueAsConcept(Concept observationValueAsConcept) {
-		this.observationValueAsConcept = observationValueAsConcept;
+	public void setValueAsConcept(Concept valueAsConcept) {
+		this.valueAsConcept = valueAsConcept;
 	}
 
 	public Concept getRelevantCondition() {
@@ -210,6 +226,39 @@ public class Observation extends BaseResourceEntity{
 	@Override
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
+		observation.setId(this.getIdDt());
+		observation.setCode(new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode()));
+		observation.setStatus(STATUS);
+		IDatatype value = null;
+		if (this.valueAsString != null){
+			value = new StringDt(this.valueAsString); 
+		} else 	if(this.valueAsNumber != null ){
+			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
+			quantity.setUnits(this.unit.getConceptCode());
+			quantity.setCode(this.unit.getConceptCode());
+			quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+			value = quantity;
+			if(this.rangeLow != null)
+				observation.getReferenceRangeFirstRep().setLow(new QuantityDt(this.rangeLow.doubleValue()));
+			if(this.rangeHigh != null)
+				observation.getReferenceRangeFirstRep().setHigh(new QuantityDt(this.rangeHigh.doubleValue()));			
+		} else if (this.valueAsConcept != null){
+			CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), //vocabulary is a required attribute for concept, then it's expected to not be null
+					this.valueAsConcept.getConceptCode());
+			value = valueAsConcept;
+		}
+		observation.setValue(value);
+		
+		if(this.date != null && this.time != null){
+			Calendar c = Calendar.getInstance();
+			c.set(this.date.getYear(), this.date.getMonth(), this.date.getDay(), this.time.getHours(), this.time.getMinutes(), this.time.getSeconds());
+			DateTimeDt appliesDate = new DateTimeDt(c.getTime(), TemporalPrecisionEnum.SECOND);
+			observation.setApplies(appliesDate);
+		}
+		
+		observation.setSubject(new ResourceReferenceDt(this.person.getRelatedResource()));
+		//FIXME database has inconsistent foreign key for visit occurence
+//		observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
 		return observation;
 	}
 
@@ -225,15 +274,29 @@ public class Observation extends BaseResourceEntity{
 	}
 
 	@Override
-	public String translateLink(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public String translateLink(String chain) {
+		super.translateLink(chain);
+		String translatedChain = "";
+		if(getHead() != null){
+			switch (getHead()) {
+			case SP_SUBJECT:
+				translatedChain = translatedChain.concat("person");
+				translatedChain = translatedChain.concat(this.person.translateLink(getBody()));
+				break;
+			case SP_ENCOUNTER:
+				translatedChain = translatedChain.concat("visitOccurrence");
+				translatedChain = translatedChain.concat(this.visitOccurrence.translateLink(getBody()));
+				break;
+			default:
+				break;
+			}
+		}
+		return translatedChain;
 	}
 
 	@Override
 	public IdDt getIdDt() {
-		// TODO Auto-generated method stub
-		return null;
+		return new IdDt(this.id);
 	}
 	
 	

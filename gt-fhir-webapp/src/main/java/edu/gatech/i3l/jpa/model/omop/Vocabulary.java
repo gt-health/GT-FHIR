@@ -30,7 +30,7 @@ public class Vocabulary {
 		this.name = name;
 	}
 
-	// This is FHIR related. We may need to do this in the database. But, for quick
+	// FIXME This is FHIR related. We may need to do this in the database. But, for quick
 	// initial implementation, we do this. Later, we may extend vocabulary table.
 	public String getSystemUri() {
 		String uri = "";
