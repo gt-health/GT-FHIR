@@ -3,11 +3,12 @@
  */
 package edu.gatech.i3l.jpa.model.omop;
 
-import java.sql.Date;
+import java.util.Date;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
@@ -61,7 +62,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	/* (non-Javadoc)
 	 * @see edu.gatech.i3l.jpa.model.omop.IResourceTable#getRelatedResource()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Condition getRelatedResource() {
 		Condition condition = new Condition();
@@ -250,9 +250,64 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		if (resource instanceof Condition) {
+			Condition condition = (Condition) resource;
+
+			this.person = new Person();
+			this.person.setId(condition.getPatient().getReference().getIdPartAsLong());
+			
+			CodeableConceptDt codeableConcept = condition.getCode();
+			CodingDt code = codeableConcept.getCoding().get(0);				
+			this.conditionConcept = new Concept();
+			this.conditionConcept.setConceptCode(code.getCode());
+			String uri = code.getSystem();
+			
+			Vocabulary vocabularyCode = new Vocabulary();
+			vocabularyCode.setIdNameBySystemUri(uri);
+			this.conditionConcept.setVocabulary(vocabularyCode);
+			
+			IDatatype onSetDate = condition.getOnset();
+			if (onSetDate instanceof DateTimeDt) {
+				DateTimeDt dateTimeDt = (DateTimeDt) onSetDate;
+				this.startDate = dateTimeDt.getValue();
+			} else if (onSetDate instanceof PeriodDt) {
+				PeriodDt periodDt = (PeriodDt) onSetDate;
+				this.startDate = periodDt.getStart();
+				this.endDate = periodDt.getEnd();
+			}
+
+			this.conditionTypeConcept = new Concept();
+			ResourceReferenceDt encounterReference = condition.getEncounter();
+			Vocabulary vocabularyConditionType = new Vocabulary();
+			vocabularyConditionType.setId((long)37);
+			this.conditionTypeConcept.setVocabulary(vocabularyConditionType);
+			if (encounterReference == null) {
+				// No Resource Reference for Encounter. 
+				// We just assumed that this is EHR Problem List Entry = 38000245
+				this.conditionTypeConcept.setConceptCode("38000245");
+			} else {
+				this.conditionTypeConcept.setConceptCode("44786627");
+				long encounterId = encounterReference.getReference().getIdPartAsLong();
+				this.encounter = new VisitOccurrence();
+				this.encounter.setId(encounterId);
+			}
+			
+			// this.stopReason = stopReason;  NOTE: no FHIR parameter for stopReason.
+			
+			ResourceReferenceDt asserterReference = condition.getAsserter();
+			if (asserterReference != null) {
+				if (asserterReference.getReference().getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
+					long providerId = asserterReference.getReference().getIdPartAsLong();
+					this.provider = new Provider();
+					this.provider.setId(providerId);
+				}
+			}
+
+			this.sourceValue = "FHIRCREATE";
+		}
+		
+		return this;
 	}
 
 	@Override
