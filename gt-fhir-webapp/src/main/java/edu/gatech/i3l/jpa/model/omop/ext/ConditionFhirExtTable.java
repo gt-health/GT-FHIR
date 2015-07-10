@@ -26,6 +26,7 @@ import edu.gatech.i3l.jpa.model.omop.Vocabulary;
  */
 public class ConditionFhirExtTable extends ConditionOccurrence {
 
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ConditionFhirExtTable.class);
 	private String statusCode;
 	private String display;
 	private Concept severityConcept;

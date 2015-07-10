@@ -323,8 +323,36 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public String translateLink(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public String translateLink(String chain) {
+		String translatedChain = "";
+		if(chain.isEmpty())
+			return translatedChain;
+		String head = "";
+		if(chain.contains(".")){
+			head = chain.substring(0, chain.indexOf("."));
+			chain = chain.substring(chain.indexOf(".") + 1, chain.length());
+		} else {
+			head = chain;
+		}
+		
+		System.out.println("translateLink():chain="+chain);
+		switch (head) {
+		case Condition.SP_ASSERTER:
+			translatedChain = translatedChain.concat(this.provider.translateLink(head));
+			System.out.println("translateLink():Asserter:translateChain="+translatedChain);
+			break;
+		case Condition.SP_ENCOUNTER:
+			translatedChain = translatedChain.concat(this.encounter.translateLink(head));
+			System.out.println("translateLink():Encounter:translateChain="+translatedChain);
+			break;
+		case Condition.SP_PATIENT:
+			translatedChain = translatedChain.concat(this.person.translateLink(head));
+			System.out.println("translateLink():Patient:translateChain="+translatedChain);
+			break;
+		default:
+			break;
+		}
+		
+		return translatedChain;
 	}
 }
