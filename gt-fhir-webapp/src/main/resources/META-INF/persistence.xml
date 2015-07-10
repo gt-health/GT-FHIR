@@ -17,6 +17,7 @@
 		<mapping-file>org/hibernate/episodeofcare.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/organization.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/caresite.hbm.xml</mapping-file>
+		<mapping-file>org/hibernate/observation.hbm.xml</mapping-file>
 		<!-- <mapping-file>org/hibernate/death.hbm.xml</mapping-file> -->
 					
 		<!-- <class>ca.uhn.fhir.jpa.entity.ForcedId</class>
