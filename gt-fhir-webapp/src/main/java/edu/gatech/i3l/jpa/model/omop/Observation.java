@@ -1,11 +1,11 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
+
 import java.math.BigDecimal;
-import java.sql.Ref;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
@@ -17,13 +17,10 @@ import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
-import ca.uhn.fhir.model.primitive.BoundCodeDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
 
 public class Observation extends BaseResourceEntity{
 
@@ -255,8 +252,7 @@ public class Observation extends BaseResourceEntity{
 			DateTimeDt appliesDate = new DateTimeDt(c.getTime(), TemporalPrecisionEnum.SECOND);
 			observation.setApplies(appliesDate);
 		}
-		
-		observation.setSubject(new ResourceReferenceDt(this.person.getRelatedResource()));
+		observation.setSubject(new ResourceReferenceDt(new IdDt(this.person.getId())));
 		//FIXME database has inconsistent foreign key for visit occurence
 //		observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
 		return observation;
@@ -274,24 +270,16 @@ public class Observation extends BaseResourceEntity{
 	}
 
 	@Override
-	public String translateLink(String chain) {
-		super.translateLink(chain);
-		String translatedChain = "";
-		if(getHead() != null){
-			switch (getHead()) {
+	public String translateLink(String link) {
+			switch (link) {
 			case SP_SUBJECT:
-				translatedChain = translatedChain.concat("person");
-				translatedChain = translatedChain.concat(this.person.translateLink(getBody()));
-				break;
+				return "person";
 			case SP_ENCOUNTER:
-				translatedChain = translatedChain.concat("visitOccurrence");
-				translatedChain = translatedChain.concat(this.visitOccurrence.translateLink(getBody()));
-				break;
+				return "visitOccurrence";
 			default:
 				break;
 			}
-		}
-		return translatedChain;
+		return link;
 	}
 
 	@Override
