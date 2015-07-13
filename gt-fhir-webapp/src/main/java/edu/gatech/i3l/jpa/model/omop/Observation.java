@@ -14,6 +14,7 @@ import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
@@ -224,7 +225,11 @@ public class Observation extends BaseResourceEntity{
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
 		observation.setId(this.getIdDt());
-		observation.setCode(new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode()));
+		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode());
+		CodingDt coding = new CodingDt();
+		coding.setDisplay(this.sourceValue);
+		code.addCoding(coding );
+		observation.setCode(code);
 		observation.setStatus(STATUS);
 		IDatatype value = null;
 		if (this.valueAsString != null){
@@ -252,9 +257,10 @@ public class Observation extends BaseResourceEntity{
 			DateTimeDt appliesDate = new DateTimeDt(c.getTime(), TemporalPrecisionEnum.SECOND);
 			observation.setApplies(appliesDate);
 		}
-		observation.setSubject(new ResourceReferenceDt(new IdDt(this.person.getId())));
-		//FIXME database has inconsistent foreign key for visit occurence
-//		observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
+		if(this.person != null)
+			observation.setSubject(new ResourceReferenceDt(new IdDt(this.person.getId())));
+		if(this.visitOccurrence != null)
+			observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
 		return observation;
 	}
 

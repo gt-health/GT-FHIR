@@ -23,6 +23,6 @@
 		<many-to-one name="relevantCondition" column="relevant_condition_concept_id" class="edu.gatech.i3l.jpa.model.omop.Concept"/>
 		<property name="sourceValue" column="observation_source_value" type="string"/>
 		<property name="unitsSourceValue" column="units_source_value" type="string"/>
-		<many-to-one name="visitOccurrence" column="visit_occurence_id" class="edu.gatech.i3l.jpa.model.omop.VisitOccurrence" not-null="true"/>
+		<many-to-one name="visitOccurrence" column="visit_occurence_id" class="edu.gatech.i3l.jpa.model.omop.VisitOccurrence"/>
 	</class>
 </hibernate-mapping>
