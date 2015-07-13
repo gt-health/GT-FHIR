@@ -292,30 +292,14 @@ public class Person extends BaseResourceEntity{
 	}
 
 	@Override
-	public String translateLink(String chain) {
-		String translatedChain = "";
-		if(chain.isEmpty())
-			return translatedChain;
-		String head = "";
-		if(chain.contains(".")){
-			head = chain.substring(0, chain.indexOf("."));
-			chain = chain.substring(chain.indexOf(".") + 1, chain.length());
-		} else {
-			head = chain;
-		}
-		switch (head) {
-		case Patient.SP_ORGANIZATION:
-			translatedChain = translatedChain.concat(this.provider.translateLink(head));
-			break;
+	public String translateLink(String link) {
+		switch (link) {
 		case Patient.SP_CAREPROVIDER:
-			translatedChain = translatedChain.concat("provider").concat("." + provider.translateLink(chain));
-			break;
+			return "provider";
 		default:
 			break;
 		}
 		
-		return translatedChain;
+		return link;
 	}
-
-
 }

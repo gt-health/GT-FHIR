@@ -17,21 +17,9 @@
 		<mapping-file>org/hibernate/episodeofcare.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/organization.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/caresite.hbm.xml</mapping-file>
+		<mapping-file>org/hibernate/observation.hbm.xml</mapping-file>
 		<!-- <mapping-file>org/hibernate/death.hbm.xml</mapping-file> -->
 					
-		<!-- <class>ca.uhn.fhir.jpa.entity.ForcedId</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceHistoryTable</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceHistoryTag</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamDate</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamNumber</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamQuantity</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamString</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamToken</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceLink</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceTable</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceTag</class>
-		<class>ca.uhn.fhir.jpa.entity.TagDefinition</class> -->
-			
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
 			<property name="hibernate.hbm2ddl.auto" value="update" />

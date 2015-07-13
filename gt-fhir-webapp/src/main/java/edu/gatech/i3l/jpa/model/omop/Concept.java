@@ -3,7 +3,6 @@ package edu.gatech.i3l.jpa.model.omop;
 import java.util.Date;
 
 public class Concept {
-
 	private Long id;
 	private String name;
 	private Integer level;
