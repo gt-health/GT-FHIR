@@ -22,8 +22,6 @@ import edu.gatech.i3l.jpa.model.omop.ext.PatientFhirExtTable;
 @Transactional(propagation = Propagation.REQUIRED)
 public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PatientFhirResourceDao.class);
-
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
 	private EntityManager myEntityManager;
 
@@ -44,17 +42,28 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 			Predicate ub = null;
 			switch (theParamName) {
 			case Patient.SP_DEATHDATE:
-				ub = theBuilder.lessThanOrEqualTo(from.get("death_date").as(Date.class), upperBound);
+				if(inclusive){
+					ub = theBuilder.lessThanOrEqualTo(from.get("death_date").as(Date.class), upperBound);
+				} else{
+					ub = theBuilder.lessThan(from.get("death_date").as(Date.class), upperBound);
+				}
 				break;
 			case Patient.SP_BIRTHDATE:
 				Predicate lt1 = theBuilder.lessThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
+				
 				Predicate lt2 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
 						theBuilder.lessThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
+				
+				Predicate predicateDay = null;
+				if(inclusive){
+					predicateDay = theBuilder.lessThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
+				} else{
+					predicateDay = theBuilder.lessThan(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
+				}
 				Predicate lt3 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
-						theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)),
-						theBuilder.lessThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH)));
+						theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)), predicateDay);
+				
 				ub = theBuilder.or(lt1, lt2, lt3);
-
 				break;
 			default:
 				break;
@@ -70,15 +79,28 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 			Predicate lb = null;
 			switch (theParamName) {
 			case Patient.SP_DEATHDATE:
-				lb = theBuilder.greaterThanOrEqualTo(from.get("death_date").as(Date.class), lowerBound);
+				if(inclusive){
+					lb = theBuilder.greaterThanOrEqualTo(from.get("death_date").as(Date.class), lowerBound);
+				} else {
+					lb = theBuilder.greaterThan(from.get("death_date").as(Date.class), lowerBound);
+				}
 				break;
 			case Patient.SP_BIRTHDATE:
 				Predicate gt1 = theBuilder.greaterThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
+				
 				Predicate gt2 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
 						theBuilder.greaterThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
+				
+				Predicate predicateDay = null;
+				if(inclusive){
+					predicateDay = theBuilder.greaterThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
+				} else{
+					predicateDay = theBuilder.greaterThan(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
+				}
 				Predicate gt3 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
 						theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)),
-						theBuilder.greaterThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH)));
+						predicateDay);
+				
 				lb = theBuilder.or(gt1, gt2, gt3);
 				break;
 			default:
