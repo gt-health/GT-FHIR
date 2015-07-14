@@ -23,6 +23,12 @@
 			<name>libs-release</name>
 			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-release</url>
 		</repository>
+		<repository>
+			<snapshots />
+			<id>snapshots</id>
+			<name>libs-snapshot</name>
+			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-snapshot</url>
+		</repository>
 	</repositories>
 	
 	<properties>

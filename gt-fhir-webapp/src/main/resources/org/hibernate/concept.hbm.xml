@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-	<class name="edu.gatech.i3l.jpa.model.omop.Concept">
+	<class name="edu.gatech.i3l.jpa.model.omop.Concept" table="concept">
 		<id name="id" column="concept_id" type="long">
 			<generator class="hilo"/>
 		</id>
