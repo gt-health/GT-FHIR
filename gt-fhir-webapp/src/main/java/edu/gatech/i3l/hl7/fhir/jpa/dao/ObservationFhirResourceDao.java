@@ -1,17 +1,23 @@
 package edu.gatech.i3l.hl7.fhir.jpa.dao;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.From;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.StringUtils;
 
+import ca.uhn.fhir.jpa.dao.AbstractPredicateBuilder;
 import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.PredicateBuilder;
+import ca.uhn.fhir.jpa.dao.QueryHelper;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 
 public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>{
@@ -22,13 +28,13 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 		setPredicateBuilder(this.predicateBuilder);
 	}
 	
-	private PredicateBuilder predicateBuilder = new PredicateBuilder() {
+	private PredicateBuilder predicateBuilder = new AbstractPredicateBuilder() {
 		
 		/**
 		 * 	If the system is "", we only match on null systems
 		 */
 		@Override
-		public Predicate translatePredicateTokenSystem(String theParamName, String system, Root<? extends IResourceEntity> from,
+		public Predicate translatePredicateTokenSystem(Class<IResourceEntity> entity, String theParamName, String system, From<? extends IResourceEntity, ? extends IResourceEntity> from,
 				CriteriaBuilder theBuilder) {
 			if (system == null) {
 				return null;
@@ -49,7 +55,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 		}
 		
 		@Override
-		public Predicate translatePredicateTokenCode(String theParamName, String code, Root<? extends IResourceEntity> from,
+		public Predicate translatePredicateTokenCode(Class<IResourceEntity> entity, String theParamName, String code, From<? extends IResourceEntity, ? extends IResourceEntity> from,
 				CriteriaBuilder theBuilder) {
 			Path<Object> path = null;
 			switch (theParamName) {
@@ -66,26 +72,6 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 			}
 		}
 
-		@Override
-		public Predicate translatePredicateString(String theParamName, String likeExpression, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Predicate translatePredicateDateLessThan(String theParamName, Date upperBound, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder, boolean inclusive) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Predicate translatePredicateDateGreaterThan(String theParamName, Date lowerBound, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder, boolean inclusive) {
-			// TODO Auto-generated method stub
-			return null;
-		}
 	};
 
 

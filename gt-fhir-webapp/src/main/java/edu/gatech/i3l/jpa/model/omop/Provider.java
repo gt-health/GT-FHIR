@@ -130,7 +130,7 @@ public class Provider extends BaseResourceEntity {
 	}
 
 	@Override
-	public String translateLink(String chain) {
+	public String translateSearchParam(String chain) {
 		String translatedChain = "";
 		if(chain.isEmpty())
 			return translatedChain;

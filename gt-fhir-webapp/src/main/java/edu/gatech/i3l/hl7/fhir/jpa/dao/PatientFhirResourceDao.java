@@ -7,12 +7,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import ca.uhn.fhir.jpa.dao.AbstractPredicateBuilder;
 import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.PredicateBuilder;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
@@ -33,10 +34,48 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 		setPredicateBuilder(this.predicateBuilder);
 	}
 
-	PredicateBuilder predicateBuilder = new PredicateBuilder(myEntityManager, getResourceEntity(), getResourceType(), getContext()) {
+	PredicateBuilder predicateBuilder = new AbstractPredicateBuilder()  {
+		
+		
 		@Override
-		public Predicate translatePredicateDateLessThan(String theParamName, Date upperBound, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder, boolean inclusive) {
+		public Predicate translatePredicateString(Class<IResourceEntity> entity, String theParamName, String likeExpression,
+				From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder) {
+			Predicate singleCode = null;
+			switch (theParamName) {
+			case Patient.SP_ADDRESS:
+				Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
+				Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
+				Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
+				Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
+				Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
+				Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
+				singleCode = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
+				break;
+			case Patient.SP_GIVEN:
+				Predicate gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
+				Predicate gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
+				singleCode = theBuilder.or(gn1, gn2);
+				break;
+			case Patient.SP_FAMILY:
+				singleCode = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+				break;
+			case Patient.SP_NAME:
+				gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
+				gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
+				Predicate fn1 = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+				Predicate n1 = theBuilder.like(from.get("prefixName").as(String.class), likeExpression);
+				Predicate n2 = theBuilder.like(from.get("suffixName").as(String.class), likeExpression);
+				singleCode = theBuilder.or(gn1, gn2, fn1, n1, n2);
+				break;
+			default:
+				break;
+			}
+			return singleCode;
+		}
+
+		@Override
+		public Predicate translatePredicateDateLessThan(Class<IResourceEntity> entity, String theParamName, Date upperBound,
+				From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder, boolean inclusive) {
 			Calendar c = Calendar.getInstance();
 			c.setTime(upperBound);
 			Predicate ub = null;
@@ -72,8 +111,8 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 		}
 
 		@Override
-		public Predicate translatePredicateDateGreaterThan(String theParamName, Date lowerBound, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder, boolean inclusive) {
+		public Predicate translatePredicateDateGreaterThan(Class<IResourceEntity> entity, String theParamName, Date lowerBound,
+				From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder, boolean inclusive) {
 			Calendar c = Calendar.getInstance();
 			c.setTime(lowerBound);
 			Predicate lb = null;
@@ -109,55 +148,7 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 			return lb;
 		}
 
-		@Override
-		public Predicate translatePredicateString(String theParamName, String likeExpression, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder) {
-			Predicate singleCode = null;
-			switch (theParamName) {
-			case Patient.SP_ADDRESS:
-				Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
-				Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
-				Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
-				Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
-				Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
-				Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
-				singleCode = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
-				break;
-			case Patient.SP_GIVEN:
-				Predicate gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
-				Predicate gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
-				singleCode = theBuilder.or(gn1, gn2);
-				break;
-			case Patient.SP_FAMILY:
-				singleCode = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
-				break;
-			case Patient.SP_NAME:
-				gn1 = theBuilder.like(from.get("givenName1").as(String.class), likeExpression);
-				gn2 = theBuilder.like(from.get("givenName2").as(String.class), likeExpression);
-				Predicate fn1 = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
-				Predicate n1 = theBuilder.like(from.get("prefixName").as(String.class), likeExpression);
-				Predicate n2 = theBuilder.like(from.get("suffixName").as(String.class), likeExpression);
-				singleCode = theBuilder.or(gn1, gn2, fn1, n1, n2);
-				break;
-			default:
-				break;
-			}
-			return singleCode;
-		}
 
-		@Override
-		public Predicate translatePredicateTokenSystem(String theParamName, String system, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Predicate translatePredicateTokenCode(String theParamName, String code, Root<? extends IResourceEntity> from,
-				CriteriaBuilder theBuilder) {
-			// TODO Auto-generated method stub
-			return null;
-		}
 
 	};
 
