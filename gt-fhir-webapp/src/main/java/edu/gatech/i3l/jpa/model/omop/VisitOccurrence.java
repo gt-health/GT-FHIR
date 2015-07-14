@@ -211,7 +211,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public String translateLink(String arg0) {
+	public String translateSearchParam(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}

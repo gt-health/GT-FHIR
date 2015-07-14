@@ -292,7 +292,7 @@ public class Person extends BaseResourceEntity{
 	}
 
 	@Override
-	public String translateLink(String link) {
+	public String translateSearchParam(String link) {
 		switch (link) {
 		case Patient.SP_CAREPROVIDER:
 			return "provider";

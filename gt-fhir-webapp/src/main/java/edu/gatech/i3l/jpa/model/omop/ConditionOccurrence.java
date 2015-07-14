@@ -323,7 +323,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public String translateLink(String chain) {
+	public String translateSearchParam(String chain) {
 		String translatedChain = "";
 		if(chain.isEmpty())
 			return translatedChain;
@@ -338,15 +338,15 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		System.out.println("translateLink():chain="+chain);
 		switch (head) {
 		case Condition.SP_ASSERTER:
-			translatedChain = translatedChain.concat(this.provider.translateLink(head));
+			translatedChain = translatedChain.concat(this.provider.translateSearchParam(head));
 			System.out.println("translateLink():Asserter:translateChain="+translatedChain);
 			break;
 		case Condition.SP_ENCOUNTER:
-			translatedChain = translatedChain.concat(this.encounter.translateLink(head));
+			translatedChain = translatedChain.concat(this.encounter.translateSearchParam(head));
 			System.out.println("translateLink():Encounter:translateChain="+translatedChain);
 			break;
 		case Condition.SP_PATIENT:
-			translatedChain = translatedChain.concat(this.person.translateLink(head));
+			translatedChain = translatedChain.concat(this.person.translateSearchParam(head));
 			System.out.println("translateLink():Patient:translateChain="+translatedChain);
 			break;
 		default:

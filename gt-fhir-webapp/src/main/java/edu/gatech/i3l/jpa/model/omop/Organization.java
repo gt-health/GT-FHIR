@@ -124,7 +124,7 @@ public class Organization extends BaseResourceEntity {
 	}
 
 	@Override
-	public String translateLink(String chain) {
+	public String translateSearchParam(String chain) {
 		// TODO Auto-generated method stub
 		return null;
 	}

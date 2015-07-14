@@ -2,6 +2,7 @@ package edu.gatech.i3l.jpa.model.omop;
 
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_CODE_VALUE_QUANTITY;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -276,16 +277,18 @@ public class Observation extends BaseResourceEntity{
 	}
 
 	@Override
-	public String translateLink(String link) {
-			switch (link) {
+	public String translateSearchParam(String theSearchParam) {
+			switch (theSearchParam) {
 			case SP_SUBJECT:
 				return "person";
 			case SP_ENCOUNTER:
 				return "visitOccurrence";
+			case SP_CODE_VALUE_QUANTITY:
+				return "valueAsNumber";
 			default:
 				break;
 			}
-		return link;
+		return theSearchParam;
 	}
 
 	@Override
