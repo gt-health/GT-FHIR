@@ -38,7 +38,7 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 		setPredicateBuilder(this.predicateBuilder);	
 	}
 	
-	PredicateBuilder predicateBuilder = new AbstractPredicateBuilder() {
+	private PredicateBuilder predicateBuilder = new AbstractPredicateBuilder() {
 		
 		@Override
 		public Predicate translatePredicateDateGreaterThan(Class<? extends IResourceEntity> entity, String theParamName, Date lowerBound,
