@@ -1,15 +1,13 @@
 /**
  * 
  */
-package edu.gatech.i3l.HealthPort.Security;
+package edu.gatech.i3l.hl7.fhir.security;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.Date;
 
 import javax.naming.InitialContext;
@@ -25,7 +23,6 @@ import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 
 import ca.uhn.fhir.rest.method.OtherOperationTypeEnum;
 import ca.uhn.fhir.rest.method.RequestDetails;
-import ca.uhn.fhir.rest.server.Constants;
 import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
 
@@ -79,7 +76,6 @@ public class OIDCInterceptor extends InterceptorAdapter {
 					+ accessToken + "' and t.client_id = c.id;";
 
 			System.out.println(SQL_STATEMENT);
-
 			connection = dataSource.getConnection();
 
 			statement = connection.createStatement();
@@ -96,12 +92,9 @@ public class OIDCInterceptor extends InterceptorAdapter {
 						// expired.
 						err_msg = "Current Time:"+minAllowableExpirationTime.toString()+" Access Token is expired: " + ts.toString();
 						System.out.println(err_msg);
-
 					} else {
 						System.out.println("Auth successful");
-
 					}
-					
 				}
 			} else {
 				System.out.println("Access Token does not exist");
@@ -121,7 +114,7 @@ public class OIDCInterceptor extends InterceptorAdapter {
 				e.printStackTrace();
 			} 
 		}
-		
+
 		if (err_msg.isEmpty()) {
 			System.out.println("Valid Request - OK!");
 			return true;
