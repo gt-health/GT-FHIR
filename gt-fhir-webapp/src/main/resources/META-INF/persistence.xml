@@ -6,7 +6,7 @@
 
 	<persistence-unit name="GT_FHIR_UT" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		
+		 
 		<mapping-file>org/hibernate/person.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/location.hbm.xml</mapping-file>
 		<mapping-file>org/hibernate/concept.hbm.xml</mapping-file>

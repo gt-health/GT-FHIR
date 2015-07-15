@@ -36,7 +36,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	private String stopReason;
 	private Provider provider;
 	private VisitOccurrence encounter;
-	private String sourceValue;
+	private String sourceValue; 
 
 	public ConditionOccurrence() {
 		super();
