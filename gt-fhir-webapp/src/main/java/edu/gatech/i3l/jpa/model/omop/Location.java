@@ -7,7 +7,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
-public class Location extends BaseResourceEntity{
+public class Location extends BaseResourceEntity{ 
 	
 	public static final String RESOURCE_TYPE = "Location";
 

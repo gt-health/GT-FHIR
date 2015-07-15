@@ -3,6 +3,9 @@ package edu.gatech.i3l.jpa.model.omop;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_CODE_VALUE_QUANTITY;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -283,8 +286,12 @@ public class Observation extends BaseResourceEntity{
 				return "person";
 			case SP_ENCOUNTER:
 				return "visitOccurrence";
-			case SP_CODE_VALUE_QUANTITY:
+			case SP_VALUE_QUANTITY:
 				return "valueAsNumber";
+			case SP_VALUE_STRING:
+				return "valueAsString";
+			case SP_VALUE_CONCEPT:
+				return "valueAsConcept";
 			default:
 				break;
 			}

@@ -3,6 +3,7 @@ package edu.gatech.i3l.hl7.fhir.jpa.dao;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
@@ -25,7 +26,12 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 	public ObservationFhirResourceDao() {
 		super();
 		setResourceEntity(edu.gatech.i3l.jpa.model.omop.Observation.class); //TODO set this automatically; this is error prone since we need to remember to set this on each dao class
-		setPredicateBuilder(this.predicateBuilder);
+	}
+	
+	@PostConstruct
+	public void  setQueryHelper(){
+		setQueryHelper(new QueryHelper(getEntityManager(), getResourceEntity(), getResourceType(), getContext(), getBaseFhirDao()));
+		setPredicateBuilder(this.predicateBuilder);	
 	}
 	
 	private PredicateBuilder predicateBuilder = new AbstractPredicateBuilder() {
@@ -34,7 +40,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 		 * 	If the system is "", we only match on null systems
 		 */
 		@Override
-		public Predicate translatePredicateTokenSystem(Class<IResourceEntity> entity, String theParamName, String system, From<? extends IResourceEntity, ? extends IResourceEntity> from,
+		public Predicate translatePredicateTokenSystem(Class<? extends IResourceEntity> entity, String theParamName, String system, From<? extends IResourceEntity, ? extends IResourceEntity> from,
 				CriteriaBuilder theBuilder) {
 			if (system == null) {
 				return null;
@@ -42,7 +48,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 			Path<Object> path = null;
 			switch (theParamName) {
 			case Observation.SP_CODE:
-				path = from.get("vocabulary").get("systemUri");
+				path = from.get("observationConcept").get("vocabulary").get("systemUri");
 				break;
 			default:
 				break;
@@ -55,12 +61,12 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 		}
 		
 		@Override
-		public Predicate translatePredicateTokenCode(Class<IResourceEntity> entity, String theParamName, String code, From<? extends IResourceEntity, ? extends IResourceEntity> from,
+		public Predicate translatePredicateTokenCode(Class<? extends IResourceEntity> entity, String theParamName, String code, From<? extends IResourceEntity, ? extends IResourceEntity> from,
 				CriteriaBuilder theBuilder) {
 			Path<Object> path = null;
 			switch (theParamName) {
 			case Observation.SP_CODE:
-				path = from.get("vocabulary").get("observationConcept").get("conceptCode");
+				path = from.get("observationConcept").get("conceptCode");
 				break;
 			default:
 				break;

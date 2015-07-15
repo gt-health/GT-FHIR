@@ -14,25 +14,27 @@ function addSearchParamRow() {
 			$('<div />', { id: 'search-param-rowopts-' + nextRow })
 	);
 	$("#search-param-rows").append(rowDiv);
-	
+		
 	plusBtn.click(function() {
 		plusBtn.hide();
 		addSearchParamRow();
 	});
 	
 	var params = new Array();
+	var refResource = getResourceStruct(resourceName);
 	conformance.rest.forEach(function(rest){
 		rest.resource.forEach(function(restResource){
 			if (restResource.type == resourceName) {
 				if (restResource.searchParam) {
 					for (var i = 0; i < restResource.searchParam.length; i++) {
 						var searchParam = restResource.searchParam[i];
-						var nextName = searchParam.name + '_' + i; 
-						params[nextName] = searchParam;
-						select.append(
-							$('<option />', { value: nextName }).text(searchParam.name + ' - ' + searchParam.documentation)														
-						);
-						
+						if(refResource.providesSearch(searchParam.name)){
+							var nextName = searchParam.name + '_' + i; 
+							params[nextName] = searchParam;
+							select.append(
+									$('<option />', { value: nextName }).text(searchParam.name + ' - ' + searchParam.documentation)														
+							);
+						}
 					}
 					/*
 					restResource.searchParam.forEach(function(searchParam){
@@ -396,15 +398,22 @@ $.fn.serializeResourceObject = function()
 };
 
 $.getScript('js/models/patient.js');
+$.getScript('js/models/observation.js');
+$.getScript('js/models/location.js');
 
 function buildFromJSON(params) {
-	var createResource;
-	if(resourceName == 'Patient'){
-		createResource = new Patient();
-	}
+	var createResource = getResourceStruct(resourceName);
 	createResource.buildFromJSON(params);
     
     return createResource;
+}
+
+function getResourceStruct(resourceName){
+	if(resourceName == 'Patient'){
+		return new Patient();
+	} else if (resourceName == 'Observation'){
+		return new Observation();
+	}
 }
 
 /*function updateTableEntry(source, type, id, vid){

@@ -5,7 +5,7 @@ public class Relationship {
 	private Long id;
 	private String name;
 
-	/*
+	/* 
 	 * The following attributes could be Boolean types, but they are Characters
 	 * to remain in conformance to Omop definition.
 	 */

@@ -10,7 +10,6 @@ public class LocationFhirResourceDao extends BaseFhirResourceDao<Location>{
 	
 	public LocationFhirResourceDao() {
 		setResourceEntity(edu.gatech.i3l.jpa.model.omop.Location.class);
-		setPredicateBuilder(this.predicateBuilder);
 	}
 
 	private PredicateBuilder predicateBuilder = new AbstractPredicateBuilder() {
