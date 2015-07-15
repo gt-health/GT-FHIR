@@ -53,7 +53,11 @@ function Patient(){
         fhirType: String,
     }];
     active: Boolean;
-   
+    
+    this.providesSearch = function(searchParam){
+		var searchParams = ["_id", "name", "family", "given", "gender", "birthdate"];
+		return (searchParams.indexOf(searchParam) != -1);
+	}   
     
     this.buildFromJSON = function(params) {
 	    
