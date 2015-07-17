@@ -2,36 +2,55 @@ package edu.gatech.i3l.jpa.model.omop.ext;
 
 import java.util.Iterator;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import edu.gatech.i3l.jpa.model.omop.Concept;
-import edu.gatech.i3l.jpa.model.omop.Location;
 import edu.gatech.i3l.jpa.model.omop.Person;
-import edu.gatech.i3l.jpa.model.omop.Provider;
 
 /** 
  * This class adds some properties to the Omop data model Person, in order to provide
  * all the data specified for FHIR.
  * @author Ismael Sarmento
  */
+@Entity
+@Table(name="f_person")
+@PrimaryKeyJoinColumn(name="person_id")
 public class PatientFhirExtTable extends Person{
 
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PatientFhirExtTable.class);
+	
+	@Column(name="family_name")
 	private String familyName;
+	
+	@Column(name="given1_name")
 	private String givenName1;
+	
+	@Column(name="given2_name")
 	private String givenName2;
+	
+	@Column(name="prefix_name")
 	private String prefixName;
+	
+	@Column(name="suffix_name")
 	private String suffixName;
+	
+	@Column(name="preferred_language")
 	private String preferredLanguage;
+	
+	@Column(name="ssn")
 	private String ssn;
+	
+	@Column(name="maritalstatus_concept_id")
 	private String maritalStatusConceptValue;
+	
+	@Column(name="active")
 	private Boolean active;
 	
 	public PatientFhirExtTable() {

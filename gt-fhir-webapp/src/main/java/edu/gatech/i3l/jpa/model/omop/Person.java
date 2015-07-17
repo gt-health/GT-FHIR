@@ -3,6 +3,20 @@ package edu.gatech.i3l.jpa.model.omop;
 import java.util.Calendar;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
@@ -18,28 +32,62 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.jpa.model.omop.ext.LocationFhirExtTable;
 
+@Entity
+@Audited
+@Table(name="person")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class Person extends BaseResourceEntity{
 
 	public static final String RESOURCE_TYPE = "Patient";
 	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column(name="year_of_birth", nullable=false)
 	private Integer yearOfBirth;
+	
+	@Column(name="month_of_birth")
 	private Integer monthOfBirth;
+	
+	@Column(name="day_of_birth")
 	private Integer dayOfBirth;
+	
+	@Column(name="location_id")
+	@ManyToOne(cascade={CascadeType.MERGE})
 	private LocationFhirExtTable location;
 	/**
 	 * Makes the indirect relationship between the person and the Care Site.
 	 */
 	private Provider provider;
+	
+	@Column(name="person_source_value")
 	private String personSourceValue;
+	
+	@Column(name="gender_source_value")
 	private String genderSourceValue;
+	
+	@ManyToOne
+	@Column(name="gender_concept_id")
 	private Concept genderConcept;
+	
+	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
+	
+	@Column(name="ethnicity_concept_id")
+	@ManyToOne
 	private Concept ethnicityConcept;
+	
+	@Column(name="race_source_value")
 	private String raceSourceValue;
+	
+	@ManyToOne
+	@Column(name="race_concept_id")
 	private Concept raceConcept;
 	
+	@OneToMany(orphanRemoval=true, mappedBy="person")
 	private Set<ConditionOccurrence> conditions;
+	
 	private Death death;
 
 	public Person() {

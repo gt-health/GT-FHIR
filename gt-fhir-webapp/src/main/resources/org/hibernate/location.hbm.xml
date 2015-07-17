@@ -4,7 +4,7 @@
 <hibernate-mapping>
 	<class name="edu.gatech.i3l.jpa.model.omop.Location" table="location">
 		<id name="id" column="location_id" type="long">
-			<generator class="hilo"/>
+			<generator class="identity"/>
 		</id>
 		<property name="address1" column="address_1" type="string"/>
 		<property name="address2" column="address_2" type="string"/>

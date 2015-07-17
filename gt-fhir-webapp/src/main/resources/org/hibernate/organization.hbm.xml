@@ -4,7 +4,7 @@
 <hibernate-mapping>
 	<class name="edu.gatech.i3l.jpa.model.omop.Organization" table="organization">
 		<id name="id" column="organization_id" type="long">
-			<generator class="hilo" />
+			<generator class="identity" />
 		</id>
 		<many-to-one name="placeOfServiceConcept" class="edu.gatech.i3l.jpa.model.omop.Concept">
 			<column name="place_of_service_concept_id"/>

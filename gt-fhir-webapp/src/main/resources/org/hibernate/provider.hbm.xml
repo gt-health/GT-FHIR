@@ -4,7 +4,7 @@
 <hibernate-mapping>
 	<class name="edu.gatech.i3l.jpa.model.omop.Provider" table="provider">
 		<id name="id" column="provider_id" type="long">
-			<generator class="hilo" />
+			<generator class="identity" />
 		</id>
 		<property name="npi" type="string" column="npi"/>
 		<property name="dea" type="string" column="dea"/>

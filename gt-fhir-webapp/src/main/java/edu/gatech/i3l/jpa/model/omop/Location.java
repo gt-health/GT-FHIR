@@ -1,5 +1,13 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
@@ -7,10 +15,15 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
+@Entity
+@Table(name="location")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class Location extends BaseResourceEntity{ 
 	
 	public static final String RESOURCE_TYPE = "Location";
 
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	private String address1;
 	private String address2;

@@ -5,6 +5,14 @@ package edu.gatech.i3l.jpa.model.omop;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
@@ -23,11 +31,18 @@ import ca.uhn.fhir.model.primitive.InstantDt;
  * @author MC142
  *
  */
+@Entity
+@Table(name="condition_occurrence")
 public class ConditionOccurrence extends BaseResourceEntity {
 
 	public static final String RESOURCE_TYPE = "Condition";
 
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
+	
+	@ManyToOne
+	@Column(name="person_id")
 	private Person person;
 	private Concept conditionConcept;
 	private Date startDate;
