@@ -4,7 +4,7 @@
 <hibernate-mapping>
 	<class name="edu.gatech.i3l.jpa.model.omop.VisitOccurrence" table="visit_occurrence">
 		<id name="id" column="visit_occurrence_id" type="long">
-			<generator class="hilo" />
+			<generator class="identity" />
 		</id>
 		<many-to-one name="person" class="edu.gatech.i3l.jpa.model.omop.Person">
 			<column name="person_id"/>

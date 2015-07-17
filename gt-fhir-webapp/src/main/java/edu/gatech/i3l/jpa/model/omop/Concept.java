@@ -2,8 +2,20 @@ package edu.gatech.i3l.jpa.model.omop;
 
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="concept")
 public class Concept {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
+	
 	private String name;
 	private Integer level;
 	private String klass;

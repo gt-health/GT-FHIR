@@ -4,7 +4,7 @@
 <hibernate-mapping>
 	<class name="edu.gatech.i3l.jpa.model.omop.Concept" table="concept">
 		<id name="id" column="concept_id" type="long">
-			<generator class="hilo"/>
+			<generator class="identity"/>
 		</id>
 		<property name="name" column="concept_name" type="string"/>
 		<property name="level" column="concept_level" type="integer"/>

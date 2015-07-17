@@ -8,6 +8,13 @@
 
 	<repositories>
 		<repository>
+			<id>oss-snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -21,15 +28,10 @@
 			<name>libs-snapshot</name>
 			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-snapshot</url>
 		</repository>
-		<repository>
-			<id>oss-snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-		</repository>
 	</repositories>
-
+	<properties>
+		<hibernate_version>4.2.17.Final</hibernate_version>
+	</properties>
 	<dependencies>
 
 		<!-- This dependency includes the core HAPI-FHIR classes -->
@@ -122,7 +124,7 @@
 			<version>5.1.6</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>net.vidageek</groupId>
 			<artifactId>mirror</artifactId>
 			<version>1.6.1</version>
@@ -131,7 +133,13 @@
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time-hibernate</artifactId>
 			<version>1.4</version>
+		</dependency> -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-envers</artifactId>
+			<version>${hibernate_version}</version>
 		</dependency>
+				
 
 	</dependencies>
 

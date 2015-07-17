@@ -4,7 +4,7 @@
 <hibernate-mapping>
 	<class name="edu.gatech.i3l.jpa.model.omop.Vocabulary" table="vocabulary">
 		<id name="id" column="vocabulary_id" type="long">
-			<generator class="hilo"/>
+			<generator class="identity"/>
 		</id>
 		<property name="name" column="vocabulary_name" type="string"/>
 	</class>
