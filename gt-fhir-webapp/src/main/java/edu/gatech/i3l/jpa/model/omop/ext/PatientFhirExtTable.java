@@ -16,7 +16,7 @@ import edu.gatech.i3l.jpa.model.omop.Location;
 import edu.gatech.i3l.jpa.model.omop.Person;
 import edu.gatech.i3l.jpa.model.omop.Provider;
 
-/**
+/** 
  * This class adds some properties to the Omop data model Person, in order to provide
  * all the data specified for FHIR.
  * @author Ismael Sarmento

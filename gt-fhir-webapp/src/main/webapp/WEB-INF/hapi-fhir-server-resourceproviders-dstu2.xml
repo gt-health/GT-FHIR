@@ -25,8 +25,8 @@
  	<util:list id="myResourceProvidersDstu2">
 		<ref bean="myConditionRpDstu2"/>
 		<!-- <ref bean="myEncounterRpDstu2"/>-->
-		<ref bean="myLocationRpDstu2"/>
-		<ref bean="myObservationRpDstu2"/>
+		<!-- <ref bean="myLocationRpDstu2"/> -->
+		<!-- <ref bean="myObservationRpDstu2"/> -->
 		<!-- <ref bean="myOrganizationRpDstu2"/>-->
 		<ref bean="myPatientRpDstu2"/>
 		<!-- <ref bean="myPersonRpDstu2"/>
@@ -46,7 +46,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
-	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.LocationFhirResourceDao">
+	<!-- <bean id="myLocationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.LocationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -54,9 +54,9 @@
 	<bean id="myLocationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.LocationResourceProvider">
 		<property name="dao" ref="myLocationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
-	</bean>
+	</bean> -->
 	
-	<bean id="myObservationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.ObservationFhirResourceDao">
+	<!-- <bean id="myObservationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.ObservationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Observation"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -64,7 +64,7 @@
 	<bean id="myObservationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.ObservationResourceProvider">
 		<property name="dao" ref="myObservationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
-	</bean>
+	</bean> -->
  
 	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.PatientFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Patient"/>
