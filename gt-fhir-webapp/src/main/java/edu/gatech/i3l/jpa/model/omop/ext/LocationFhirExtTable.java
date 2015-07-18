@@ -9,12 +9,16 @@ import javax.persistence.Enumerated;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+
 import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import edu.gatech.i3l.jpa.model.omop.Location;
 
 @Entity
 @Table(name="f_location")
 @PrimaryKeyJoinColumn(name="location_id")
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class LocationFhirExtTable extends Location{
 
 	@Column(name="address_use")
