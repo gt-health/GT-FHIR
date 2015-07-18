@@ -2,7 +2,10 @@ package edu.gatech.i3l.jpa.model.omop.ext;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
@@ -14,8 +17,14 @@ import edu.gatech.i3l.jpa.model.omop.Location;
 @PrimaryKeyJoinColumn(name="location_id")
 public class LocationFhirExtTable extends Location{
 
+	@Column(name="address_use")
+	@Enumerated(EnumType.STRING)
 	private AddressUseEnum addressUse;
+	
+	@Column(name="start_date")
 	private Date startDate;
+	
+	@Column(name="end_date")
 	private Date endDate;
 	
 	public LocationFhirExtTable() {

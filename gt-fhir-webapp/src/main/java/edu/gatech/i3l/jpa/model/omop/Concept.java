@@ -2,10 +2,13 @@ package edu.gatech.i3l.jpa.model.omop;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -14,15 +17,32 @@ public class Concept {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="concept_id")
 	private Long id;
 	
+	@Column(name="concept_name")
 	private String name;
+	
+	@Column(name="concept_level")
 	private Integer level;
+	
+	@Column(name="concept_class")
 	private String klass;
+	
+	@ManyToOne
+	@JoinColumn(name="vocabulary_id")
 	private Vocabulary vocabulary;
+	
+	@Column(name="concept_code")
 	private String conceptCode;
+	
+	@Column(name="valid_start_date")
 	private Date validStartDate;
+	
+	@Column(name="valid_end_date")
 	private Date validEndDate;
+	
+	@Column(name="invalid_reason")
 	private String invalidReason;
 
 	public Concept() {

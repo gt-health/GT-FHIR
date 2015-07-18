@@ -6,12 +6,18 @@ package edu.gatech.i3l.jpa.model.omop.ext;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionClinicalStatusEnum;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.ConditionOccurrence;
@@ -21,14 +27,22 @@ import edu.gatech.i3l.jpa.model.omop.VisitOccurrence;
 import edu.gatech.i3l.jpa.model.omop.Vocabulary;
 
 /**
- * @author MC142
+ * @author Myung Choi
  *
  */
+@Entity
+@Table(name="f_condition_occurrence")
+@PrimaryKeyJoinColumn(name="condition_occurrence_id")
 public class ConditionFhirExtTable extends ConditionOccurrence {
 
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ConditionFhirExtTable.class);
+	@Column(name="fhir_condition_status_code")
 	private String statusCode;
+	
+	@Column(name="fhir_condition_display")
 	private String display;
+	
+	@ManyToOne
+	@JoinColumn(name="condition_severity_concept_id")
 	private Concept severityConcept;
 
 	public ConditionFhirExtTable() {

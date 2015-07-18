@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -42,6 +43,7 @@ public class Person extends BaseResourceEntity{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="person_id")
 	private Long id;
 	
 	@Column(name="year_of_birth", nullable=false)
@@ -53,12 +55,15 @@ public class Person extends BaseResourceEntity{
 	@Column(name="day_of_birth")
 	private Integer dayOfBirth;
 	
-	@Column(name="location_id")
 	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="location_id")
 	private LocationFhirExtTable location;
+	
 	/**
 	 * Makes the indirect relationship between the person and the Care Site.
 	 */
+	@ManyToOne
+	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
 	@Column(name="person_source_value")
@@ -68,27 +73,27 @@ public class Person extends BaseResourceEntity{
 	private String genderSourceValue;
 	
 	@ManyToOne
-	@Column(name="gender_concept_id")
+	@JoinColumn(name="gender_concept_id")
 	private Concept genderConcept;
 	
 	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
 	
-	@Column(name="ethnicity_concept_id")
 	@ManyToOne
+	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
 	@ManyToOne
-	@Column(name="race_concept_id")
+	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
 	@OneToMany(orphanRemoval=true, mappedBy="person")
 	private Set<ConditionOccurrence> conditions;
 	
-	private Death death;
+	//private Death death;
 
 	public Person() {
 		super();
@@ -231,13 +236,13 @@ public class Person extends BaseResourceEntity{
 		this.raceConcept = raceConcept;
 	}
 	
-	public Death getDeath() {
-		return death;
-	}
-	
-	public void setDeath(Death death) {
-		this.death = death;
-	}
+//	public Death getDeath() {
+//		return death;
+//	}
+//	
+//	public void setDeath(Death death) {
+//		this.death = death;
+//	}
 
 	@Override
 	public Patient getRelatedResource() {

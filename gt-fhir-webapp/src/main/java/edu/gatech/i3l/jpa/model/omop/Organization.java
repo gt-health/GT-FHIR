@@ -3,6 +3,15 @@
  */
 package edu.gatech.i3l.jpa.model.omop;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
@@ -11,17 +20,32 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
- * @author MC142
+ * @author Myung Choi
  *
  */
+@Entity
+@Table(name="organization")
 public class Organization extends BaseResourceEntity {
 
 	public static final String RESOURCE_TYPE = "Organization";
 
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="organization_id")
 	private Long id;
+	
+	@ManyToOne
+	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
+	
+	@ManyToOne
+	@JoinColumn(name="location_id")
 	private Location location;
+	
+	@Column(name="organization_source_value")
 	private String organizationSourceValue;
+	
+	@Column(name="place_of_service_source_value")
 	private String placeOfServiceSourceValue;
 	
 	public Organization() {

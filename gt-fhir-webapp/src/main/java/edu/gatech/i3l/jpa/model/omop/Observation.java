@@ -2,14 +2,22 @@ package edu.gatech.i3l.jpa.model.omop;
 
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_CODE_VALUE_QUANTITY;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
@@ -27,29 +35,72 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 
+@Entity
+@Table(name="observation")
 public class Observation extends BaseResourceEntity{
 
 	private static final String RES_TYPE = "Observation";
 	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
 	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="observation_id")
 	private Long id;
+	
+	@ManyToOne
+	@JoinColumn(name="person_id", nullable=false)
 	private Person person;
+	
+	@ManyToOne
+	@JoinColumn(name="observation_concept_id", nullable=false)
 	private Concept observationConcept;
+	
+	@Column(name="observation_date", nullable=false)
 	private Date date;
+	
+	@Column(name="observation_time")
 	private Date time;
+	
+	@Column(name="value_as_string")
 	private String valueAsString;
+	
+	@Column(name="value_as_number")
 	private BigDecimal valueAsNumber;
+	
+	@Column(name="range_low")
 	private BigDecimal rangeLow;
 
+	@Column(name="range_high")
 	private BigDecimal rangeHigh;
+	
+	@ManyToOne
+	@JoinColumn(name="value_as_concept_id")
 	private Concept valueAsConcept;
+	
+	@ManyToOne
+	@JoinColumn(name="relevant_condition_concept_id")
 	private Concept relevantCondition;
+	
+	@ManyToOne
+	@JoinColumn(name="observation_type_concept_id", nullable=false)
 	private Concept type;
+	
+	@ManyToOne
+	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
+	
+	@ManyToOne
+	@JoinColumn(name="visit_occurence_id")
 	private VisitOccurrence visitOccurrence;
+	
+	@Column(name="observation_source_value")
 	private String sourceValue;
 	
+	@ManyToOne
+	@JoinColumn(name="unit_concept_id")
 	private Concept unit;
+	
+	@Column(name="units_source_value")
 	private String unitsSourceValue;
 
 	public Observation() {

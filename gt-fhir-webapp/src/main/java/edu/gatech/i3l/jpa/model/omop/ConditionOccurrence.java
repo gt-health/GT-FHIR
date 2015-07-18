@@ -10,6 +10,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -28,29 +31,51 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
- * @author MC142
+ * @author Myung Choi
  *
  */
 @Entity
 @Table(name="condition_occurrence")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class ConditionOccurrence extends BaseResourceEntity {
 
 	public static final String RESOURCE_TYPE = "Condition";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="condition_occurrence_id")
 	private Long id;
 	
 	@ManyToOne
-	@Column(name="person_id")
+	@JoinColumn(name="person_id")
 	private Person person;
+	
+	@ManyToOne
+	@JoinColumn(name="condition_concept_id")
 	private Concept conditionConcept;
+	
+	@Column(name="condition_start_date")
 	private Date startDate;
+	
+	@Column(name="condition_end_date")
 	private Date endDate;
+	
+	@ManyToOne
+	@JoinColumn(name="condition_type_concept_id")
 	private Concept conditionTypeConcept;
+	
+	@Column(name="stop_reason")
 	private String stopReason;
+	
+	@ManyToOne
+	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
+	
+	@ManyToOne
+	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence encounter;
+	
+	@Column(name="condition_source_value")
 	private String sourceValue; 
 
 	public ConditionOccurrence() {

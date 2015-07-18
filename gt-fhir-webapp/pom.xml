@@ -139,7 +139,6 @@
 			<artifactId>hibernate-envers</artifactId>
 			<version>${hibernate_version}</version>
 		</dependency>
-				
 
 	</dependencies>
 

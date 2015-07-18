@@ -1,7 +1,22 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="vocabulary")
 public class Vocabulary {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="vocabulary_id")
 	private Long id;
+	
+	@Column(name="vocabulary_name")
 	private String name;
 
 	public Vocabulary() {
