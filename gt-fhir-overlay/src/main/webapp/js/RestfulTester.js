@@ -13,6 +13,21 @@ function Condition(){
 	}
 }
 
+function Encounter(){
+	
+	identifier: [{
+        use: String,
+        label: String,
+        system: String,
+        value: String
+    }];
+	
+	this.providesSearch = function(searchParam){
+		var searchParams = ["_id", "date", "patient", "reason"];
+		return (searchParams.indexOf(searchParam) != -1);
+	}
+}
+
 function Observation(){
 	
 	identifier: [{
@@ -543,6 +558,8 @@ function getResourceStruct(resourceName){
 		return new Observation();
 	} else if (resourceName == 'Condition') {
 		return new Condition();
+	} else if (resourceName == 'Encounter'){
+		return new Encounter();
 	}
 }
 

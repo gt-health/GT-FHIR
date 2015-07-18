@@ -1,11 +1,40 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+
+@Entity
+@Table(name="care_site")
 public class CareSite {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="care_site_id")
 	private Long id;
+	
+	@ManyToOne
+	@JoinColumn(name="location_id")
 	private Location location;
+	
+	@ManyToOne
+	@JoinColumn(name="organization_id")
 	private Organization organization;
+	
+	@ManyToOne
+	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
+	
+	@Column(name="care_site_source_value")
 	private String careSiteSourceValue;
+	
+	@Column(name="place_of_service_source_value")
 	private String placeOfServiceSourceValue;
 	
 	public CareSite() {

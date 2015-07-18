@@ -5,8 +5,14 @@ package edu.gatech.i3l.jpa.model.omop.ext;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
 import edu.gatech.i3l.jpa.model.omop.CareSite;
@@ -16,12 +22,22 @@ import edu.gatech.i3l.jpa.model.omop.Person;
 import edu.gatech.i3l.jpa.model.omop.VisitOccurrence;
 
 /**
- * @author MC142
+ * @author Myung Choi
  *
  */
+@Entity
+@Table(name="f_visit_occurrence")
+@PrimaryKeyJoinColumn(name="visit_occurrence_id")
 public class VisitOccurrenceFhirExtTable extends VisitOccurrence {
+	
+	@ManyToOne
+	@JoinColumn(name="episode_of_care_id")
 	private EpisodeOfCare episodeOfCare;
+	
+	@Column(name="status")
 	private String status;
+	
+	@Column(name="note")
 	private String note;
 	
 	public VisitOccurrenceFhirExtTable() {

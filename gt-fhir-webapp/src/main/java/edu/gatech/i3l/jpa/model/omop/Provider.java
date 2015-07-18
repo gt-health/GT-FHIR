@@ -1,5 +1,16 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
@@ -9,16 +20,36 @@ import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
+@Entity
+@Table(name="provider")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class Provider extends BaseResourceEntity {
 
 	public static final String RESOURCE_TYPE = "Practitioner|Organization";
 
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="provider_id")
 	private Long id;
+	
+	@Column(name="npi")
 	private String npi;
+	
+	@Column(name="dea")
 	private String dea;
+	
+	@ManyToOne
+	@JoinColumn(name="specialty_concept_id")
 	private Concept specialtyConcept;
+	
+	@ManyToOne
+	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
+	
+	@Column(name="provider_source_value", nullable=false)
 	private String providerSourceValue;
+	
+	@Column(name="specialty_source_value")
 	private String specialtySourceValue;
 	
 	public Provider() {

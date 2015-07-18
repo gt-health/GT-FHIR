@@ -1,5 +1,6 @@
 package edu.gatech.i3l.jpa.model.omop;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -24,13 +25,28 @@ public class Location extends BaseResourceEntity{
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="location_id")
 	private Long id;
+	
+	@Column(name="address_1")
 	private String address1;
+	
+	@Column(name="address_2")
 	private String address2;
+	
+	@Column(name="city")
 	private String city;
+	
+	@Column(name="state")
 	private String state;
+	
+	@Column(name="zip")
 	private String zipCode;
+	
+	@Column(name="country")
 	private String country;
+	
+	@Column(name="location_source_value")
 	private String locationSourceValue;
 
 	public Location() {

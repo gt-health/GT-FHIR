@@ -3,9 +3,18 @@
  */
 package edu.gatech.i3l.jpa.model.omop;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
@@ -17,22 +26,42 @@ import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
-import edu.gatech.i3l.jpa.model.omop.Location;
 
 /**
- * @author MC142
+ * @author Myung Choi
  *
  */
+@Entity
+@Table(name="visit_occurrence")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class VisitOccurrence extends BaseResourceEntity {
 	
 	public static final String RESOURCE_TYPE = "Encounter";
 
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="visit_occurrence_id")
 	private Long id;
+	
+	@ManyToOne
+	@JoinColumn(name="person_id")
 	private Person person;
+	
+	@Column(name="visit_start_date")
 	private Date startDate;
+	
+	@Column(name="visit_end_date")
 	private Date endDate;
+	
+	@ManyToOne
+	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
+	
+	@ManyToOne
+	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
+	
+	@Column(name="place_of_service_source_value")
 	private String placeOfServiceSourceValue;
 	
 	public VisitOccurrence() {
@@ -150,7 +179,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			// set Location
 			Location location = careSite.getLocation();
 			if (location != null) {
-				ca.uhn.fhir.model.dstu2.resource.Encounter.Location encounterLocation = new ca.uhn.fhir.model.dstu2.resource.Encounter.Location();
+				Encounter.Location encounterLocation = new Encounter.Location();
 				ResourceReferenceDt locationReference = new ResourceReferenceDt(location.getIdDt());
 				encounterLocation.setLocation(locationReference);
 				encounter.addLocation(encounterLocation);
@@ -194,8 +223,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 
 	@Override
 	public FhirVersionEnum getFhirVersion() {
-		// TODO Auto-generated method stub
-		return null;
+		return FhirVersionEnum.DSTU2;
 	}
 
 	@Override
@@ -206,14 +234,32 @@ public class VisitOccurrence extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		// TODO Auto-generated method stub
+		Encounter encounter = (Encounter) resource;
+		this.id = encounter.getId().getIdPartAsLong();
+		this.person = new Person();
+		this.person.setId(encounter.getPatient().getId().getIdPartAsLong());
+		this.startDate = encounter.getPeriod().getStart();
+		this.endDate = encounter.getPeriod().getEnd();
+		this.careSite = new CareSite();
+		Organization organization = new Organization();
+		organization.setId(encounter.getServiceProvider().getId().getIdPartAsLong());
+		Location location = new Location();
+		location.setId(encounter.getLocationFirstRep().getId().getIdPartAsLong());
+		this.careSite.setOrganization(organization);
+		this.careSite.setLocation(location);
+		//TODO set place of service concept
 		return null;
 	}
 
 	@Override
-	public String translateSearchParam(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public String translateSearchParam(String param) {
+		switch (param) {
+		case Encounter.SP_PATIENT:
+			return "person";
+		default:
+			break;
+		}
+		return param;
 	}
 
 }

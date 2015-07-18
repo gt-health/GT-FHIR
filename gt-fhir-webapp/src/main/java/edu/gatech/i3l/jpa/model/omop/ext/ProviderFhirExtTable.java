@@ -3,20 +3,41 @@
  */
 package edu.gatech.i3l.jpa.model.omop.ext;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import edu.gatech.i3l.jpa.model.omop.CareSite;
 import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.Provider;
 
 /**
- * @author MC142
+ * @author Myung Choi
  *
  */
+@Entity
+@Table(name="f_provider")
+@PrimaryKeyJoinColumn(name="provider_id")
 public class ProviderFhirExtTable extends Provider {
+	
+	@Column(name="name")
 	private String name;
+	
+	@Column(name="year_of_birth")
 	private Integer yearOfBirth;
+	
+	@Column(name="month_of_birth")
 	private Integer monthOfBirth;
+	
+	@Column(name="day_of_birth")
 	private Integer dayOfBirth;
+	
+	@ManyToOne
+	@JoinColumn(name="gender_concept_id")
 	private Concept genderConcept;
 	
 	public ProviderFhirExtTable() {
