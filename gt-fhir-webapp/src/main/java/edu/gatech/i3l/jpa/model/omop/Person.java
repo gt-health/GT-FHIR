@@ -72,7 +72,7 @@ public class Person extends BaseResourceEntity{
 	@Column(name="gender_source_value")
 	private String genderSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="gender_concept_id")
 	private Concept genderConcept;
 	
@@ -247,7 +247,7 @@ public class Person extends BaseResourceEntity{
 	@Override
 	public Patient getRelatedResource() {
 		Patient patient = new Patient();
-		patient.setId(new IdDt(this.getId()));
+		patient.setId(new IdDt(this.getResourceType(), String.valueOf(this.getId()), String.valueOf(this.getVersion())));
 		
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(this.yearOfBirth, this.monthOfBirth, this.dayOfBirth);
@@ -268,10 +268,9 @@ public class Person extends BaseResourceEntity{
 				.setPeriod(period);
 		}
 		
-		Concept gender = this.getGenderConcept();
-		if(gender != null){
+		if(this.genderConcept != null){
 			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
-			String gName = gender.getName(); 
+			String gName = this.genderConcept.getName(); 
 			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
 			for (int i = 0; i < values.length; i++) {
 				if(gName.equalsIgnoreCase(values[i].getCode())){
@@ -317,9 +316,9 @@ public class Person extends BaseResourceEntity{
 			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
-			String gender = patient.getGender();
-			this.genderSourceValue = gender;
-			this.genderConcept = OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender());
+			if(this.genderConcept == null)
+				this.genderConcept = new Concept();
+			this.genderConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender()));
 			
 			LocationFhirExtTable location;
 			if(this.location != null){
@@ -330,7 +329,7 @@ public class Person extends BaseResourceEntity{
 			AddressDt address = patient.getAddress().get(0);
 			location.setAddressUse(address.getUseElement().getValueAsEnum());
 			location.setAddress1(address.getLine().iterator().next().getValue());
-			if (address.getLine().iterator().hasNext())
+			if (address.getLine().size() > 1)// iterator.hasNext or listIterator.hasNext were returning true in all cases
 				location.setAddress2(address.getLine().iterator().next().getValue());
 			location.setZipCode(address.getPostalCode());
 			location.setCity(address.getCity());

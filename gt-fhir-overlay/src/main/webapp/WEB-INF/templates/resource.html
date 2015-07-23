@@ -23,26 +23,11 @@
 					<!-- ** Default Home                                         ** -->
 					<!-- ********************************************************** -->
 
-						<div class="well">
-							This is a RESTful server tester, which can be used to send
-							requests to, and receive responses from the server at the
-							following URL: 
-						</div>
 
 						<!-- ************************************************ -->
 						<!-- ** Resource Actions                           ** -->
 						<!-- ************************************************ -->
-						
-						<div class="panel panel-default" th:if="${resourceName.empty} == false">
-							<div class="panel-heading">
-								<h3 class="panel-title" th:text="'Resource: ' + ${resourceName}">Resource: <b>Patient</b></h3>
-							</div>
-							<div class="panel-body">
-								This page contains various operations for interacting with
-								the <th:block th:text="${resourceName}"/> resource.
-							</div>
-						</div>
-						
+												
 						<!-- Nav tabs -->
 						<ul class="nav nav-tabs" role="tablist" id="resource-nav-tabs">
 							<!-- Search Tab -->

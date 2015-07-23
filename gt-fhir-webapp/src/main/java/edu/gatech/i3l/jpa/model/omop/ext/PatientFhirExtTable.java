@@ -4,14 +4,19 @@ import java.util.Iterator;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.StringDt;
+import edu.gatech.i3l.jpa.model.omop.Concept;
 import edu.gatech.i3l.jpa.model.omop.Person;
 
 /** 
@@ -22,6 +27,7 @@ import edu.gatech.i3l.jpa.model.omop.Person;
 @Entity
 @Table(name="f_person")
 @PrimaryKeyJoinColumn(name="person_id")
+@Audited
 public class PatientFhirExtTable extends Person{
 
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PatientFhirExtTable.class);
@@ -47,8 +53,9 @@ public class PatientFhirExtTable extends Person{
 	@Column(name="ssn")
 	private String ssn;
 	
-	@Column(name="maritalstatus_concept_id")
-	private String maritalStatusConceptValue;
+	@ManyToOne
+	@JoinColumn(name="maritalstatus_concept_id")
+	private Concept maritalStatus;
 	
 	@Column(name="active")
 	private Boolean active;
@@ -56,30 +63,6 @@ public class PatientFhirExtTable extends Person{
 	public PatientFhirExtTable() {
 		super();
 	}
-
-//	public PatientFhirExtTable(Long id, Integer yearOfBirth,
-//			Integer monthOfBirth, Integer dayOfBirth, Location location,
-//			Provider provider, String personSourceValue,
-//			String genderSourceValue, Concept genderConcept,
-//			String ethnicitySourceValue, Concept ethnicityConcept,
-//			String raceSourceValue, Concept raceConcept,
-//			String familyName, String givenName1,
-//			String givenName2, String prefixName, String suffixName,
-//			String preferredLanguage, String ssn,
-//			String maritalStatusConceptValue) {
-//		super(id, yearOfBirth, monthOfBirth, dayOfBirth, location, provider,
-//				personSourceValue, genderSourceValue, genderConcept,
-//				ethnicitySourceValue, ethnicityConcept, raceSourceValue,
-//				raceConcept);
-//		this.familyName = familyName;
-//		this.givenName1 = givenName1;
-//		this.givenName2 = givenName2;
-//		this.prefixName = prefixName;
-//		this.suffixName = suffixName;
-//		this.preferredLanguage = preferredLanguage;
-//		this.ssn = ssn;
-//		this.maritalStatusConceptValue = maritalStatusConceptValue;
-//	}
 
 	public String getFamilyName() {
 		return familyName;
@@ -137,12 +120,12 @@ public class PatientFhirExtTable extends Person{
 		this.ssn = ssn;
 	}
 
-	public String getMaritalStatusConceptValue() {
-		return maritalStatusConceptValue;
+	public Concept getMaritalStatus() {
+		return maritalStatus;
 	}
 
-	public void setMaritalStatusConceptValue(String maritalStatusConceptValue) {
-		this.maritalStatusConceptValue = maritalStatusConceptValue;
+	public void setMaritalStatus(Concept maritalStatus) {
+		this.maritalStatus = maritalStatus;
 	}
 	
 	public Boolean getActive() {
@@ -161,9 +144,23 @@ public class PatientFhirExtTable extends Person{
 			patient.getName().get(0).addGiven(this.givenName2);
 		boolean active = this.active != null ? this.active : false;
 		patient.setActive(active);
+		
+		//MARITAL STATUS
+//		MaritalStatusCodesEnum[] values = MaritalStatusCodesEnum.values();
+//		for (int i = 0; i < values.length; i++) {
+//			if(values[i].equals(this.maritalStatus.getName())){
+//				patient.setMaritalStatus(values[i]);
+//				break;
+//			}
+//		}
+//		or patient.setMaritalStatus(MaritalStatusCodesEnum.valueOf(""));
 		return patient;
 	}
-
+	
+	/**
+	 * @notice In Fhir model, {@link Patient} has a collection of names, while in this extension table, {@link PatientFhirExtTable},
+	 * there is only one name for each {@link Person}.
+	 */
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		super.constructEntityFromResource(resource);
@@ -172,23 +169,26 @@ public class PatientFhirExtTable extends Person{
 			
 			Iterator<HumanNameDt> iterator = patient.getName().iterator();
 			//while(iterator.hasNext()){
-				HumanNameDt next = iterator.next();
-				this.givenName1 = next.getGiven().iterator().next().getValue();
-				if(next.getGiven().iterator().hasNext())  
-					this.givenName2 = next.getGiven().iterator().next().getValue();
-				Iterator<StringDt> family = next.getFamily().iterator();
-				this.familyName = "";
-				while(family.hasNext()){
-					this.familyName = this.familyName.concat(family.next().getValue()+" ");
+				if(iterator.hasNext()){
+					HumanNameDt next = iterator.next();
+					this.givenName1 = next.getGiven().get(0).getValue();//the next method was not advancing to the next element, then the need to use the get(index) method
+					if(next.getGiven().size() > 1) //TODO add unit tests, to assure this won't be changed to hasNext
+						this.givenName2 = next.getGiven().get(1).getValue();
+					Iterator<StringDt> family = next.getFamily().iterator();
+					this.familyName = "";
+					while(family.hasNext()){
+						this.familyName = this.familyName.concat(family.next().getValue()+" ");
+					}
+					if(next.getSuffix().iterator().hasNext())
+						this.suffixName = next.getSuffix().iterator().next().getValue();
+					if(next.getPrefix().iterator().hasNext())
+						this.prefixName = next.getPrefix().iterator().next().getValue();
 				}
-				if(next.getSuffix().iterator().hasNext())
-					this.suffixName = next.getSuffix().iterator().next().getValue();
-				if(next.getPrefix().iterator().hasNext())
-					this.prefixName = next.getPrefix().iterator().next().getValue();
 			//}
 			
 			this.active = patient.getActive();
-			this.maritalStatusConceptValue = patient.getMaritalStatus().getText();
+			//MARITAL STATUS
+//			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.MARITAL_STATUS, patient.getMaritalStatus().getText()));
 		} else {
 			ourLog.error("There was not possible to construct the entity ? using the resource ?. It should be used the resource ?.",
 					this.getClass().getSimpleName(), resource.getResourceName(), getResourceType());
