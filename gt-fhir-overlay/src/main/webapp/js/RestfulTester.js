@@ -14,14 +14,7 @@ function Condition(){
 }
 
 function Encounter(){
-	
-	identifier: [{
-        use: String,
-        label: String,
-        system: String,
-        value: String
-    }];
-	
+		
 	this.providesSearch = function(searchParam){
 		var searchParams = ["_id", "date", "patient", "reason"];
 		return (searchParams.indexOf(searchParam) != -1);
@@ -30,15 +23,29 @@ function Encounter(){
 
 function Observation(){
 	
-	identifier: [{
-        use: String,
-        label: String,
-        system: String,
-        value: String
-    }];
-	
 	this.providesSearch = function(searchParam){
 		var searchParams = ["_id", "code", "subject", "value-concept", "value-string", "value-quantity"];
+		return (searchParams.indexOf(searchParam) != -1);
+	}
+}
+
+function Medication(){
+	this.providesSearch = function(searchParam){
+		var searchParams = ["_id", "name"];
+		return (searchParams.indexOf(searchParam) != -1);
+	}
+}
+
+function MedicationPrescription(){
+	this.providesSearch = function(searchParam){
+		var searchParams = ["_id", "encounter", "patient", "medication"];
+		return (searchParams.indexOf(searchParam) != -1);
+	}
+}
+
+function MedicationDispense(){
+	this.providesSearch = function(searchParam){
+		var searchParams = ["_id", "patient", "medication"];
 		return (searchParams.indexOf(searchParam) != -1);
 	}
 }
@@ -560,6 +567,12 @@ function getResourceStruct(resourceName){
 		return new Condition();
 	} else if (resourceName == 'Encounter'){
 		return new Encounter();
+	} else if (resourceName == 'Medication'){
+		return new Medication();
+	} else if (resourceName == 'MedicationPrescription'){
+		return new MedicationPrescription();
+	} else if (resourceName == 'MedicationDispense'){
+		return new MedicationDispense();
 	}
 }
 

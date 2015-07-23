@@ -2,17 +2,17 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-	<class name="edu.gatech.i3l.jpa.model.omop.CareSite" table="care_site">
+	<class name="edu.gatech.i3l.fhir.dstu2.entities.CareSite" table="care_site">
 		<id name="id" column="care_site_id" type="long" >
 			<generator class="identity"/>
 		</id>
-		<many-to-one name="location" class="edu.gatech.i3l.jpa.model.omop.Location">
+		<many-to-one name="location" class="edu.gatech.i3l.fhir.dstu2.entities.Location">
 			<column name="location_id"/>
 		</many-to-one>
-		<many-to-one name="organization" class="edu.gatech.i3l.jpa.model.omop.Organization">
+		<many-to-one name="organization" class="edu.gatech.i3l.fhir.dstu2.entities.Organization">
 			<column name="organization_id"/>
 		</many-to-one>
-		<many-to-one name="placeOfServiceConcept" class="edu.gatech.i3l.jpa.model.omop.Concept">
+		<many-to-one name="placeOfServiceConcept" class="edu.gatech.i3l.fhir.dstu2.entities.Concept">
 			<column name="place_of_service_concept_id"/>
 		</many-to-one>
 		<property name="careSiteSourceValue" type="string" column="care_site_source_value"/>

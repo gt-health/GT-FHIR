@@ -36,7 +36,7 @@
 
  
     
-	<bean id="myConditionDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.ConditionFhirResourceDao">
+	<bean id="myConditionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ConditionFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Condition"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -46,7 +46,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	
-	<bean id="myEncounterDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.EncounterFhirResourceDao">
+	<bean id="myEncounterDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.EncounterFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Encounter"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -56,7 +56,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
-	<!-- <bean id="myLocationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.LocationFhirResourceDao">
+	<!-- <bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -66,7 +66,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean> -->
 	
-	<bean id="myObservationDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.ObservationFhirResourceDao">
+	<bean id="myObservationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ObservationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Observation"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -76,7 +76,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
-	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.hl7.fhir.jpa.dao.PatientFhirResourceDao">
+	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Patient"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>

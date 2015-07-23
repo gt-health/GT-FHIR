@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping package="edu.gatech.i3l.jpa.model.omop">
+<hibernate-mapping package="edu.gatech.i3l.fhir.dstu2.entities">
 
 	<class name="Death" table="death">
 		<id name="person" type="long">
@@ -11,13 +11,13 @@
 				<param name="property">person</param>
 			</generator>
 		</id>
-		<one-to-one name="person" class="edu.gatech.i3l.jpa.model.omop.Person"
+		<one-to-one name="person" class="edu.gatech.i3l.fhir.dstu2.entities.Person"
 			constrained="true" />
 		<property name="deathDate" type="date" column="death_date" />
-		<many-to-one name="deathType" class="edu.gatech.i3l.jpa.model.omop.Concept">
+		<many-to-one name="deathType" class="edu.gatech.i3l.fhir.dstu2.entities.Concept">
 			<column name="death_type_concept_id" />
 		</many-to-one>
-		<many-to-one name="causeOfDeath" class="edu.gatech.i3l.jpa.model.omop.Concept">
+		<many-to-one name="causeOfDeath" class="edu.gatech.i3l.fhir.dstu2.entities.Concept">
 			<column name="cause_of_death_concept_id" />
 		</many-to-one>
 		<property name="causeOfDeathSourceValue" type="string"

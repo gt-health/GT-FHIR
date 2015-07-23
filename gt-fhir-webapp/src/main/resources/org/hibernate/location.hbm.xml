@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-	<class name="edu.gatech.i3l.jpa.model.omop.Location" table="location">
+	<class name="edu.gatech.i3l.fhir.dstu2.entities.Location" table="location">
 		<id name="id" column="location_id" type="long">
 			<generator class="identity"/>
 		</id>
@@ -14,7 +14,7 @@
 		<property name="country" column="country" type="string"/>
 		<property name="locationSourceValue" column="location_source_value" type="string"/>
 		
-		<joined-subclass name="edu.gatech.i3l.jpa.model.omop.ext.LocationFhirExtTable" lazy="false" table="f_location">
+		<joined-subclass name="edu.gatech.i3l.fhir.dstu2.entities.LocationComplement" lazy="false" table="f_location">
 			<key column="location_id"/>
 			<property name="startDate" type="java.util.Date"/>
 			<property name="endDate" type="java.util.Date"/>

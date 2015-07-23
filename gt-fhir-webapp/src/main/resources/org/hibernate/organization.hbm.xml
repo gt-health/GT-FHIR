@@ -2,14 +2,14 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-	<class name="edu.gatech.i3l.jpa.model.omop.Organization" table="organization">
+	<class name="edu.gatech.i3l.fhir.dstu2.entities.Organization" table="organization">
 		<id name="id" column="organization_id" type="long">
 			<generator class="identity" />
 		</id>
-		<many-to-one name="placeOfServiceConcept" class="edu.gatech.i3l.jpa.model.omop.Concept">
+		<many-to-one name="placeOfServiceConcept" class="edu.gatech.i3l.fhir.dstu2.entities.Concept">
 			<column name="place_of_service_concept_id"/>
 		</many-to-one>
-		<many-to-one name="location" class="edu.gatech.i3l.jpa.model.omop.Location">
+		<many-to-one name="location" class="edu.gatech.i3l.fhir.dstu2.entities.Location">
 			<column name="location_id"/>
 		</many-to-one>
 		<property name="organizationSourceValue" type="string" column="organization_source_value"/>
