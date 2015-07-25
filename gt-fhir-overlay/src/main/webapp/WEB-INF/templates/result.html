@@ -27,7 +27,7 @@
 						<th:block th:text="${latencyMs} + 'ms'"/>
 					</div>
 
-					<!-- <div th:if="${clientCodeJson} != null" class="panel panel-default">
+					<div th:if="${clientCodeJson} != null" class="panel panel-default">
 						<div class="panel-heading">
 							Client Code - 
 							<small style="color: #888;">
@@ -42,7 +42,7 @@
 							var jsonClientCode = <th:block th:utext="${clientCodeJson}"/>;
 							generateHapi(jsonClientCode, $('#clientCodeBody'));
 						</script>
-					</div> -->
+					</div>
 					 
 					<div th:if="${requestUrl} != null">
 
@@ -208,45 +208,18 @@
 														</table>
 													</div>
 												</div>
-												
+												<script type="text/javascript">
+													$('#collapseOne').on('hidden.bs.collapse', function () {
+													   $("#collapseOneIcon").removeClass("fa-minus-square-o").addClass("fa-plus-square-o");
+													});
+	
+													$('#collapseOne').on('shown.bs.collapse', function () {
+													   $("#collapseOneIcon").removeClass("fa-plus-square-o").addClass("fa-minus-square-o");
+													});
+												</script>
 											</div>
 										</div>										
-										<div th:if="${!#strings.isEmpty(narrative)}" class="panel-group" style="margin-bottom: 0px;">
-														<div class="panel-group"  id="accordion" style="margin-bottom: 0px;">
-															<h4>
-																<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-																	<i id="collapseOneIcon" class="fa fa-plus-square-o"></i>
-																	Manage Resource
-																</a>
-															</h4>
-															<div id="collapseOne" class="panel-collapse collapse">
-																<div class="panel-body" style="padding-bottom: 0px;">
-																	<table class="table table-condensed" style="padding-bottom: 0px; margin-bottom: 0px;">
-																		<colgroup>
-																			<col style="width: 100px;"/>
-																			<col/>
-																			<col/>
-																			<col style="width: 100px;"/>
-																		</colgroup>
-																		<thead>
-																			<tr>
-																				<td style="white-space: nowrap;">
-																					<th:block>
-																						<button class="btn btn-primary" th:onclick="'updateTableEntry(this, \'' + ${resource.id.resourceType} + '\', \'' + ${resource.id.toUnqualified()} + '\', \'' + ${#strings.defaultString(version, '')} + '\');'" type="submit" name="action" value="update"><i class="fa fa-pencil" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ></i> Update</button>
-																						<button class="btn btn-primary" th:onclick="'deleteTableEntry(this, \'' + ${resource.id.resourceType} + '\', \'' + ${resource.id.toUnqualified()} + '\');'" type="submit" name="action" value="delete" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ><i class="fa fa-trash-o"></i> Delete</button>
-																					</th:block>
-																				</td>
-																			</tr>
-																		</thead>
-																	</table>
-																	<div th:if="${resourceName} == 'Patient'">
-																		<div th:include="forms/tmpl-patient :: form-frgmt" />
-																	</div>
-																</div>
-															</div>
-														</div>
-										</div>
-										<div class="panel-heading" style="margin: 5px;">
+										<div class="panel-heading" sstyle="margin: 5px;">
 											<h4 class="panel-title">
 												Raw Message
 											</h4>										
@@ -268,30 +241,7 @@
 							</tbody>
 						</table>
 						
-						<script type="text/javascript">
-							function updateTableEntry(source, type, id, vid){
-								var btn = $(source);
-								btn.button('loading');
-								// Note we're using resource-create-id even though this is an update because
-								// the controller expects that...
-								if (id != null) btn.append($('<input />', { type: 'hidden', name: 'resource-create-id', value: id }));
-								console.log('id:'+id);
-								var json = $('#outerForm').serializeResourceObject();
-								var myResource = buildFromJSON(json);
-								myResource.resourceType = json.resource;
-								myResource.id = id;
-								var body = JSON.stringify(myResource);
-								btn.append($('<input />', { type: 'hidden', name: 'resource-create-body', value: body }));
-								$("#outerForm").attr("action", "update").attr("method", "POST").submit();
-							}
-							$('#collapseOne').on('hidden.bs.collapse', function () {
-							   $("#collapseOneIcon").removeClass("fa-minus-square-o").addClass("fa-plus-square-o");
-							});
-	
-							$('#collapseOne').on('shown.bs.collapse', function () {
-							   $("#collapseOneIcon").removeClass("fa-plus-square-o").addClass("fa-minus-square-o");
-							});
-						<!--
+						<script type="text/javascript"><!--
 							$( document ).ready(function() {
 								var reswidth = $('#resultBodyPlaceholder').outerWidth(true);
 								var reqwidth = 0;

@@ -1,26 +1,149 @@
+/bin
+/target
+target/
+.idea/
+.project/
+.settings/
+.metadata/
+RemoteSystemsTempFiles/
+Servers/
+*.iml
+*.log
+*.log*
+nohup.out
+.DS_Store
+*.orig
+
+# Vagrant stuff.
+.vagrant
+/vagrant/build
+/vagrant/chef/tmp
+
+
+
+# Created by https://www.gitignore.io
+
+### Java ###
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+
+### Vim ###
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+
+### Intellij ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
+
+*.iml
+
+## Directory-based project format:
+.idea/
+# if you remove the above rule, at least ignore the following:
+
+# User-specific stuff:
+# .idea/workspace.xml
+# .idea/tasks.xml
+# .idea/dictionaries
+
+# Sensitive or high-churn files:
+# .idea/dataSources.ids
+# .idea/dataSources.xml
+# .idea/sqlDataSources.xml
+# .idea/dynamic.xml
+# .idea/uiDesigner.xml
+
+# Gradle:
+# .idea/gradle.xml
+# .idea/libraries
+
+# Mongo Explorer plugin:
+# .idea/mongoSettings.xml
+
+## File-based project format:
+*.ipr
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+
+
+### Eclipse ###
+*.pydevproject
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# Eclipse Core
+.project
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# PDT-specific
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# TeXlipse plugin
+.texlipse
+
 # Local configuration files
 gt-fhir-webapp/src/main/webapp/WEB-INF/hapi-fhir-server-database-config.xml
-
-# Other dependent source packages
-examples
-hapi-deployable-pom
-hapi-fhir-android
-hapi-fhir-base
-hapi-fhir-dist
-hapi-fhir-jpaserver-base
-hapi-fhir-jpaserver-example
-hapi-fhir-jpaserver-uhnfhirtest
-hapi-fhir-oauth2
-hapi-fhir-structures-dev
-hapi-fhir-structures-dstu
-hapi-fhir-structures-dstu2
-hapi-fhir-structures-hl7org-dstu2
-hapi-fhir-testpage-interceptor
-hapi-fhir-testpage-overlay
-hapi-fhir-tutorial
-hapi-tinder-test
-hapi-tinder-plugin
-restful-server-example
-restful-server-example-test
-temp
-vagrant
