@@ -61,7 +61,7 @@ public class DrugExposureMedication extends BaseResourceEntity{
 	public String translateSearchParam(String theSearchParam) {
 		switch (theSearchParam) {
 		case Medication.SP_NAME:
-			return "drugConcept";
+			return "drugConcept.name";
 		default:
 			break;
 		}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="edu.gatech.i3l.fhir.jpa.model.Location" table="location">
+		<id name="id" column="location_id" type="long">
+			<generator class="identity"/>
+		</id>
+		<property name="address1" column="address_1" type="string"/>
+		<property name="address2" column="address_2" type="string"/>
+		<property name="city" column="city" type="string"/>
+		<property name="state" column="state" type="string"/>	
+		<property name="zipCode" column="zip" type="string"/>
+		<property name="country" column="country" type="string"/>
+		<property name="locationSourceValue" column="location_source_value" type="string"/>
+		
+		<joined-subclass name="edu.gatech.i3l.fhir.jpa.model.LocationFhirExtTable" lazy="false" table="f_location">
+			<key column="location_id"/>
+			<property name="startDate" type="java.util.Date"/>
+			<property name="endDate" type="java.util.Date"/>
+			<property name="addressUse">
+				<type name="org.hibernate.type.EnumType">
+					<param name="enumClass">ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum</param>
+				</type>
+			</property>
+		</joined-subclass>
+	</class>
+</hibernate-mapping>

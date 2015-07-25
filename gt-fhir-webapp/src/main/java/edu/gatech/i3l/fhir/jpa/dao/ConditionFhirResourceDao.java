@@ -67,12 +67,6 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 				return ub;
 			}
 
-			@Override
-			public Predicate translatePredicateString(Class<? extends IResourceEntity> entity, String theParamName, String likeExpression,
-					From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder) {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		};
 	}
 

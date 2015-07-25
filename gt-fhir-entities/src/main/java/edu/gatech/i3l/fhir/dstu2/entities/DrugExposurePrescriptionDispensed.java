@@ -36,7 +36,11 @@ public class DrugExposurePrescriptionDispensed extends BaseResourceEntity{
 	private Long id;
 	
 	@ManyToOne
-	@JoinColumn(name="person_id", updatable=false)
+	@JoinColumn(name="drug_type_concept_id", updatable= false, nullable=false)
+	private Concept drugExposureType;
+	
+	@ManyToOne
+	@JoinColumn(name="person_id", updatable=false, nullable=false)
 	private Person person;
 	
 	@Column(name="quantity", updatable=false)
@@ -90,6 +94,14 @@ public class DrugExposurePrescriptionDispensed extends BaseResourceEntity{
 		this.medication = medication;
 	}
 
+	public Concept getDrugExposureType() {
+		return drugExposureType;
+	}
+
+	public void setDrugExposureType(Concept drugExposureType) {
+		this.drugExposureType = drugExposureType;
+	}
+
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
@@ -112,7 +124,7 @@ public class DrugExposurePrescriptionDispensed extends BaseResourceEntity{
 		case MedicationDispense.SP_PATIENT:
 			return "person";
 		case MedicationDispense.SP_MEDICATION:
-			return "medication";
+			return "medication.name";
 		default:
 			break;
 		}
@@ -125,8 +137,10 @@ public class DrugExposurePrescriptionDispensed extends BaseResourceEntity{
 		resource.setId(this.getIdDt());
 		resource.setPatient(new ResourceReferenceDt(new IdDt(this.person.getId())));
 		resource.setMedication(new ResourceReferenceDt(new IdDt(this.medication.getId())));
-		resource.setQuantity(new QuantityDt(this.quantity.doubleValue()));
-		resource.setDaysSupply(new QuantityDt(this.daysSupply));
+		if(this.quantity != null)
+			resource.setQuantity(new QuantityDt(this.quantity.doubleValue()));
+		if(this.daysSupply != null)
+			resource.setDaysSupply(new QuantityDt(this.daysSupply));
 		return resource;
 	}
 

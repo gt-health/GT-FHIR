@@ -1,0 +1,16 @@
+package edu.gatech.i3l.fhir.jpa.dao;
+
+import ca.uhn.fhir.jpa.dao.AbstractPredicateBuilder;
+import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
+import ca.uhn.fhir.jpa.dao.PredicateBuilder;
+import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
+
+public class MedicationDispenseFhirResourceDao extends BaseFhirResourceDao<MedicationDispense>{
+
+	@Override
+	public PredicateBuilder getPredicateBuilder() {
+		return new AbstractPredicateBuilder() {
+		};
+	}
+
+}

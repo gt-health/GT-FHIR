@@ -13,6 +13,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureMedication</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionDispensed</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionWritten</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionWrittenComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
@@ -30,7 +31,7 @@
 							
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
-			<property name="hibernate.hbm2ddl.auto" value="validate" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
 			<property name="hibernate.jdbc.batch_size" value="0" />
 			<property name="hibernate.cache.use_minimal_puts" value="false" />
 			<property name="hibernate.show_sql" value="true" />

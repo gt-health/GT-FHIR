@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="edu.gatech.i3l.fhir.dstu2.jpa.EpisodeOfCare" table="episode_of_care">
+		<id name="id" column="episode_of_care_id" type="long">
+			<generator class="identity" />
+		</id>
+		<many-to-one name="person" class="edu.gatech.i3l.fhir.dstu2.jpa.Person">
+			<column name="person_id"/>
+		</many-to-one>
+		<property name="episodeSourceValue" type="string" column="episode_source_value"/>
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,25 @@
+package ca.uhn.fhir.jpa.entity;
+
+import javax.persistence.MappedSuperclass;
+
+import ca.uhn.fhir.model.primitive.IdDt;
+
+@MappedSuperclass
+public abstract class BaseResourceEntity implements IResourceEntity{
+
+	private long version;
+	
+	@Override
+	public IdDt getIdDt() {
+		return new IdDt(this.getResourceType(), String.valueOf(this.getId()), String.valueOf(this.getVersion()));
+	}
+	
+	@Override
+	public long getVersion() {
+		return version;
+	}
+	
+	public void setVersion(long version) {
+		this.version = version;
+	}
+}

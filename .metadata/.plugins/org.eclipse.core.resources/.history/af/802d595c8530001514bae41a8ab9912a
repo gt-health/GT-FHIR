@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="edu.gatech.i3l.hl7.fhir.jpa.model.Provider" table="provider">
+		<id name="id" column="provider_id" type="long">
+			<generator class="identity" />
+		</id>
+		<property name="npi" type="string" column="npi"/>
+		<property name="dea" type="string" column="dea"/>
+		<many-to-one name="specialtyConcept" class="edu.gatech.i3l.hl7.fhir.jpa.model.Concept">
+			<column name="specialty_concept_id"/>
+		</many-to-one>
+		<many-to-one name="careSite" class="edu.gatech.i3l.hl7.fhir.jpa.model.CareSite">
+			<column name="care_site_id"/>
+		</many-to-one>	
+		<property name="providerSourceValue" type="string" not-null="true" column="provider_source_value"/>
+		<property name="specialtySourceValue" type="string" column="specialty_source_value"/>
+		
+		<joined-subclass name="edu.gatech.i3l.hl7.fhir.jpa.model.ProviderFhirExtTable" table="f_provider">
+			<key column="provider_id" />
+			<property name="name" type="string" column="name"/>
+			<property name="yearOfBirth" type="integer" column="year_of_birth"/>
+			<property name="monthOfBirth" type="integer" column="month_of_birth"/>
+			<property name="dayOfBirth" type="integer" column="day_of_birth"/>
+			<many-to-one name="genderConcept" class="edu.gatech.i3l.hl7.fhir.jpa.model.Concept">
+				<column name="gender_concept_id"/>
+			</many-to-one>	
+		</joined-subclass>
+	</class>
+</hibernate-mapping>

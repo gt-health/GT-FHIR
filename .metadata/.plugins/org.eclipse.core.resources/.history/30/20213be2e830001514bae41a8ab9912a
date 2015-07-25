@@ -1,0 +1,60 @@
+package edu.gatech.i3l.hl7.fhir.jpa.model;
+
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.resource.Medication;
+
+/**
+ * @fhirVersion 2.0
+ * @author Ismael Sarmento
+ */
+@Entity
+@Table(name="f_drug_exposure")
+@PrimaryKeyJoinColumn(name="drug_exposure_id")
+@Audited
+public class DrugExposurePrescriptionWrittenComplement extends DrugExposurePrescriptionWritten {
+
+	/**
+	 * @fhir MedicationPrescription.dosageInstruction.dose.doseQuantity
+	 */
+	@Column(name="effective_drug_dose")
+	private BigDecimal dose;
+	
+	/**
+	 * The corresponding unit for the dose quantity.
+	 */
+	@Column(name="dose_unit_concept_id")
+	private Concept unit;
+
+	public BigDecimal getDose() {
+		return dose;
+	}
+
+	public void setDose(BigDecimal dose) {
+		this.dose = dose;
+	}
+
+	public Concept getUnit() {
+		return unit;
+	}
+
+	public void setUnit(Concept unit) {
+		this.unit = unit;
+	}
+
+	@Override
+	public IResource getRelatedResource() {
+		Medication resource = (Medication) super.getRelatedResource();
+		
+		return resource;
+	}
+	
+}

@@ -28,6 +28,8 @@ import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_DATE;
+import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;;
 
 /**
  * @author Myung Choi
@@ -141,7 +143,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		
 		// http://hl7-fhir.github.io/encounter.html
 		//
-		encounter.setId(getIdDt());
+		encounter.setId(this.getIdDt());
 		
 		// set class
 		String place_of_service = getPlaceOfServiceConcept().getName().toLowerCase();
@@ -251,14 +253,16 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.careSite.setOrganization(organization);
 		this.careSite.setLocation(location);
 		//TODO set place of service concept
-		return null;
+		return this;
 	}
 
 	@Override
 	public String translateSearchParam(String param) {
 		switch (param) {
-		case Encounter.SP_PATIENT:
+		case SP_PATIENT:
 			return "person";
+		case SP_DATE:
+			return "startDate";
 		default:
 			break;
 		}

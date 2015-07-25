@@ -192,7 +192,6 @@
 																<td style="white-space: nowrap;">
 																	<th:block th:if="${entry.resource} != null">
 																		<button class="btn btn-primary btn-xs" th:onclick="'readFromEntriesTable(this, \'' + ${entry.resource.id.resourceType} + '\', \'' + ${entry.resource.id.idPart} + '\', \'' + ${#strings.defaultString(entry.resource.id.versionIdPart,'')} + '\');'" type="submit" name="action" value="read" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ><i class="fa fa-book"></i> Read</button>
-																		<button class="btn btn-primary btn-xs" th:onclick="'updateFromEntriesTable(this, \'' + ${entry.resource.id.resourceType} + '\', \'' + ${entry.resource.id.idPart} + '\', \'' + ${#strings.defaultString(entry.resource.id.versionIdPart, '')} + '\');'" type="submit" name="action" value="home"><i class="fa fa-pencil" data-loading-text="Loading &lt;i class='fa fa-spinner fa-spin'/&gt;" ></i> Update</button>
 																	</th:block>
 																</td>
 																<td>

@@ -1,0 +1,23 @@
+1437578104685	Move compilation units
+1437578205006	Rename package 'edu.gatech.i3l.jpa.model.omop'
+1437578245444	Rename package 'edu.gatech.i3l.fhir.jpa.model'
+1437578254660	Delete element
+1437578424686	Rename type 'PatientFhirExtTable'
+1437578450324	Rename type 'LocationFhirExtTable'
+1437578470760	Rename type 'ConditionFhirExtTable'
+1437578484147	Rename type 'VisitOccurrenceFhirExtTable'
+1437578504333	Rename type 'ProviderFhirExtTable'
+1437588157431	Rename type 'ConditionComplement'
+1437618820131	Extract local variable 'theValue'
+1437623317630	Copy package
+1437623813830	Delete element
+1437624188759	Rename package 'edu.gatech.i3l.hl7.fhir.concepts'
+1437624212291	Rename package 'edu.gatech.i3l.hl7.fhir.jpa.dao'
+1437624234124	Rename package 'edu.gatech.i3l.hl7.fhir.servlet'
+1437672251144	Copy file
+1437672905211	Delete element
+1437784220818	Delete element
+1437784245076	Delete element
+1437799481072	Delete element
+1437800884322	Copy file
+1437802306085	Delete element

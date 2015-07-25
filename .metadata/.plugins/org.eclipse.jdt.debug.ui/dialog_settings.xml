@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="82" key="org.eclipse.jdt.debug.ui.jre_preference_page_context.columnWidth2"/>
+	<item value="1" key="org.eclipse.jdt.debug.ui.jre_preference_page_context.sortColumn"/>
+	<item value="188" key="org.eclipse.jdt.debug.ui.jre_preference_page_context.columnWidth1"/>
+	<item value="115" key="org.eclipse.jdt.debug.ui.jre_preference_page_context.columnWidth0"/>
+	<section name="org.eclipse.jdt.internal.debug.ui.ExpressionInformationControlCreator$ExpressionInformationControl">
+		<item value="200" key="SashWeightTree"/>
+		<item value="200" key="SashWeightDetails"/>
+		<item value="614" key="WIDTH"/>
+		<item value="194" key="HEIGHT"/>
+	</section>
+</section>

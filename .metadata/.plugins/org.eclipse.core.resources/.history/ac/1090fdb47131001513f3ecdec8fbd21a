@@ -1,0 +1,964 @@
+package ca.uhn.fhir.jpa.dao;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import net.vidageek.mirror.dsl.Mirror;
+
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.context.RuntimeResourceDefinition;
+import ca.uhn.fhir.context.RuntimeSearchParam;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.jpa.entity.ResourceTable;
+import ca.uhn.fhir.jpa.entity.TagTypeEnum;
+import ca.uhn.fhir.jpa.util.StopWatch;
+import ca.uhn.fhir.model.api.IQueryParameterType;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
+import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
+import ca.uhn.fhir.model.api.TagList;
+import ca.uhn.fhir.model.base.composite.BaseResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.composite.MetaDt;
+import ca.uhn.fhir.model.dstu2.resource.Bundle;
+import ca.uhn.fhir.model.dstu2.resource.OperationOutcome;
+import ca.uhn.fhir.model.dstu2.valueset.BundleTypeEnum;
+import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.UriDt;
+import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
+import ca.uhn.fhir.rest.param.StringParam;
+import ca.uhn.fhir.rest.server.IBundleProvider;
+import ca.uhn.fhir.rest.server.SimpleBundleProvider;
+import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import ca.uhn.fhir.rest.server.exceptions.PreconditionFailedException;
+import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
+import ca.uhn.fhir.util.FhirTerser;
+
+/**
+ * This class serves as Template with commmon dao functions that are meant to be extended by subclasses.
+ * @author Ismael Sarmento
+ */
+@Transactional(propagation = Propagation.REQUIRED)
+public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirResourceDao<T>{
+	
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(BaseFhirResourceDao.class);
+	
+	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
+	private EntityManager myEntityManager;
+	
+	private BaseFhirDao baseFhirDao;
+	private boolean createBundle;
+	
+	@Autowired
+	private PlatformTransactionManager myPlatformTransactionManager;
+	
+	private Class<T> myResourceType;
+	private Class<? extends IResourceEntity> myResourceEntity;
+	
+	private FhirContext myContext;
+
+	private QueryHelper myQueryHelper ;
+
+	public abstract PredicateBuilder getPredicateBuilder();
+	
+	public BaseFhirResourceDao() {
+		super();
+	}
+	
+	@PostConstruct
+	public void setQueryHelper(){
+		if(myQueryHelper == null){
+			myQueryHelper = new QueryHelper( this.myEntityManager, this.myResourceEntity, this.myResourceType, this.myContext, this.baseFhirDao);
+			myQueryHelper.setPredicateBuilder(getPredicateBuilder());
+		}
+	}
+
+	@Override
+	public Class<T> getResourceType() {
+		return myResourceType;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Required
+	public void setResourceType(Class<? extends IResource> theTableType) {
+		myResourceType = (Class<T>) theTableType;
+	}
+
+	public Class<? extends IResourceEntity> getResourceEntity() {
+		return myResourceEntity;
+	}
+
+	public void setResourceEntity(Class<? extends IResourceEntity> theResourceEntity) {
+		this.myResourceEntity = theResourceEntity;
+	}
+	
+	public void setContext(FhirContext context){
+		this.myContext = context;
+	}
+	
+	public FhirContext getContext(){
+		return this.myContext;
+	}
+	
+	public EntityManager getEntityManager() {
+		return myEntityManager;
+	}
+
+	public void setEntityManager(EntityManager myEntityManager) {
+		this.myEntityManager = myEntityManager;
+	}
+
+	public QueryHelper getQueryHelper() {
+		return myQueryHelper;
+	}
+
+	public void setQueryHelper(QueryHelper myQueryHelper) {
+		this.myQueryHelper = myQueryHelper;
+	}
+
+//	public abstract PredicateBuilder getPredicateBuilder();
+//	
+//	public abstract void setPredicateBuilder(PredicateBuilder predicateBuilder);
+	
+	/*
+	 ****************************** 
+	 * METHODS WITH STRUCTURE OF ca.uhn.BaseFhirResourceDao
+	 *****************************/
+	
+	@Override
+	public DaoMethodOutcome create(final T theResource) {
+		return create(theResource, null, true);
+	}
+
+	@Override
+	public DaoMethodOutcome create(final T theResource, String theIfNoneExist) {
+		return create(theResource, theIfNoneExist, true);
+	}
+
+	@Override
+	public DaoMethodOutcome create(T theResource, String theIfNoneExist, boolean thePerformIndexing) {
+		if (isNotBlank(theResource.getId().getIdPart())) {
+			throw new InvalidRequestException(baseFhirDao.getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedId", theResource.getId().getIdPart()));
+		}
+
+		return doCreate(theResource, theIfNoneExist, thePerformIndexing);
+	}
+	
+	private DaoMethodOutcome doCreate(T theResource, String theIfNoneExist, boolean thePerformIndexing) {
+		StopWatch w = new StopWatch();
+		BaseResourceEntity entity = (BaseResourceEntity) new Mirror().on(myResourceEntity).invoke().constructor().withoutArgs();
+		entity.constructEntityFromResource(theResource);
+
+		if (isNotBlank(theIfNoneExist)) {//FIXME remove this if not needed
+			Set<Long> match = baseFhirDao.processMatchUrl(theIfNoneExist, myResourceType);
+			if (match.size() > 1) {
+				String msg = baseFhirDao.getContext().getLocalizer().getMessage(BaseFhirDao.class, "transactionOperationWithMultipleMatchFailure", "CREATE", theIfNoneExist, match.size());
+				throw new PreconditionFailedException(msg);
+			} else if (match.size() == 1) {
+				Long pid = match.iterator().next();
+				entity = myEntityManager.find(ResourceTable.class, pid);
+				return toMethodOutcome(entity, theResource).setCreated(false);
+			}
+		}
+
+		baseFhirDao.updateEntity(theResource, entity, false, null, thePerformIndexing, true);
+
+		DaoMethodOutcome outcome = toMethodOutcome(entity, theResource).setCreated(true);
+
+		baseFhirDao.notifyWriteCompleted();
+		ourLog.info("Processed create on {} in {}ms", myResourceType, w.getMillisAndRestart());//WARNING once it was resource name
+		return outcome;
+	}
+	
+	private DaoMethodOutcome toMethodOutcome(final BaseResourceEntity entity, IResource theResource) {
+		DaoMethodOutcome outcome = new DaoMethodOutcome();
+		outcome.setId(new IdDt(entity.getId()));
+		outcome.setEntity(entity);
+		outcome.setResource(theResource);
+		if (theResource != null) {
+			theResource.setId(new IdDt(entity.getId()));
+		}
+		return outcome;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public T read(IIdType theId) {
+//		validateResourceTypeAndThrowIllegalArgumentException(theId);
+
+		StopWatch w = new StopWatch();
+		BaseResourceEntity entity = (BaseResourceEntity) readEntity(theId);
+//		validateResourceType(entity);
+
+		T retVal = (T) entity.getRelatedResource();//toResource(myResourceType, entity);
+
+		InstantDt deleted = ResourceMetadataKeyEnum.DELETED_AT.get(retVal);
+		if (deleted != null && !deleted.isEmpty()) {
+			throw new ResourceGoneException("Resource was deleted at " + deleted.getValueAsString());
+		}
+
+		ourLog.info("Processed read on {} in {}ms", theId.getValue(), w.getMillisAndRestart());
+		return retVal;
+	}
+	
+	//	private void validateResourceType(BaseHapiResourceTable entity) {
+	//		if (!myResourceName.equals(entity.getResourceType())) {
+	//			throw new ResourceNotFoundException("Resource with ID " + entity.getIdDt().getIdPart() + " exists but it is not of type " + myResourceName + ", found resource of type "
+	//					+ entity.getResourceType());
+	//		}
+	//	}
+	//	
+	//	private void validateResourceTypeAndThrowIllegalArgumentException(IdDt theId) {
+	//		if (theId.hasResourceType() && !theId.getResourceType().equals(myResourceName)) {
+	//			throw new IllegalArgumentException("Incorrect resource type (" + theId.getResourceType() + ") for this DAO, wanted: " + myResourceName);
+	//		}
+	//	}
+
+
+	@Override
+	public BaseResourceEntity readEntity(IIdType theId) {
+		boolean checkForForcedId = false;
+	
+		BaseResourceEntity entity = readEntity(theId, checkForForcedId);
+	
+		return entity;
+	}
+	
+	@Override
+	public BaseResourceEntity readEntity(IIdType theId, boolean theCheckForForcedId) {
+		//validateResourceTypeAndThrowIllegalArgumentException(theId);
+	
+		Long pid = theId.getIdPartAsLong();//translateForcedIdToPid(theId); //WARNING ForcedId strategy 
+		BaseResourceEntity entity = (BaseResourceEntity) myEntityManager.find(getResourceEntity(), pid);
+	//	if (theId.hasVersionIdPart()) { //FIXME implement the versioning check
+	//		if (entity.getVersion() != theId.getVersionIdPartAsLong()) {
+	//			entity = null;
+	//		}
+	//	}
+	//
+	//	if (entity == null) {
+	//		if (theId.hasVersionIdPart()) {
+	//			TypedQuery<ResourceHistoryTable> q = myEntityManager.createQuery(
+	//					"SELECT t from ResourceHistoryTable t WHERE t.myResourceId = :RID AND t.myResourceType = :RTYP AND t.myResourceVersion = :RVER", ResourceHistoryTable.class);
+	//			q.setParameter("RID", pid);
+	//			q.setParameter("RTYP", myResourceType);//WARNING originally myResourceName
+	//			q.setParameter("RVER", theId.getVersionIdPartAsLong());
+	//			entity = q.getSingleResult();
+	//		}
+	//		if (entity == null) {
+	//			throw new ResourceNotFoundException(theId);
+	//		}
+	//	}
+	
+		//validateResourceType(entity);
+	
+		if (theCheckForForcedId) {
+			//validateGivenIdIsAppropriateToRetrieveResource(theId, entity);//WARNING checks for forcedId
+		}
+		return entity;
+	}
+	
+	
+	@Override
+	public IBundleProvider search(Map<String, IQueryParameterType> theParams) {
+		SearchParameterMap map = new SearchParameterMap();
+		for (Entry<String, IQueryParameterType> nextEntry : theParams.entrySet()) {
+			map.add(nextEntry.getKey(), (nextEntry.getValue()));
+		}
+		return search(map);
+	}
+	
+	public IBundleProvider search(String theParameterName, IQueryParameterType theValue) {
+		return search(Collections.singletonMap(theParameterName, theValue));
+	}
+
+	@Override
+	public Set<Long> searchForIds(Map<String, IQueryParameterType> theParams) {
+		SearchParameterMap map = new SearchParameterMap();
+		for (Entry<String, IQueryParameterType> nextEntry : theParams.entrySet()) {
+			map.add(nextEntry.getKey(), (nextEntry.getValue()));
+		}
+		return searchForIdsWithAndOr(map);
+	}
+
+	@Override
+	public Set<Long> searchForIds(String theParameterName, IQueryParameterType theValue) {
+		return searchForIds(Collections.singletonMap(theParameterName, theValue));
+	}
+	
+	/**
+	 * Search for the <b>current revisions</b> of entity, according to the map with filters.
+	 * In order to add historic data to the search, it is suggested to override the method 
+	 * {@link BaseFhirResourceDao#loadResourcesByPid(Collection, List, BundleEntrySearchModeEnum)}.
+	 */
+	@Override
+	public IBundleProvider search(final SearchParameterMap theParams) {
+		StopWatch w = new StopWatch();
+		final InstantDt now = InstantDt.withCurrentTime();
+
+		Set<Long> loadPids;
+		if (theParams.isEmpty()) {
+			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+			Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
+			criteria.select(from.get("id").as(Long.class));
+			List<Long> resultList = myEntityManager.createQuery(criteria).getResultList();
+			loadPids = new HashSet<Long>(resultList);
+		} else {
+			loadPids = searchForIdsWithAndOr(theParams);
+			if (loadPids.isEmpty()) {
+				return new SimpleBundleProvider();
+			}
+		}
+
+		final List<Long> pids= new ArrayList<Long>(loadPids);
+		//TODO removed sort excerpt
+		
+		// Load _revinclude resources
+		if (theParams.getRevIncludes() != null && theParams.getRevIncludes().isEmpty() == false) {
+			//loadReverseIncludes(pids, theParams.getRevIncludes()); //FIXME Fix loadReverseIncludes method
+		}
+
+		IBundleProvider retVal = new IBundleProvider() {
+			@Override
+			public InstantDt getPublished() {
+				return now;
+			}
+
+			@Override
+			public List<IBaseResource> getResources(final int theFromIndex, final int theToIndex) {
+				TransactionTemplate template = new TransactionTemplate(myPlatformTransactionManager);
+				return template.execute(new TransactionCallback<List<IBaseResource>>() {
+					@Override
+					public List<IBaseResource> doInTransaction(TransactionStatus theStatus) {
+						List<Long> pidsSubList = pids.subList(theFromIndex, theToIndex);
+
+						// Execute the query and make sure we return distinct results
+						List<IBaseResource> retVal = new ArrayList<IBaseResource>();
+						loadResourcesByPid(pidsSubList, retVal, BundleEntrySearchModeEnum.MATCH);
+
+						/*
+						 * Load _include resources - Note that _revincludes are handled differently than _include ones, as they are counted towards the total count and paged, so they are loaded
+						 * outside the bundle provider
+						 */
+						if (theParams.getIncludes() != null && theParams.getIncludes().isEmpty() == false) {
+							Set<IIdType> previouslyLoadedPids = new HashSet<IIdType>();
+							for (IBaseResource next : retVal) {
+								previouslyLoadedPids.add(next.getIdElement().toUnqualifiedVersionless());
+							}
+
+							Set<IdDt> includePids = new HashSet<IdDt>();
+							List<IBaseResource> resources = retVal;
+							do {
+								includePids.clear();
+
+								FhirTerser t = baseFhirDao.getContext().newTerser();
+								for (Include next : theParams.getIncludes()) {
+									for (IBaseResource nextResource : resources) {
+										RuntimeResourceDefinition def = baseFhirDao.getContext().getResourceDefinition(nextResource);
+										List<Object> values = null;
+										switch (baseFhirDao.getContext().getVersion().getVersion()) {
+										case DSTU1:
+											if ("*".equals(next.getValue())) {
+												values = new ArrayList<Object>();
+												values.addAll(t.getAllPopulatedChildElementsOfType(nextResource, BaseResourceReferenceDt.class));
+											} else if (next.getValue().startsWith(def.getName() + ".")) {
+												values = t.getValues(nextResource, next.getValue());
+											} else {
+												values = Collections.emptyList();
+											}
+											break;
+										case DSTU2:
+											if ("*".equals(next.getValue())) {
+												values = new ArrayList<Object>();
+												values.addAll(t.getAllPopulatedChildElementsOfType(nextResource, BaseResourceReferenceDt.class));
+											} else if (next.getValue().startsWith(def.getName() + ":")) {
+												values = new ArrayList<Object>();
+												RuntimeSearchParam sp = def.getSearchParam(next.getValue().substring(next.getValue().indexOf(':')+1));
+												for (String nextPath : sp.getPathsSplit()) {
+													values.addAll(t.getValues(nextResource, nextPath));
+												}
+											} else {
+												values = Collections.emptyList();
+											}
+											break;
+										case DEV:
+											break;
+										case DSTU2_HL7ORG:
+											break;
+										default:
+											break;
+										}
+										if(values == null)
+											throw new IllegalStateException("Support for Search not provided for Version: " + baseFhirDao.getContext().getVersion().getVersion());
+
+										for (Object object : values) {
+											if (object == null) {
+												continue;
+											}
+											if (!(object instanceof BaseResourceReferenceDt)) {
+												throw new InvalidRequestException("Path '" + next.getValue() + "' produced non ResourceReferenceDt value: " + object.getClass());
+											}
+											BaseResourceReferenceDt rr = (BaseResourceReferenceDt) object;
+											if (rr.getReference().isEmpty()) {
+												continue;
+											}
+											if (rr.getReference().isLocal()) {
+												continue;
+											}
+
+											IdDt nextId = rr.getReference().toUnqualified();
+											if (!previouslyLoadedPids.contains(nextId)) {
+												includePids.add(nextId);
+												previouslyLoadedPids.add(nextId);
+											}
+										}
+									}
+								}
+
+								//resources = addResourcesAsIncludesById(retVal, includePids, resources);
+							} while (includePids.size() > 0 && previouslyLoadedPids.size() < baseFhirDao.getConfig().getIncludeLimit());
+
+							if (previouslyLoadedPids.size() >= baseFhirDao.getConfig().getIncludeLimit()) {
+								OperationOutcome oo = new OperationOutcome();
+								oo.addIssue().setSeverity(IssueSeverityEnum.WARNING)
+										.setDetails("Not all _include resources were actually included as the request surpassed the limit of " + baseFhirDao.getConfig().getIncludeLimit() + " resources");
+								retVal.add(0, oo);
+							}
+						}
+
+						return retVal;
+					}
+
+				});
+			}
+
+			@Override
+			public Integer preferredPageSize() {
+				return theParams.getCount();
+			}
+
+			@Override
+			public int size() {
+				return pids.size();
+			}
+		};
+
+		ourLog.info("Processed search for {} on {} in {}ms", new Object[] { getResourceType(), theParams, w.getMillisAndRestart() });
+
+		return retVal;
+	}
+	
+	@Override
+	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams) {
+		SearchParameterMap params = theParams;
+		if (params == null) {
+			params = new SearchParameterMap();
+		}
+
+		RuntimeResourceDefinition resourceDef = baseFhirDao.getContext().getResourceDefinition(myResourceType);
+
+		Set<Long> pids = new HashSet<Long>();
+
+		for (Entry<String, List<List<? extends IQueryParameterType>>> nextParamEntry : params.entrySet()) {
+			String nextParamName = nextParamEntry.getKey();
+			if (nextParamName.equals("_id")) {
+
+				if (nextParamEntry.getValue().isEmpty()) {
+					continue;
+				} else if (nextParamEntry.getValue().size() > 1) {
+					throw new InvalidRequestException("AND queries not supported for _id (Multiple instances of this param found)");
+				} else {
+					Set<Long> joinPids = new HashSet<Long>();
+					List<? extends IQueryParameterType> nextValue = nextParamEntry.getValue().get(0);
+					if (nextValue == null || nextValue.size() == 0) {
+						continue;
+					} else {
+						for (IQueryParameterType next : nextValue) {
+							String value = next.getValueAsQueryToken();
+							IdDt valueId = new IdDt(value);
+							try {
+								if (baseFhirDao.isValidPid(valueId)) {
+									long valueLong =  valueId.getIdPartAsLong();
+									//translateForcedIdToPid(valueId); //WARNING altered line
+									joinPids.add(valueLong);
+								}
+							} catch (ResourceNotFoundException e) {
+								// This isn't an error, just means no result found
+							}
+						}
+						if (joinPids.isEmpty()) {
+							continue;
+						}
+					}
+
+					pids = myQueryHelper.addPredicateId(pids, joinPids);
+					if (pids.isEmpty()) {
+						return new HashSet<Long>();
+					}
+
+//					if (pids.isEmpty()) {
+//						pids.addAll(joinPids);
+//					} else {
+//						pids.retainAll(joinPids);
+//					}
+				}
+
+			} 
+			else if (nextParamName.equals("_language")) {
+
+				pids = addPredicateLanguage(pids, nextParamEntry.getValue());
+
+			} else {
+				RuntimeSearchParam nextParamDef = resourceDef.getSearchParam(nextParamName);
+				if (nextParamDef != null) {
+					switch (nextParamDef.getParamType()) {
+					case DATE:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = myQueryHelper.addPredicateDate(nextParamName, pids, nextAnd);
+						}
+						break;
+					case QUANTITY:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = myQueryHelper.addPredicateQuantity(nextParamName, pids, nextAnd);
+						}
+						break;
+					case REFERENCE:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = myQueryHelper.addPredicateReference(nextParamName, pids, nextAnd);
+						}
+						break;
+					case STRING:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = myQueryHelper.addPredicateString(nextParamName, pids, nextAnd);
+						}
+						break;
+					case TOKEN:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = myQueryHelper.addPredicateToken(nextParamName, pids, nextAnd);
+						}
+						break;
+					case NUMBER:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							//pids = predicateBuilder.addPredicateNumber(nextParamName, pids, nextAnd);
+						}
+						break;
+					case COMPOSITE:
+						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+							pids = myQueryHelper.addPredicateComposite(nextParamDef, pids, nextAnd);
+						}
+						break;
+					default:
+						break;
+					}
+					if (pids.isEmpty()) {
+						return new HashSet<Long>();
+					}
+				}
+			}
+		}
+
+		return pids;
+	}
+
+	//TODO needs to be tested
+	private Set<Long> addPredicateLanguage(Set<Long> thePids, List<List<? extends IQueryParameterType>> theList) {
+		if (theList == null || theList.isEmpty()) {
+			return thePids;
+		}
+		if (theList.size() > 1) {
+			throw new InvalidRequestException("Language parameter can not have more than one AND value, found " + theList.size());
+		}
+
+		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
+		Root<BaseResourceEntity> from = cq.from(BaseResourceEntity.class);
+		cq.select(from.get("id").as(Long.class));
+
+		Set<String> values = new HashSet<String>();
+		for (IQueryParameterType next : theList.get(0)) {
+			if (next instanceof StringParam) {
+				String nextValue = ((StringParam) next).getValue();
+				if (isBlank(nextValue)) {
+					continue;
+				}
+				values.add(nextValue);
+			} else {
+				throw new InternalErrorException("Lanugage parameter must be of type " + StringParam.class.getCanonicalName() + " - Got " + next.getClass().getCanonicalName());
+			}
+		}
+
+		if (values.isEmpty()) {
+			return thePids;
+		}
+
+		Predicate typePredicate = builder.equal(from.get("myResourceType"), myResourceType);
+		Predicate langPredicate = from.get("language").as(String.class).in(values);
+		Predicate masterCodePredicate = builder.and(typePredicate, langPredicate);
+
+		if (thePids.size() > 0) {
+			Predicate inPids = (from.get("id").in(thePids));
+			cq.where(builder.and(masterCodePredicate, inPids));
+		} else {
+			cq.where(masterCodePredicate);
+		}
+
+		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		return new HashSet<Long>(q.getResultList());
+	}
+	
+	public void loadResourcesByPid(Collection<Long> theIncludePids, List<IBaseResource> theResourceListToPopulate, BundleEntrySearchModeEnum theBundleEntryStatus) {
+		if (theIncludePids.isEmpty()) {
+			return;
+		}
+
+		Map<Long, Integer> position = new HashMap<Long, Integer>();
+		for (Long next : theIncludePids) {
+			position.put(next, theResourceListToPopulate.size());
+			theResourceListToPopulate.add(null);
+		}
+
+		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+		@SuppressWarnings("unchecked")
+		CriteriaQuery<IResourceEntity> cq = (CriteriaQuery<IResourceEntity>) builder.createQuery(getResourceEntity());
+		Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
+		cq.select(from);
+		cq.where(from.get("id").in(theIncludePids));
+		TypedQuery<IResourceEntity> q = myEntityManager.createQuery(cq);
+		for (IResourceEntity entity : q.getResultList()) { 
+			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
+			IResource resource = entity.getRelatedResource();
+			Integer index = position.get(entity.getId());
+			if (index == null) {
+				ourLog.warn("Got back unexpected resource PID {}", entity.getId());
+				continue;
+			}
+
+			ResourceMetadataKeyEnum.ENTRY_SEARCH_MODE.put(resource, theBundleEntryStatus);
+
+			theResourceListToPopulate.set(index, resource);
+		}
+	}
+	
+//	private List<IBaseResource> addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids, List<IBaseResource> resources) {
+//		if (!includePids.isEmpty()) {
+//			ourLog.info("Loading {} included resources", includePids.size());
+//			Set<Long> pids = new HashSet<Long>();
+//			for (IIdType next : includePids) {
+//				if (next.isIdPartValidLong()) {
+//					pids.add(next.getIdPartAsLong());
+//				} 
+//			}
+//
+//			if (pids.isEmpty()) {
+//				return new ArrayList<IBaseResource>();
+//			}
+//			
+//			CriteriaBuilder builder = baseFhirDao.getEntityManager().getCriteriaBuilder();
+//			CriteriaQuery<? extends IResourceEntity> cq = builder.createQuery(myResourceEntity);
+//			Root<? extends IResourceEntity> from = cq.from(myResourceEntity);
+//			cq.where(from.get("id").in(pids));
+//			TypedQuery<? extends IResourceEntity> q = baseFhirDao.getEntityManager().createQuery(cq); 
+//
+//			//FIXME after search, transform to resource
+////			for (BaseResourceEntity next : q.getResultList()) {
+////				IResource resource = (IResource) baseFhirDao.toResource(next);
+////				resources.add(resource);
+////			}
+//
+//			for (IBaseResource next : resources) {
+//				ResourceMetadataKeyEnum.ENTRY_SEARCH_MODE.put((IResource) next, BundleEntrySearchModeEnum.INCLUDE);
+//			}
+//			theListToPopulate.addAll(resources);
+//		}
+//		return resources;
+//	}
+	
+	
+	public BaseFhirDao getBaseFhirDao() {
+		return baseFhirDao;
+	}
+
+	public void setBaseFhirDao(BaseFhirDao baseFhirDao) {
+		this.baseFhirDao = baseFhirDao;
+	}
+
+	@Override
+	public void registerDaoListener(IDaoListener theListener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public DaoMethodOutcome delete(IIdType theId) {
+		StopWatch w = new StopWatch();
+//		final BaseResourceEntity entity = readEntityLatestVersion(theId);
+//		if (theId.hasVersionIdPart() && theId.getVersionIdPartAsLong().longValue() != entity.getVersion()) {
+//			throw new InvalidRequestException("Trying to update " + theId + " but this is not the current version");
+//		}
+//
+//		BaseResourceEntity savedEntity = baseFhirDao.updateEntity(null, entity, true, new Date());
+		BaseResourceEntity reference = (BaseResourceEntity) baseFhirDao.getEntityManager().getReference(myResourceEntity, theId.getIdPartAsLong());
+		baseFhirDao.getEntityManager().remove(reference);
+
+		baseFhirDao.notifyWriteCompleted();
+
+		ourLog.info("Processed delete on {} in {}ms", theId.getValue(), w.getMillisAndRestart());
+		return toMethodOutcome(reference, null);
+	}
+
+	@Override
+	public DaoMethodOutcome deleteByUrl(String theString) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TagList getAllResourceTags() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IBundleProvider history(Date theSince) {
+		return null;
+	}
+
+	@Override
+	public IBundleProvider history(Long theId, Date theSince) {
+		final InstantDt end = baseFhirDao.createHistoryToTimestamp();
+		int limit = 10000;
+		AuditReader auditReader = AuditReaderFactory.get(myEntityManager);
+		AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(myResourceEntity, true, false).setMaxResults(limit);
+		if(theId != null){
+			query.add(AuditEntity.id().eq(theId));
+		}
+		if(theSince != null){
+			query.add(AuditEntity.revisionNumber().ge(auditReader.getRevisionNumberForDate(theSince)));
+		}
+		query.addProjection(AuditEntity.revisionNumber());
+		query.addOrder(AuditEntity.revisionNumber().asc());
+		final List<Number> revs = query.getResultList();
+		
+		return new IBundleProvider() { 
+			
+			@Override
+			public int size() {
+				return revs.size();
+			}
+			
+			@Override
+			public Integer preferredPageSize() {
+				return null;
+			}
+			
+			@Override
+			public List<IBaseResource> getResources(final int theFromIndex,final int theToIndex) {
+				//final StopWatch timer = new StopWatch();
+				TransactionTemplate template = new TransactionTemplate(myPlatformTransactionManager);
+				return template.execute(new TransactionCallback<List<IBaseResource>>(){
+
+					@Override
+					public List<IBaseResource> doInTransaction(TransactionStatus status) {
+						int limit = theToIndex - theFromIndex;
+						AuditReader auditReader = AuditReaderFactory.get(myEntityManager);
+						AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(myResourceEntity, true, false).setMaxResults(limit);
+						query.add(AuditEntity.revisionNumber().in(revs.toArray(new Number[0])));
+						query.addOrder(AuditEntity.revisionNumber().asc());
+						List<? extends IResourceEntity> resEntities = query.getResultList();
+						if (resEntities.size() > limit) {
+							resEntities = resEntities.subList(0, limit);
+						}
+						ArrayList<IBaseResource> retVal = new ArrayList<IBaseResource>();
+						for (int i = 0; i < resEntities.size(); i++) {
+							BaseResourceEntity entity = (BaseResourceEntity) resEntities.get(i);//WARNING works only for instances of BaseResourceEntity
+							entity.setVersion(revs.get(i).longValue());
+							IResource resource = entity.getRelatedResource();
+							retVal.add(resource);
+							
+						}
+						return retVal;
+					}
+				});
+			}
+			
+			@Override
+			public InstantDt getPublished() {
+				return end;
+			}
+		};
+	}
+	
+	@Override
+	public IBundleProvider history(IIdType theId, Date theSince) {
+		return history(theId.getIdPartAsLong(), theSince);//TODO add unit test
+	}
+	
+	private AuditQuery getAuditQuery(Long theId, Date theSince){
+		int limit = 10000;
+		AuditReader auditReader = AuditReaderFactory.get(myEntityManager);
+		AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(myResourceEntity, true, false).setMaxResults(limit);
+//		query.add(AuditEntity.revisionNumber().in(values))
+		return query;
+	}
+
+	@Override
+	public DaoMethodOutcome update(T theResource) {
+		return update(theResource, null);
+	}
+
+	@Override
+	public DaoMethodOutcome update(T theResource, String theMatchUrl) {
+		return update(theResource, theMatchUrl, true);
+	}
+
+	@Override
+	public DaoMethodOutcome update(T theResource, String theMatchUrl,boolean thePerformIndexing) {
+		StopWatch w = new StopWatch();
+
+		preProcessResourceForStorage(theResource);
+
+		final BaseResourceEntity entity;
+
+		IIdType resourceId;
+		if (isNotBlank(theMatchUrl)) {
+			Set<Long> match = baseFhirDao.processMatchUrl(theMatchUrl, myResourceType);
+			if (match.size() > 1) {
+				String msg = getContext().getLocalizer().getMessage(BaseFhirDao.class, "transactionOperationWithMultipleMatchFailure", "UPDATE", theMatchUrl, match.size());
+				throw new PreconditionFailedException(msg);
+			} else if (match.size() == 1) {
+				Long pid = match.iterator().next();
+				entity = (BaseResourceEntity) myEntityManager.find(myResourceEntity, pid);
+				resourceId = entity.getIdDt();
+			} else {
+				return create(theResource, null, thePerformIndexing);
+			}
+		} else {
+			resourceId = theResource.getId();
+			if (resourceId == null || isBlank(resourceId.getIdPart())) {
+				throw new InvalidRequestException("Can not update a resource with no ID");
+			}
+			try {
+				entity = (BaseResourceEntity) myEntityManager.find(myResourceEntity, resourceId.getIdPartAsLong());
+				if (entity == null) {
+					throw new ResourceNotFoundException(resourceId);
+				}
+//				validateGivenIdIsAppropriateToRetrieveResource(resourceId, entity);
+			} catch (ResourceNotFoundException e) {
+				if (Character.isDigit(theResource.getId().getIdPart().charAt(0))) {
+					throw new InvalidRequestException(getContext().getLocalizer().getMessage(BaseHapiFhirResourceDao.class, "failedToCreateWithClientAssignedNumericId", theResource.getId().getIdPart()));
+				}
+				return doCreate(theResource, null, thePerformIndexing);
+			}
+		}
+
+//		if (resourceId.hasVersionIdPart() && Long.parseLong(resourceId.getVersionIdPart()) != entity.getVersion()) {
+//			throw new InvalidRequestException("Trying to update " + resourceId + " but this is not the current version");
+//		}
+
+		BaseResourceEntity savedEntity = baseFhirDao.updateEntity(theResource, entity, true, null, thePerformIndexing, true);
+
+		baseFhirDao.notifyWriteCompleted();
+		ourLog.info("Processed update on {} in {}ms", resourceId, w.getMillisAndRestart());
+		return toMethodOutcome(savedEntity, theResource).setCreated(false);
+	}
+	
+	protected void preProcessResourceForStorage(T theResource) {
+		if(getContext().getVersion().getVersion() == FhirVersionEnum.DSTU2 && createBundle){
+			Bundle bundle = (Bundle)theResource;
+			if (bundle.getTypeElement().getValueAsEnum() != BundleTypeEnum.DOCUMENT) {
+				String message = "Unable to store a Bundle resource on this server with a Bundle.type value other than '" + BundleTypeEnum.DOCUMENT.getCode() + "' - Value was: " + (bundle.getTypeElement().getValueAsEnum() != null ? bundle.getTypeElement().getValueAsEnum().getCode() : "(missing)");
+				throw new UnprocessableEntityException(message);
+			}
+			
+			bundle.setBase((UriDt)null);
+		}
+	}
+	
+	@Override
+	public void addTag(IIdType theId, TagTypeEnum theTagType, String theScheme,
+			String theTerm, String theLabel) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public TagList getTags(IIdType theResourceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeTag(IIdType theId, TagTypeEnum theTagType,
+			String theScheme, String theTerm) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public MetaDt metaGetOperation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MetaDt metaGetOperation(IIdType theId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MetaDt metaDeleteOperation(IIdType theId1, MetaDt theMetaDel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MetaDt metaAddOperation(IIdType theId1, MetaDt theMetaAdd) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

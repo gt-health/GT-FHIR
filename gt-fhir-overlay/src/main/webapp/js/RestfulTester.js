@@ -16,7 +16,15 @@ function Condition(){
 function Encounter(){
 		
 	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "date", "patient", "reason"];
+		var searchParams = ["_id", "date", "patient"];
+		return (searchParams.indexOf(searchParam) != -1);
+	}
+}
+
+function Location(){
+	
+	this.providesSearch = function(searchParam){
+		var searchParams = ["_id"];
 		return (searchParams.indexOf(searchParam) != -1);
 	}
 }
@@ -573,6 +581,8 @@ function getResourceStruct(resourceName){
 		return new MedicationPrescription();
 	} else if (resourceName == 'MedicationDispense'){
 		return new MedicationDispense();
+	} else if (resourceName == 'Location'){
+		return new Location();
 	}
 }
 

@@ -116,7 +116,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// Refer to 4.3.3 at http://hl7-fhir.github.io/condition.html
 
 		// set Identifier
-		condition.setId(getIdDt());
+		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(person.getIdDt());
@@ -384,14 +384,13 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Override
 	public String translateSearchParam(String link) {
 		switch (link) {
-		case Condition.SP_ASSERTER:
-			System.out.println("translateLink():Asserter=" + link);
-			return "provider";
+		case Condition.SP_CODE:
+			return "conditionConcept.conceptCode";
 		case Condition.SP_ENCOUNTER:
-			System.out.println("translateLink():Encounter=" + link);
 			return "encounter";
 		case Condition.SP_PATIENT:
-			System.out.println("translateLink():Patient=" + link);
+			return "person";
+		case Condition.SP_SUBJECT:
 			return "person";
 		default:
 			break;

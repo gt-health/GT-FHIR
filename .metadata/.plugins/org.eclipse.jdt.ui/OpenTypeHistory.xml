@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<typeInfoHistroy>
+<typeInfo handle="=gt-fhir-entities/C:\/Users\/Ismael Sarmento\/.m2\/repository\/ca\/uhn\/hapi\/fhir\/hapi-fhir-structures-dstu2\/1.1-SNAPSHOT\/hapi-fhir-structures-dstu2-1.1-SNAPSHOT.jar&lt;ca.uhn.fhir.model.dstu2.resource(MedicationDispense.class[MedicationDispense" modifiers="33" timestamp="1436297159430"/>
+<typeInfo handle="=gt-fhir-webapp/src\/main\/java&lt;edu.gatech.i3l.fhir.jpa.dao{MedicationPrescriptionFhirResourceDao.java[MedicationPrescriptionFhirResourceDao" modifiers="1" timestamp="1437797821275"/>
+<typeInfo handle="=gt-fhir-webapp/src\/main\/java&lt;edu.gatech.i3l.fhir.jpa.dao{MedicationFhirResourceDao.java[MedicationFhirResourceDao" modifiers="1" timestamp="1437797821266"/>
+<typeInfo handle="=gt-fhir-entities/C:\/Users\/Ismael Sarmento\/.m2\/repository\/org\/hibernate\/javax\/persistence\/hibernate-jpa-2.0-api\/1.0.1.Final\/hibernate-jpa-2.0-api-1.0.1.Final.jar&lt;javax.persistence.criteria(Order.class[Order" modifiers="1537" timestamp="1433284091563"/>
+<typeInfo handle="=hapi-fhir-jpaserver-base/src\/main\/java&lt;ca.uhn.fhir.jpa.dao{BaseHapiFhirResourceDao.java[BaseHapiFhirResourceDao" modifiers="1" timestamp="1437774256371"/>
+<typeInfo handle="=gt-fhir-entities/src\/main\/java&lt;edu.gatech.i3l.fhir.dstu2.entities{DrugExposurePrescriptionDispensed.java[DrugExposurePrescriptionDispensed" modifiers="1" timestamp="1437787152125"/>
+<typeInfo handle="=gt-fhir-entities/src\/main\/java&lt;edu.gatech.i3l.fhir.dstu2.entities{Concept.java[Concept" modifiers="1" timestamp="1437687693862"/>
+<typeInfo handle="=gt-fhir-entities/src\/main\/java&lt;edu.gatech.i3l.fhir.dstu2.entities{DrugExposurePrescriptionWritten.java[DrugExposurePrescriptionWritten" modifiers="1" timestamp="1437787152035"/>
+<typeInfo handle="=gt-fhir-entities/src\/main\/java&lt;edu.gatech.i3l.fhir.dstu2.entities{DrugExposureMedication.java[DrugExposureMedication" modifiers="1" timestamp="1437787151970"/>
+<typeInfo handle="=gt-fhir-entities/src\/main\/java&lt;edu.gatech.i3l.fhir.dstu2.entities{ConditionOccurrence.java[ConditionOccurrence" modifiers="1" timestamp="1437787152238"/>
+<typeInfo handle="=gt-fhir-entities/C:\/Users\/Ismael Sarmento\/.m2\/repository\/ca\/uhn\/hapi\/fhir\/hapi-fhir-structures-dstu2\/1.1-SNAPSHOT\/hapi-fhir-structures-dstu2-1.1-SNAPSHOT.jar&lt;ca.uhn.fhir.model.dstu2.resource(Encounter.class[Encounter" modifiers="33" timestamp="1436297159430"/>
+<typeInfo handle="=hapi-fhir-jpaserver-base/src\/main\/java&lt;ca.uhn.fhir.jpa.dao{BaseFhirResourceDao.java[BaseFhirResourceDao" modifiers="1025" timestamp="1437772039565"/>
+<typeInfo handle="=gt-fhir-webapp/src\/main\/java&lt;edu.gatech.i3l.fhir.jpa.dao{ConditionFhirResourceDao.java[ConditionFhirResourceDao" modifiers="1" timestamp="1437797821250"/>
+<typeInfo handle="=gt-fhir-entities/src\/main\/java&lt;edu.gatech.i3l.fhir.dstu2.entities{VisitOccurrence.java[VisitOccurrence" modifiers="1" timestamp="1437793061009"/>
+<typeInfo handle="=hapi-fhir-jpaserver-base/src\/main\/java&lt;ca.uhn.fhir.jpa.entity{IResourceEntity.java[IResourceEntity" modifiers="513" timestamp="1437794111588"/>
+<typeInfo handle="=hapi-fhir-jpaserver-base/src\/main\/java&lt;ca.uhn.fhir.jpa.entity{BaseResourceEntity.java[BaseResourceEntity" modifiers="1025" timestamp="1437794149006"/>
+<typeInfo handle="=hapi-fhir-jpaserver-base/src\/main\/java&lt;ca.uhn.fhir.jpa.dao{AbstractPredicateBuilder.java[AbstractPredicateBuilder" modifiers="1025" timestamp="1437792631997"/>
+<typeInfo handle="=gt-fhir-webapp/src\/main\/java&lt;edu.gatech.i3l.fhir.jpa.dao{EncounterFhirResourceDao.java[EncounterFhirResourceDao" modifiers="1" timestamp="1437797821253"/>
+</typeInfoHistroy>

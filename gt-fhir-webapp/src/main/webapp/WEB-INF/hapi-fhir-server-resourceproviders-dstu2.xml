@@ -25,7 +25,10 @@
  	<util:list id="myResourceProvidersDstu2">
 		<ref bean="myConditionRpDstu2"/>
 		<ref bean="myEncounterRpDstu2"/>
-		<!-- <ref bean="myLocationRpDstu2"/> -->
+		<ref bean="myLocationRpDstu2"/>
+		<ref bean="myMedicationRpDstu2"/>
+		<ref bean="myMedicationDispenseRpDstu2"/>
+		<ref bean="myMedicationPrescriptionRpDstu2"/>
 		<ref bean="myObservationRpDstu2"/>
 		<!-- <ref bean="myOrganizationRpDstu2"/>-->
 		<ref bean="myPatientRpDstu2"/>
@@ -52,11 +55,11 @@
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myEncounterRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.EncounterResourceProvider">
-		<property name="dao" ref="myConditionDaoDstu2"/>
+		<property name="dao" ref="myEncounterDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
-	<!-- <bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
+	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -64,7 +67,37 @@
 	<bean id="myLocationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.LocationResourceProvider">
 		<property name="dao" ref="myLocationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
-	</bean> -->
+	</bean>
+	
+	<bean id="myMedicationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationFhirResourceDao">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Medication"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myMedicationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationResourceProvider">
+		<property name="dao" ref="myMedicationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	
+	<bean id="myMedicationDispenseDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationDispenseFhirResourceDao">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationDispense"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myMedicationDispenseRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationDispenseResourceProvider">
+		<property name="dao" ref="myMedicationDispenseDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	
+	<bean id="myMedicationPrescriptionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationPrescriptionFhirResourceDao">
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationPrescription"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myMedicationPrescriptionRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.MedicationPrescriptionResourceProvider">
+		<property name="dao" ref="myMedicationPrescriptionDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
 	
 	<bean id="myObservationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ObservationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Observation"/>

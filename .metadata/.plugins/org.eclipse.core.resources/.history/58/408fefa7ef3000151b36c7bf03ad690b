@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="edu.gatech.i3l.hl7.fhir.dstu2.jpa.model.VisitOccurrence" table="visit_occurrence">
+		<id name="id" column="visit_occurrence_id" type="long">
+			<generator class="identity" />
+		</id>
+		<many-to-one name="person" class="edu.gatech.i3l.hl7.fhir.dstu2.jpa.model.Person">
+			<column name="person_id"/>
+		</many-to-one>
+		<property name="startDate" type="timestamp" not-null="true" column="visit_start_date"/>
+		<property name="endDate" type="timestamp" not-null="true" column="visit_end_date"/>
+		<many-to-one name="placeOfServiceConcept" class="edu.gatech.i3l.hl7.fhir.dstu2.jpa.model.Concept">
+			<column name="place_of_service_concept_id"/>
+		</many-to-one>
+		<many-to-one name="careSite" class="edu.gatech.i3l.hl7.fhir.dstu2.jpa.model.CareSite">
+			<column name="care_site_id"/>
+		</many-to-one>
+		<property name="placeOfServiceSourceValue" type="string" column="place_of_service_source_value"/>
+		<joined-subclass name="edu.gatech.i3l.hl7.fhir.dstu2.jpa.model.VisitOccurrenceComplement" table="f_visit_occurrence">
+			<key column="visit_occurrence_id" />
+			<many-to-one name="episodeOfCare" class="edu.gatech.i3l.hl7.fhir.dstu2.jpa.model.EpisodeOfCare">
+				<column name="episode_of_care_id"/>
+			</many-to-one>	
+			<property name="status" type="string" column="status"/>
+			<property name="note" type="string" column="note"/>
+		</joined-subclass>
+	</class>
+</hibernate-mapping>

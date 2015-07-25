@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.gatech.i3l</groupId>
 	<artifactId>gt-fhir-webapp</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>war</packaging>
 
 	<repositories>
@@ -51,21 +51,21 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jpaserver-base</artifactId>
-			<version>1.7-SNAPSHOT</version>
+			<version>1.8-SNAPSHOT</version>
 		</dependency>
 
 		<!-- This dependency is used for the "FHIR Tester" web app overlay -->
 		<dependency>
 			<groupId>edu.gatech.i3l</groupId>
 			<artifactId>gt-fhir-overlay</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.0</version>
 			<type>war</type>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.gatech.i3l</groupId>
 			<artifactId>gt-fhir-entities</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.0</version>
 			<type>jar</type>
 		</dependency>
 

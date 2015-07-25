@@ -1,0 +1,15 @@
+package edu.gatech.i3l.hl7.fhir.jpa.model;
+
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+
+@Entity
+@Table(name="f_drug_exposure")
+@PrimaryKeyJoinColumn(name="drug_exposure_id")
+@Audited
+public class DrugExposurePrescriptionWrittenComplement extends DrugExposurePrescriptionWritten {
+
+}

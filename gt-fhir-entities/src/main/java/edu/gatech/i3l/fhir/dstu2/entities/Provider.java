@@ -118,7 +118,6 @@ public class Provider extends BaseResourceEntity {
 		this.specialtySourceValue = specialtySourceValue;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Practitioner getRelatedResource() {
 		Practitioner practitioner = new Practitioner();

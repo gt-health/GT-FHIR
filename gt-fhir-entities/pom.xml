@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.gatech.i3l</groupId>
   <artifactId>gt-fhir-entities</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <repositories>
 		<repository>
 			<id>oss-snapshots</id>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jpaserver-base</artifactId>
-			<version>1.7-SNAPSHOT</version>
+			<version>1.8-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

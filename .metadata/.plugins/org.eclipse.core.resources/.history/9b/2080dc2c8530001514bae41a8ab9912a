@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" 
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="edu.gatech.i3l.hl7.fhir.jpa.model.Person" table="person">
+		<id name="id" column="person_id" type="long">
+			<generator class="identity" />
+		</id>
+		<property name="yearOfBirth" type="integer" column="year_of_birth"/>
+		<property name="monthOfBirth" type="integer" not-null="true" column="month_of_birth"/>
+		<property name="dayOfBirth" type="integer" not-null="true" column="day_of_birth"/>
+		<!-- <many-to-one name="provider" class="edu.gatech.i3l.hl7.fhir.jpa.model.Provider">
+			<column name="provider_id"/> 
+		</many-to-one> -->
+		<property name="personSourceValue" type="string" column="person_source_value"/>
+		<property name="genderSourceValue" type="string" column="gender_source_value"/>
+		<many-to-one name="genderConcept" class="edu.gatech.i3l.hl7.fhir.jpa.model.Concept">
+			<column name="gender_concept_id"/>
+		</many-to-one>	
+		<many-to-one name="location" class="edu.gatech.i3l.hl7.fhir.jpa.model.LocationFhirExtTable" cascade="save-update">
+				<column name="location_id"/>
+			</many-to-one>
+		<property name="ethnicitySourceValue" type="string" column="ethnicity_source_value"/>
+		<many-to-one name="ethnicityConcept" class="edu.gatech.i3l.hl7.fhir.jpa.model.Concept">
+			<column name="ethnicity_concept_id"/>
+		</many-to-one>
+		<property name="raceSourceValue" type="string" column="race_source_value"/>
+		<many-to-one name="raceConcept" class="edu.gatech.i3l.hl7.fhir.jpa.model.Concept">
+			<column name="race_concept_id"/>
+		</many-to-one>	
+		<!-- <one-to-one name="death" class="edu.gatech.i3l.hl7.fhir.jpa.model.Death" constrained="true"/> -->
+		<set name="conditions" inverse="true">
+			<key column="person_id" on-delete="cascade"/>
+			<one-to-many class="edu.gatech.i3l.hl7.fhir.jpa.model.ConditionOccurrence"/>
+		</set>
+		<joined-subclass name="edu.gatech.i3l.hl7.fhir.jpa.model.PatientFhirExtTable" table="f_person">
+			<key column="person_id" />
+			<property name="familyName" type="string" column="family_name"/>
+			<property name="givenName1" type="string" column="given1_name"/>
+			<property name="givenName2" type="string" column="given2_name"/>
+			<property name="prefixName" type="string" column="prefix_name"/>
+			<property name="suffixName" type="string" column="suffix_name"/>
+			<property name="active" type="boolean"/>
+			<property name="preferredLanguage" type="string" column="preferred_language"/>
+			<property name="ssn" type="string" column="ssn"/>
+			<property name="maritalStatusConceptValue" type="string" column="maritalstatus_concept_id"/>
+		</joined-subclass>
+	</class>
+</hibernate-mapping>

@@ -48,7 +48,7 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 	private Long id;
 	
 	@ManyToOne
-	@JoinColumn(name="person_id", updatable= false)
+	@JoinColumn(name="person_id", updatable= false, nullable=false)
 	private Person person;
 	
 	/**
@@ -57,14 +57,14 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 	 * gather the information in the database.
 	 */
 	@ManyToOne
-	@JoinColumn(name="drug_type_concept_id", updatable= false)
+	@JoinColumn(name="drug_type_concept_id", updatable= false, nullable=false)
 	private Concept drugExposureType;
 	
 	/**
 	 * Reflects the date the prescription was written.
 	 * @fhir dateWritten
 	 */
-	@Column(name="drug_exposure_start_date", updatable= false)
+	@Column(name="drug_exposure_start_date", updatable= false, nullable=false)
 	private Date startDate;
 	
 	/**
@@ -78,7 +78,7 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 	 * @fhir encounter
 	 */
 	@ManyToOne
-	@JoinColumn(name="visit_occurrence_id", updatable= false)
+	@JoinColumn(name="visit_occurrence_id", updatable= false, nullable=false)
 	private VisitOccurrenceComplement visitOccurrence;
 	
 	/**
@@ -99,7 +99,7 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 	 * Generally in concept class 'Clinical Drug'.
 	 */
 	@ManyToOne
-	@JoinColumn(name="drug_concept_id", updatable= false)
+	@JoinColumn(name="drug_concept_id", updatable= false, nullable=false)
 	private Concept medication;
 	
 	/**
@@ -240,7 +240,7 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 		case SP_PATIENT:
 			return "person";
 		case SP_MEDICATION:
-			return "medication";
+			return "medication.name";
 		default:
 			break;
 		}
@@ -255,23 +255,29 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 		/*  Begin Setting Dispense */
 		Dispense dispense = new Dispense();
 		dispense.setMedication(new ResourceReferenceDt(new IdDt(this.medication.getId())));
-		dispense.setNumberOfRepeatsAllowed(this.refills);
-		dispense.setQuantity(new QuantityDt(this.quantity.doubleValue()));
+		if(this.refills != null)
+			dispense.setNumberOfRepeatsAllowed(this.refills);
+		if(this.quantity != null)
+			dispense.setQuantity(new QuantityDt(this.quantity.doubleValue()));
 		//setting validity
 		Calendar c = Calendar.getInstance();
 		c.setTime(this.startDate);
 		PeriodDt period = new PeriodDt();
 		period.setStart(new DateTimeDt(c.getTime()));
-		c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
-		period.setEnd(new DateTimeDt(c.getTime()));
+		if(this.daysSupply != null){
+			c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
+			period.setEnd(new DateTimeDt(c.getTime()));
+		}
 		dispense.setValidityPeriod(period);
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
 		resource.setEncounter(new ResourceReferenceDt(new IdDt(this.visitOccurrence.getId())));
 		resource.setPatient(new ResourceReferenceDt(new IdDt(this.person.getId())));
-		resource.setReason(new ResourceReferenceDt(new IdDt(this.relevantCondition.getId())));
-		resource.setPrescriber(new ResourceReferenceDt(new IdDt(this.prescribingProvider.getId())));
+		if(this.relevantCondition != null)
+			resource.setReason(new ResourceReferenceDt(new IdDt(this.relevantCondition.getId())));
+		if(this.prescribingProvider != null)
+			resource.setPrescriber(new ResourceReferenceDt(new IdDt(this.prescribingProvider.getId())));
 		
 		return resource;
 	}
