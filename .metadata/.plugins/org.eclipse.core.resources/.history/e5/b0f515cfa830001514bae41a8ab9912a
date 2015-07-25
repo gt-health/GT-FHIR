@@ -1,5 +1,0 @@
-package edu.gatech.i3l.hl7.fhir.jpa.model;
-
-public class DrugExposurePrescriptionWrittenComplement extends DrugExposurePrescriptionWritten {
-
-}

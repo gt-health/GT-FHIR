@@ -1,5 +1,0 @@
-package edu.gatech.i3l.hl7.fhir.jpa.dao;
-
-public class MedicationPrescriptionFhirResourceDao {
-
-}

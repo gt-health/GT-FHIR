@@ -1,7 +1,0 @@
-package edu.gatech.i3l.hl7.fhir.jpa.model;
-
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-
-public class DrugExposureMedication extends BaseResourceEntity{
-
-}
