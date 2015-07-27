@@ -3,10 +3,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.gatech.i3l</groupId>
 	<artifactId>gt-fhir-webapp</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>war</packaging>
 
 	<repositories>
+		<repository>
+			<id>oss-snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
 		<repository>
 			<snapshots>
 				<enabled>false</enabled>
@@ -21,15 +28,10 @@
 			<name>libs-snapshot</name>
 			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-snapshot</url>
 		</repository>
-		<repository>
-			<id>oss-snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-		</repository>
 	</repositories>
-
+	<properties>
+		<hibernate_version>4.2.17.Final</hibernate_version>
+	</properties>
 	<dependencies>
 
 		<!-- This dependency includes the core HAPI-FHIR classes -->
@@ -49,16 +51,22 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jpaserver-base</artifactId>
-			<version>1.6-SNAPSHOT</version>
+			<version>1.8-SNAPSHOT</version>
 		</dependency>
 
 		<!-- This dependency is used for the "FHIR Tester" web app overlay -->
 		<dependency>
 			<groupId>edu.gatech.i3l</groupId>
 			<artifactId>gt-fhir-overlay</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.0</version>
 			<type>war</type>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>edu.gatech.i3l</groupId>
+			<artifactId>gt-fhir-entities</artifactId>
+			<version>1.0</version>
+			<type>jar</type>
 		</dependency>
 
 		<!-- HAPI-FHIR uses Logback for logging support. The logback library is 
@@ -134,7 +142,7 @@
 			<version>5.1.6</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>net.vidageek</groupId>
 			<artifactId>mirror</artifactId>
 			<version>1.6.1</version>
@@ -143,7 +151,7 @@
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time-hibernate</artifactId>
 			<version>1.4</version>
-		</dependency>
+		</dependency> -->
 
 	</dependencies>
 
