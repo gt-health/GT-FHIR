@@ -23,6 +23,7 @@
 
 	<util:list id="myServerInterceptors">
 		<ref bean="myLoggingInterceptor"/>
+		<ref bean="myOAuthInterceptor"/>
 	</util:list>
 	
 	<!-- 
@@ -35,4 +36,5 @@
 				  value="Path[${servletPath}] Source[${requestHeader.x-forwarded-for}] Operation[${operationType} ${idOrResourceName}] UA[${requestHeader.user-agent}] Params[${requestParameters}]"/>
 	</bean>
 	
+	<bean id="myOAuthInterceptor" class="edu.gatech.i3l.hl7.fhir.security.OIDCInterceptor"></bean>
 </beans>

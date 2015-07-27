@@ -60,6 +60,10 @@ public class OIDCInterceptor extends InterceptorAdapter {
 			System.out.println("This is METADATA request.");
 			return true;
 		}
+		
+		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1")) {
+			return true;
+		}
 
 		String err_msg = "";
 		try {
