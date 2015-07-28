@@ -135,8 +135,8 @@ public class DrugExposurePrescriptionDispensed extends BaseResourceEntity{
 	public IResource getRelatedResource() {
 		MedicationDispense resource = new MedicationDispense();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(this.person.getId())));
-		resource.setMedication(new ResourceReferenceDt(new IdDt(this.medication.getId())));
+		resource.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
+		resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		if(this.quantity != null)
 			resource.setQuantity(new QuantityDt(this.quantity.doubleValue()));
 		if(this.daysSupply != null)

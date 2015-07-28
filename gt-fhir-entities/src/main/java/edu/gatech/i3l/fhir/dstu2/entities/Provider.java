@@ -135,10 +135,6 @@ public class Provider extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	public IdDt getIdDt() {
-		return new IdDt(getResourceType(), id);
-	}
 
 	@Override
 	public String getResourceType() {

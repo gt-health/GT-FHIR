@@ -254,7 +254,7 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 		resource.setDateWritten(new DateTimeDt(this.startDate));
 		/*  Begin Setting Dispense */
 		Dispense dispense = new Dispense();
-		dispense.setMedication(new ResourceReferenceDt(new IdDt(this.medication.getId())));
+		dispense.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		if(this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
 		if(this.quantity != null)
@@ -272,12 +272,13 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(new IdDt(this.visitOccurrence.getId())));
-		resource.setPatient(new ResourceReferenceDt(new IdDt(this.person.getId())));
+		resource.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getIdDt()));
+		resource.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
 		if(this.relevantCondition != null)
-			resource.setReason(new ResourceReferenceDt(new IdDt(this.relevantCondition.getId())));
+			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
+			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
 		if(this.prescribingProvider != null)
-			resource.setPrescriber(new ResourceReferenceDt(new IdDt(this.prescribingProvider.getId())));
+			resource.setPrescriber(new ResourceReferenceDt(this.prescribingProvider.getIdDt()));
 		
 		return resource;
 	}

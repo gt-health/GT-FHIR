@@ -313,7 +313,7 @@ public class Observation extends BaseResourceEntity{
 			observation.setApplies(appliesDate);
 		}
 		if(this.person != null)
-			observation.setSubject(new ResourceReferenceDt(new IdDt(this.person.getId())));
+			observation.setSubject(new ResourceReferenceDt(this.person.getIdDt()));  
 		if(this.visitOccurrence != null)
 			observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
 		return observation;
@@ -347,11 +347,6 @@ public class Observation extends BaseResourceEntity{
 				break;
 			}
 		return theSearchParam;
-	}
-
-	@Override
-	public IdDt getIdDt() {
-		return new IdDt(this.id);
 	}
 	
 	

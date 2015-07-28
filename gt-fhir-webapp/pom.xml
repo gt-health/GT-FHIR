@@ -1,9 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>edu.gatech.i3l</groupId>
+	<parent>
+		<groupId>edu.gatech.i3l</groupId> 
+		<artifactId>gt-fhir</artifactId>
+		<version>1.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 	<artifactId>gt-fhir-webapp</artifactId>
-	<version>1.0</version>
 	<packaging>war</packaging>
 
 	<repositories>
@@ -31,60 +35,22 @@
 	</repositories>
 	<properties>
 		<hibernate_version>4.2.17.Final</hibernate_version>
+		<parent_version>1.0-SNAPSHOT</parent_version>
 	</properties>
 	<dependencies>
-
-		<!-- This dependency includes the core HAPI-FHIR classes -->
-		<dependency>
-			<groupId>ca.uhn.hapi.fhir</groupId>
-			<artifactId>hapi-fhir-base</artifactId>
-			<version>1.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>ca.uhn.hapi.fhir</groupId>
-			<artifactId>hapi-fhir-structures-dstu2</artifactId>
-			<version>1.1-SNAPSHOT</version>
-		</dependency>
-
-		<!-- This dependency includes the JPA server itself, which is packaged 
-			separately from the rest of HAPI FHIR -->
-		<dependency>
-			<groupId>ca.uhn.hapi.fhir</groupId>
-			<artifactId>hapi-fhir-jpaserver-base</artifactId>
-			<version>1.8-SNAPSHOT</version>
-		</dependency>
-
 		<!-- This dependency is used for the "FHIR Tester" web app overlay -->
 		<dependency>
 			<groupId>edu.gatech.i3l</groupId>
 			<artifactId>gt-fhir-overlay</artifactId>
-			<version>1.0</version>
+			<version>${parent_version}</version>
 			<type>war</type>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.gatech.i3l</groupId>
 			<artifactId>gt-fhir-entities</artifactId>
-			<version>1.0</version>
+			<version>${parent_version}</version>
 			<type>jar</type>
-		</dependency>
-
-		<!-- HAPI-FHIR uses Logback for logging support. The logback library is 
-			included automatically by Maven as a part of the hapi-fhir-base dependency, 
-			but you also need to include a logging library. Logback is used here, but 
-			log4j would also be fine. -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.2</version>
-		</dependency>
-
-		<!-- Needed for JEE/Servlet support -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- If you are using HAPI narrative generation, you will need to include 
@@ -106,14 +72,6 @@
 					<groupId>javax.servlet</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<!-- Spring Web is used to deploy the server to a web container. -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>4.1.3.RELEASE</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- You may not need this if you are deploying to an application server 
@@ -146,26 +104,7 @@
 	<build>
 
 		<finalName>gt-fhir-webapp</finalName>
-
-		<!-- The following is not required for the application to build, but allows 
-			you to test it by issuing "mvn jetty:run" from the command line. -->
-		<!-- <pluginManagement> <plugins> <plugin> <groupId>org.eclipse.jetty</groupId> 
-			<artifactId>jetty-maven-plugin</artifactId> <version>9.1.1.v20140108</version> 
-			<configuration> <webApp> <contextPath>/gt-fhir-webapp</contextPath> </webApp> 
-			</configuration> </plugin> </plugins> </pluginManagement> -->
-
 		<plugins>
-			<!-- Tell Maven which Java source version you want to use -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.2</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
 				overlay. You can omit it if you are not using that feature. -->
 			<plugin>
