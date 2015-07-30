@@ -31,7 +31,6 @@ import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 
@@ -280,12 +279,14 @@ public class Observation extends BaseResourceEntity{
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
 		observation.setId(this.getIdDt());
+		
 		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode());
 		CodingDt coding = new CodingDt();
-		coding.setDisplay(this.sourceValue);
+		coding.setDisplay(this.observationConcept.toString());
 		code.addCoding(coding );
 		observation.setCode(code);
 		observation.setStatus(STATUS);
+		
 		IDatatype value = null;
 		if (this.valueAsString != null){
 			value = new StringDt(this.valueAsString); 

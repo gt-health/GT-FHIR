@@ -31,7 +31,7 @@ public class Concept {
 	private Integer level;
 	
 	@Column(name="concept_class", updatable=false)
-	private String klass;
+	private String conceptClass;
 	
 	@ManyToOne
 	@JoinColumn(name="vocabulary_id", updatable=false)
@@ -58,14 +58,14 @@ public class Concept {
 		this.name = name;
 	}
 
-	public Concept(Long id, String name, Integer level, String klass,
+	public Concept(Long id, String name, Integer level, String conceptClass,
 			Vocabulary vocabulary, String conceptCode, Date validStartDate,
 			Date validEndDate, String invalidReason) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.level = level;
-		this.klass = klass;
+		this.conceptClass = conceptClass;
 		this.vocabulary = vocabulary;
 		this.conceptCode = conceptCode;
 		this.validStartDate = validStartDate;
@@ -97,12 +97,12 @@ public class Concept {
 		this.level = level;
 	}
 
-	public String getKlass() {
-		return klass;
+	public String getConceptClass() {
+		return conceptClass;
 	}
 
-	public void setKlass(String klass) {
-		this.klass = klass;
+	public void setConceptClass(String conceptClass) {
+		this.conceptClass = conceptClass;
 	}
 
 	public Vocabulary getVocabulary() {
@@ -143,6 +143,19 @@ public class Concept {
 
 	public void setInvalidReason(String invalidReason) {
 		this.invalidReason = invalidReason;
+	}
+
+	@Override
+	public String toString() {
+		//Since this is an omop v.4 based model, all the information below is expected to be not null.
+		return this.getId() + ", "
+						+ this.getName() + ", "
+						+ this.getLevel() + ", "
+						+ this.getConceptClass() + ", "
+						+ this.getVocabulary().getId() + ", "
+						+ this.getConceptCode() + ", "
+						+ this.getValidStartDate() + ", "
+						+ this.getValidEndDate();
 	}
 
 }
