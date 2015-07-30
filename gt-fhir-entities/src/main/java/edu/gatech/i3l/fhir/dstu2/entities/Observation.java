@@ -18,15 +18,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
@@ -300,9 +297,7 @@ public class Observation extends BaseResourceEntity{
 		observation.setId(this.getIdDt());
 		
 		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode());
-		CodingDt coding = new CodingDt();
-		coding.setDisplay(this.observationConcept.toString());
-		code.addCoding(coding );
+		code.getCodingFirstRep().setDisplay(this.observationConcept.toString());
 		observation.setCode(code);
 		observation.setStatus(STATUS);
 		
@@ -311,7 +306,7 @@ public class Observation extends BaseResourceEntity{
 			value = new StringDt(this.valueAsString); 
 		} else 	if(this.valueAsNumber != null ){
 			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
-			quantity.setUnits(this.unit.getConceptCode());//FIXME
+			quantity.setUnits(this.unit.getConceptCode());//Unit is defined as a concept code in omop v4, then unit and code are the same in this case
 			quantity.setCode(this.unit.getConceptCode());
 			quantity.setSystem(this.unit.getVocabulary().getSystemUri());
 			value = quantity;
