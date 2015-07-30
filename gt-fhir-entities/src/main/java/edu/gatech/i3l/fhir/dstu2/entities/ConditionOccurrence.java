@@ -220,10 +220,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		this.id = id;
 	}
 
-	public IdDt getIdDt() {
-		return new IdDt(getResourceType(), id);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 

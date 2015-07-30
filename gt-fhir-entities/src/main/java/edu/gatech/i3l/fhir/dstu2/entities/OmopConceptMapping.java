@@ -67,7 +67,7 @@ public class OmopConceptMapping implements Runnable {
 		Path<Long> idPath = from.get("id");
 		Path<String> namePath = from.get("name");
 		criteria.multiselect(namePath, idPath); //TODO unit test, order matters here
-		Predicate p1 = builder.like(from.get("klass").as(String.class), conceptClass);
+		Predicate p1 = builder.like(from.get("conceptClass").as(String.class), conceptClass);
 		if(vocabularyName != null){
 			Predicate p2 = builder.like(from.get("vocabulary").get("name").as(String.class), vocabularyName);  
 			criteria.where(builder.and(p1, p2));

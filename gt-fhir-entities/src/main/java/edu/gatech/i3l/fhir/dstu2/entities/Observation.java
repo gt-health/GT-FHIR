@@ -7,7 +7,6 @@ import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -19,19 +18,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 
@@ -56,9 +55,11 @@ public class Observation extends BaseResourceEntity{
 	private Concept observationConcept;
 	
 	@Column(name="observation_date", nullable=false)
+	//@Type(type="org.joda.time.contrib.hibernate.PersistentLocalDate")
 	private Date date;
 	
 	@Column(name="observation_time")
+	//@Type(type="org.joda.time.contrib.hibernate.PersistentLocalTimeAsTime")
 	private Date time;
 	
 	@Column(name="value_as_string")
@@ -266,9 +267,26 @@ public class Observation extends BaseResourceEntity{
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
+		this.date =((DateTimeDt) observation.getApplies()).getValue();
+		this.time = ((DateTimeDt) observation.getApplies()).getValue();
+		this.person.setId(observation.getSubject().getReference().getIdPartAsLong()); //TODO set subject to the other types of resources specified on fhir
+		this.visitOccurrence.setId(observation.getEncounter().getReference().getIdPartAsLong());
+		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
+//		this.observationConcept.setId(ocm.get(OmopConceptMapping.GENDER, observation.getCode().getCodingFirstRep().getCode())); 
+		IDatatype value = observation.getValue();
+		if(value instanceof QuantityDt){
+			this.valueAsNumber = ((QuantityDt) value).getValue();
+//			this.unit.setId(ocm.get(OmopConceptMapping.GENDER, ((QuantityDt) value).getUnits())); 
+			this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
+			this.rangeLow = observation.getReferenceRangeFirstRep().getLow().getValue();
+		} else if(value instanceof CodeableConceptDt){
+//			this.valueAsConcept.setId(ocm.get(OmopConceptMapping.GENDER, ((CodeableConceptDt) value).getCodingFirstRep().getCode()));
+		} else {
+			this.valueAsString = ((StringDt)value).getValue();
+		}
+		return this;
 	}
 
 	@Override
@@ -280,18 +298,20 @@ public class Observation extends BaseResourceEntity{
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
 		observation.setId(this.getIdDt());
+		
 		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode());
 		CodingDt coding = new CodingDt();
-		coding.setDisplay(this.sourceValue);
+		coding.setDisplay(this.observationConcept.toString());
 		code.addCoding(coding );
 		observation.setCode(code);
 		observation.setStatus(STATUS);
+		
 		IDatatype value = null;
 		if (this.valueAsString != null){
 			value = new StringDt(this.valueAsString); 
 		} else 	if(this.valueAsNumber != null ){
 			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
-			quantity.setUnits(this.unit.getConceptCode());
+			quantity.setUnits(this.unit.getConceptCode());//FIXME
 			quantity.setCode(this.unit.getConceptCode());
 			quantity.setSystem(this.unit.getVocabulary().getSystemUri());
 			value = quantity;
@@ -306,14 +326,13 @@ public class Observation extends BaseResourceEntity{
 		}
 		observation.setValue(value);
 		
-		if(this.date != null && this.time != null){
-			Calendar c = Calendar.getInstance();
-			c.set(this.date.getYear(), this.date.getMonth(), this.date.getDay(), this.time.getHours(), this.time.getMinutes(), this.time.getSeconds());
-			DateTimeDt appliesDate = new DateTimeDt(c.getTime(), TemporalPrecisionEnum.SECOND);
+		if(//this.date != null && 
+				this.time != null){ //WARNING notice that the resource field 'appliesDate' relies only on the entity field 'time'
+			DateTimeDt appliesDate = new DateTimeDt(this.time);
 			observation.setApplies(appliesDate);
 		}
 		if(this.person != null)
-			observation.setSubject(new ResourceReferenceDt(new IdDt(this.person.getId())));
+			observation.setSubject(new ResourceReferenceDt(this.person.getIdDt()));  
 		if(this.visitOccurrence != null)
 			observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
 		return observation;
@@ -347,11 +366,6 @@ public class Observation extends BaseResourceEntity{
 				break;
 			}
 		return theSearchParam;
-	}
-
-	@Override
-	public IdDt getIdDt() {
-		return new IdDt(this.id);
 	}
 	
 	

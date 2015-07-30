@@ -134,14 +134,10 @@ public class Location extends BaseResourceEntity{
 		this.id = id;
 	}
 
-	public IdDt getIdDt() {
-		return new IdDt(getResourceType(), id);
-	}
-
 	@Override
 	public ca.uhn.fhir.model.dstu2.resource.Location getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Location location =  new ca.uhn.fhir.model.dstu2.resource.Location();
-		location.setId(new IdDt(this.getId()));
+		location.setId(this.getIdDt());
 		location.getAddress().addLine(this.getAddress1()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
 		if(this.getAddress2() != null)
 			location.getAddress().addLine(this.getAddress2()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());

@@ -213,10 +213,6 @@ public class VisitOccurrence extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	public IdDt getIdDt() {
-		return new IdDt(getResourceType(), id);
-	}
 
 	/* (non-Javadoc)
 	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
