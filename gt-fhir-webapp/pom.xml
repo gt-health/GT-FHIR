@@ -92,8 +92,8 @@
 			<groupId>net.vidageek</groupId>
 			<artifactId>mirror</artifactId>
 			<version>1.6.1</version>
-		</dependency>
-		<dependency>
+		</dependency> -->
+		<!-- <dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time-hibernate</artifactId>
 			<version>1.4</version>
