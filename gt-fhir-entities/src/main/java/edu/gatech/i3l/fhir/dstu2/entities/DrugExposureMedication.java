@@ -15,6 +15,8 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
@@ -22,6 +24,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 @Table(name="drug_exposure")
 @Audited
 public class DrugExposureMedication extends BaseResourceEntity{
+	
+	private static final String RES_TYPE = "Medication";
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -48,7 +52,7 @@ public class DrugExposureMedication extends BaseResourceEntity{
 
 	@Override
 	public String getResourceType() {
-		return "Medication";
+		return RES_TYPE;
 	}
 
 	@Override
@@ -73,6 +77,12 @@ public class DrugExposureMedication extends BaseResourceEntity{
 		Medication resource = new Medication();
 		resource.setId(this.getIdDt());
 		resource.setName(this.drugConcept.getName());
+		CodeableConceptDt code = new CodeableConceptDt(this.drugConcept.getVocabulary().getSystemUri(), this.drugConcept.getConceptCode());
+		code.getCodingFirstRep().setDisplay(this.drugConcept.toString());
+		resource.setCode(code); 
+		NarrativeDt narrative = new NarrativeDt();
+		narrative.setDiv(this.drugConcept.toString());
+		resource.setText(narrative);
 		return resource;
 	}
 
