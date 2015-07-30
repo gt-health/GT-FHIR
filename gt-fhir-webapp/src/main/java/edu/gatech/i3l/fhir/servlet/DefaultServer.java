@@ -70,6 +70,7 @@ public class DefaultServer extends RestfulServer {
 //			JpaConformanceProviderDstu2 confProvider = new JpaConformanceProviderDstu2(this, systemDao);
 			SMARTonFHIRConformanceStatement confProvider = new SMARTonFHIRConformanceStatement(this, systemDao);
 			confProvider.setImplementationDescription("FHIR JPA Server");
+			confProvider.setPublisher("Georgia Tech - I3L");
 			setServerConformanceProvider(confProvider);
 
 		/*

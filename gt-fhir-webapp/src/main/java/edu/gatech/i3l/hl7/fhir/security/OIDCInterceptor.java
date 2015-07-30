@@ -54,14 +54,16 @@ public class OIDCInterceptor extends InterceptorAdapter {
 		Connection connection = null;
 		Statement statement = null;
 
-		System.out.println("Point to check OAuth");
+		System.out.println("[OAuth] Request from "+theRequest.getRemoteAddr());
 
 		if (theRequestDetails.getOtherOperationType() == OtherOperationTypeEnum.METADATA) {
 			System.out.println("This is METADATA request.");
 			return true;
 		}
 		
-		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1")) {
+		// Quick Hack for request from localhost
+		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
+				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
 			return true;
 		}
 
