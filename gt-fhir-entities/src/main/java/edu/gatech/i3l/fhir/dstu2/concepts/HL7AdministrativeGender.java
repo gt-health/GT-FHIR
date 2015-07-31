@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.concepts;
+package edu.gatech.i3l.fhir.dstu2.concepts;
 
 public enum HL7AdministrativeGender {
 

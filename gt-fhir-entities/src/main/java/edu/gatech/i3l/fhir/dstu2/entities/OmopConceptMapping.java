@@ -37,6 +37,9 @@ public class OmopConceptMapping implements Runnable {
 	public static final String DRUG_EXPOSURE_TYPE = "Drug Exposure Type";
 	
 	public static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
+	
+	//FIXME to be remapped
+	public static final String CONDITION_OCCURENCE = "Condition Occurence";
 	/**
 	 * A mapping for some of the existing concepts in the database. The key for the outter mapping is the Concept Class.
 	 * The inner map has the value(name) of the Concept as key and the respective id in the database as values in the map.
