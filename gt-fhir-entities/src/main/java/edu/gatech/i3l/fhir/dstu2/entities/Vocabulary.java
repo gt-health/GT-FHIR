@@ -10,6 +10,10 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+/**
+ * 
+ * @author Myung Choi
+ */
 @Entity
 @Table(name="vocabulary")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
@@ -22,7 +26,7 @@ public class Vocabulary {
 	
 	@Column(name="vocabulary_name", updatable=false)
 	private String name;
-
+	
 	public Vocabulary() {
 		super();
 	}
@@ -66,26 +70,27 @@ public class Vocabulary {
 	
 	public void setIdNameBySystemUri(String uri) {
 		if (uri.equalsIgnoreCase("http://snomed.info/sct")) {
-			this.id = (long)1;
+			this.id = 1l;
 			this.name = "SNOMED-CT";
 		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/icd-9")) {
-			this.id = (long)2; // FIXME: there are ICD9 CM and IC9 Procedure.
+			this.id = 2l; // FIXME: there are ICD9 CM and IC9 Procedure.
 			this.name = "ICD-9-CM";
 		} else if (uri.equalsIgnoreCase("http://loinc.org")) {
-			this.id = (long)6;
+			this.id = 6l;
 			this.name = "LOINC";
 		} else if (uri.equalsIgnoreCase("http://www.nlm.nih.gov/research/umls/rxnorm")) {
-			this.id = (long)8;
+			this.id = 8l;
 			this.name = "RxNorm";			
 		} else if (uri.equalsIgnoreCase("http://unitsofmeasure.org")) {
-			this.id = (long)11;
+			this.id = 11l;
 			this.name = "UCUM";
 		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/icd-10")) {
-			this.id = (long)70;
+			this.id = 70l;
 			this.name = "ICD-10-CM";
 		} else {
-			this.id = (long)0;
+			this.id = 0l;
 			this.name = "OMOP Vocabulary v4.5 20-Oct-2014";
 		}
 	}
+	
 }
