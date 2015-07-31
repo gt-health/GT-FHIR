@@ -309,15 +309,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			this.person = new Person();
 			this.person.setId(condition.getPatient().getReference().getIdPartAsLong());
 
-			CodeableConceptDt codeableConcept = condition.getCode();
-			CodingDt code = codeableConcept.getCoding().get(0);
-			this.conditionConcept = new Concept();
-			this.conditionConcept.setConceptCode(code.getCode());
-			String uri = code.getSystem();
-
-			Vocabulary vocabularyCode = new Vocabulary();
-			vocabularyCode.setIdNameBySystemUri(uri);
-			this.conditionConcept.setVocabulary(vocabularyCode);
+			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
+			this.conditionConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, condition.getCode().getCodingFirstRep().getCode()));
 
 			IDatatype onSetDate = condition.getOnset();
 			if (onSetDate instanceof DateTimeDt) {
@@ -329,20 +322,15 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				this.endDate = periodDt.getEnd();
 			}
 
-			this.conditionTypeConcept = new Concept();
 			ResourceReferenceDt encounterReference = condition.getEncounter();
-			Vocabulary vocabularyConditionType = new Vocabulary();
-			vocabularyConditionType.setId((long) 37);
-			this.conditionTypeConcept.setVocabulary(vocabularyConditionType);
 			if (encounterReference == null) {
 				// No Resource Reference for Encounter.
 				// We just assumed that this is EHR Problem List Entry =
 				// 38000245
-				this.conditionTypeConcept.setConceptCode("38000245");
+				this.conditionTypeConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, "38000245")); 
 			} else {
-				this.conditionTypeConcept.setConceptCode("44786627");
+				this.conditionTypeConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, "44786627"));
 				long encounterId = encounterReference.getReference().getIdPartAsLong();
-				this.encounter = new VisitOccurrence();
 				this.encounter.setId(encounterId);
 			}
 
