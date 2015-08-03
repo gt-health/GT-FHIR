@@ -1,12 +1,21 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import javax.persistence.DiscriminatorValue;
+import java.util.Date;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
@@ -15,34 +24,126 @@ import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 @Entity
-//@Table(name="concept")
+@Table(name="concept")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-@DiscriminatorValue("8") //In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8 
-public class MedicationConcept extends Concept{
+public class MedicationConcept extends BaseResourceEntity{
 	
 	private static final String RES_TYPE = "Medication";
 	
-//	@Id
-//	@GeneratedValue(strategy=GenerationType.IDENTITY)
-//	@Column(name="concept_id")
-//	private Long id;
-//	
-//	@ManyToOne
-//	@JoinColumn(name="drug_concept_id")
-//	private String name;
-//
-//	@Column(name="concept_class", insertable=false, updatable=false, nullable=false)
-//	private DrugConceptClass conceptClass;
-//	
-//	@Override
-//	public Long getId() {
-//		return this.id;
-//	}
-//	
-//	public void setId(Long id){
-//		this.id = id;
-//	}
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="concept_id", updatable=false)
+	private Long id;
+	
+	@Column(name="concept_name", updatable=false)
+	private String name;
+	
+	@Column(name="concept_level", updatable=false)
+	private Integer level;
+	
+	@Column(name="concept_class", updatable=false)
+	private String conceptClass;
+	
+	@ManyToOne
+	@JoinColumn(name="vocabulary_id", insertable=false, updatable=false)
+	private Vocabulary vocabulary;
+	
+	@Column(name="concept_code", updatable=false)
+	private String conceptCode;
+	
+	@Column(name="valid_start_date", updatable=false)
+	private Date validStartDate;
+	
+	@Column(name="valid_end_date", updatable=false)
+	private Date validEndDate;
+	
+	@Column(name="invalid_reason", updatable=false)
+	private String invalidReason;
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getLevel() {
+		return level;
+	}
+
+	public void setLevel(Integer level) {
+		this.level = level;
+	}
+
+	public String getConceptClass() {
+		return conceptClass;
+	}
+
+	public void setConceptClass(String conceptClass) {
+		this.conceptClass = conceptClass;
+	}
+
+	public Vocabulary getVocabulary() {
+		return vocabulary;
+	}
+
+	public void setVocabulary(Vocabulary vocabulary) {
+		this.vocabulary = vocabulary;
+	}
+
+	public String getConceptCode() {
+		return conceptCode;
+	}
+
+	public void setConceptCode(String conceptCode) {
+		this.conceptCode = conceptCode;
+	}
+
+	public Date getValidStartDate() {
+		return validStartDate;
+	}
+
+	public void setValidStartDate(Date validStartDate) {
+		this.validStartDate = validStartDate;
+	}
+
+	public Date getValidEndDate() {
+		return validEndDate;
+	}
+
+	public void setValidEndDate(Date validEndDate) {
+		this.validEndDate = validEndDate;
+	}
+
+	public String getInvalidReason() {
+		return invalidReason;
+	}
+
+	public void setInvalidReason(String invalidReason) {
+		this.invalidReason = invalidReason;
+	}
+
+	@Override
+	public String toString() {
+		//Since this is an omop v.4 based model, all the information below is expected to be not null.
+		return this.getId() + ", "
+						+ this.getName() + ", "
+						+ this.getLevel() + ", "
+						+ this.getConceptClass() + ", "
+						+ this.getVocabulary().getId() + ", "
+						+ this.getConceptCode() + ", "
+						+ this.getValidStartDate() + ", "
+						+ this.getValidEndDate();
+	}
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;

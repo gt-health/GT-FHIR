@@ -29,7 +29,6 @@ public class DrugExposurePrescriptionComplement {
 	private Long id;
 	
 	@OneToOne(fetch=FetchType.LAZY)
-	//@PrimaryKeyJoinColumn
 	@JoinColumn(name="drug_exposure_id")
 	private DrugExposurePrescription prescription;
 

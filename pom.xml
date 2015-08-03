@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jpaserver-base</artifactId>
-			<version>1.8-SNAPSHOT</version>
+			<version>${hapi_stable_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
@@ -95,7 +95,7 @@
 			<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>${hapi_stable_version}</version>
 		</dependency>
 
 		<dependency>
