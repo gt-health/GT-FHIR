@@ -3,14 +3,10 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -18,14 +14,10 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-
 @Entity
 @Table(name="concept")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="vocabulary_id", discriminatorType=DiscriminatorType.INTEGER)
-public abstract class Concept extends BaseResourceEntity{
+public class Concept{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
