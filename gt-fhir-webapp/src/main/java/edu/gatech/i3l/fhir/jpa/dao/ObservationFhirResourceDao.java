@@ -7,10 +7,10 @@ import javax.persistence.criteria.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 
-import ca.uhn.fhir.jpa.dao.AbstractPredicateBuilder;
 import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
-import ca.uhn.fhir.jpa.dao.PredicateBuilder;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.jpa.query.AbstractPredicateBuilder;
+import ca.uhn.fhir.jpa.query.PredicateBuilder;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 
 public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>{
