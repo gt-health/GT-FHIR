@@ -3,6 +3,7 @@
  */
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +19,6 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -35,7 +35,7 @@ public class EpisodeOfCare extends BaseResourceEntity {
 	@Column(name="episode_of_care_id")
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id")
 	private Person person;
 	

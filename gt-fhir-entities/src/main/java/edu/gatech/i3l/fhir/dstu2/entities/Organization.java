@@ -3,6 +3,7 @@
  */
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +19,6 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -37,11 +37,11 @@ public class Organization extends BaseResourceEntity {
 	@Column(name="organization_id")
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="location_id")
 	private Location location;
 	
@@ -130,8 +130,7 @@ public class Organization extends BaseResourceEntity {
 
 	@Override
 	public FhirVersionEnum getFhirVersion() {
-		// TODO Auto-generated method stub
-		return null;
+		return FhirVersionEnum.DSTU2;
 	}
 
 	@Override

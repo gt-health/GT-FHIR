@@ -6,6 +6,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -35,7 +36,7 @@ public class ConditionOccurrenceComplement extends ConditionOccurrence {
 	@Column(name="fhir_condition_display")
 	private String display;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_severity_concept_id")
 	private Concept severityConcept;
 
@@ -150,7 +151,9 @@ public class ConditionOccurrenceComplement extends ConditionOccurrence {
 					String codeString = severityCode.getCode();
 					String uri = severityCode.getSystem();
 					if (codeString != null && uri != null && !codeString.isEmpty() && !uri.isEmpty()) {
-						severityConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.CONDITION_OCCURENCE, severityCode.getCode()));
+						if(severityConcept == null)
+							severityConcept = new Concept();
+						severityConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.CONDITION_OCCURENCE, severityCode.getCode()));//FIXME
 					} 
 					
 					String display = severityCode.getDisplay();

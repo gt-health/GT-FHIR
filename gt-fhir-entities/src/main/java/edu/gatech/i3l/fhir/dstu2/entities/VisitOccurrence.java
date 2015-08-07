@@ -3,8 +3,12 @@
  */
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_DATE;
+import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;
+
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,6 +21,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
@@ -26,10 +31,7 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
-import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_DATE;
-import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;;
 
 /**
  * @author Myung Choi
@@ -48,7 +50,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Column(name="visit_occurrence_id")
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name="person_id")
 	private Person person;
 	
@@ -60,9 +62,10 @@ public class VisitOccurrence extends BaseResourceEntity {
 	
 	@ManyToOne
 	@JoinColumn(name="place_of_service_concept_id")
+	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 	private Concept placeOfServiceConcept;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	
@@ -236,20 +239,22 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		Encounter encounter = (Encounter) resource;
+		checkNullReferences();
 		this.id = encounter.getId().getIdPartAsLong();
-		this.person = new Person();
-		this.person.setId(encounter.getPatient().getId().getIdPartAsLong());
+		this.person.setId(encounter.getPatient().getReference().getIdPartAsLong());
+		//Fhir Dstu 2 doesn't have related attribute for place_of_service_concept
 		this.startDate = encounter.getPeriod().getStart();
 		this.endDate = encounter.getPeriod().getEnd();
-		this.careSite = new CareSite();
-		Organization organization = new Organization();
-		organization.setId(encounter.getServiceProvider().getId().getIdPartAsLong());
-		Location location = new Location();
-		location.setId(encounter.getLocationFirstRep().getId().getIdPartAsLong());
-		this.careSite.setOrganization(organization);
-		this.careSite.setLocation(location);
-		//TODO set place of service concept
+//		this.careSite.setId(loadReference("careSite", 	encounter.getServiceProvider().getReference().getIdPartAsLong(),
+//														encounter.getLocationFirstRep().getLocation().getReference().getIdPartAsLong()));
 		return this;
+	}
+
+	private void checkNullReferences() {
+		if(this.person == null)
+			this.person = new Person();
+		if(this.careSite == null)
+			this.careSite = new CareSite();
 	}
 
 	@Override

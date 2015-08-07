@@ -16,7 +16,6 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 @Entity

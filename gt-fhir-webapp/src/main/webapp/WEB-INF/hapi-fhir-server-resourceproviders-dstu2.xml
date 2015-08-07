@@ -23,10 +23,12 @@
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
 
+	<!-- The following beans' definitions are ordered alphabetically -->
+
  	<util:list id="myResourceProvidersDstu2">
 		<ref bean="myConditionRpDstu2"/>
 		<ref bean="myEncounterRpDstu2"/>
-		<ref bean="myLocationRpDstu2"/>
+		<!-- <ref bean="myLocationRpDstu2"/> -->
 		<ref bean="myMedicationRpDstu2"/>
 		<ref bean="myMedicationDispenseRpDstu2"/>
 		<ref bean="myMedicationPrescriptionRpDstu2"/>
@@ -60,7 +62,7 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
-	<bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
+	<!-- <bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Location"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -68,7 +70,7 @@
 	<bean id="myLocationRpDstu2" class="ca.uhn.fhir.jpa.rp.dstu2.LocationResourceProvider">
 		<property name="dao" ref="myLocationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
-	</bean>
+	</bean> -->
 	
 	<bean id="myMedicationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationFhirResourceDao">
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Medication"/>

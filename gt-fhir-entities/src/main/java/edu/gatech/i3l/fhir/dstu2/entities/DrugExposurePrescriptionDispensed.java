@@ -2,6 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.math.BigDecimal;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -27,11 +28,11 @@ public class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
 	
 	public static final String RES_TYPE = "MedicationDispense";
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="drug_type_concept_id", updatable= false, nullable=false)
 	private Concept drugExposureType;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", updatable=false, nullable=false)
 	private Person person;
 	
@@ -41,7 +42,7 @@ public class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
 	@Column(name="days_supply",updatable=false)
 	private Integer daysSupply;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="drug_concept_id", updatable=false)
 	private Concept medication;
 	
@@ -131,7 +132,7 @@ public class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
 	}
 
 	/*
-	 * Not Updatable. So this is not meant to be implemented.
+	 * Not Updatable or Insertable. So this is not meant to be implemented. //TODO
 	 * @see ca.uhn.fhir.jpa.entity.IResourceEntity#constructEntityFromResource(ca.uhn.fhir.model.api.IResource)
 	 */
 	@Override

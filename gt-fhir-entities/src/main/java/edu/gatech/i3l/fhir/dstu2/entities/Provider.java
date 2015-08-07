@@ -1,5 +1,6 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -20,7 +21,6 @@ import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 @Entity
@@ -42,11 +42,11 @@ public class Provider extends BaseResourceEntity {
 	@Column(name="dea")
 	private String dea;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="specialty_concept_id")
 	private Concept specialtyConcept;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	
