@@ -7,6 +7,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
@@ -28,7 +29,7 @@ import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
 @Audited
 public class VisitOccurrenceComplement extends VisitOccurrence {
 	
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="episode_of_care_id")
 	private EpisodeOfCare episodeOfCare;
 	

@@ -37,6 +37,9 @@ public class OmopConceptMapping implements Runnable {
 	public static final String DRUG_EXPOSURE_TYPE = "Drug Exposure Type";
 	
 	public static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
+	
+	//FIXME to be remapped
+	public static final String CONDITION_OCCURENCE = "Condition Occurence";
 	/**
 	 * A mapping for some of the existing concepts in the database. The key for the outter mapping is the Concept Class.
 	 * The inner map has the value(name) of the Concept as key and the respective id in the database as values in the map.
@@ -67,7 +70,7 @@ public class OmopConceptMapping implements Runnable {
 		Path<Long> idPath = from.get("id");
 		Path<String> namePath = from.get("name");
 		criteria.multiselect(namePath, idPath); //TODO unit test, order matters here
-		Predicate p1 = builder.like(from.get("klass").as(String.class), conceptClass);
+		Predicate p1 = builder.like(from.get("conceptClass").as(String.class), conceptClass);
 		if(vocabularyName != null){
 			Predicate p2 = builder.like(from.get("vocabulary").get("name").as(String.class), vocabularyName);  
 			criteria.where(builder.and(p1, p2));

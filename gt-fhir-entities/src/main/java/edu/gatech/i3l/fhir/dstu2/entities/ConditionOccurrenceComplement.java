@@ -146,16 +146,11 @@ public class ConditionOccurrenceComplement extends ConditionOccurrence {
 				if (severityCodes != null && severityCodes.size() > 0) {
 					//FHIR spec says we have 0 or 1 severity coding
 					CodingDt severityCode = severityCodes.get(0);
-					severityConcept = new Concept();
 					
 					String codeString = severityCode.getCode();
 					String uri = severityCode.getSystem();
 					if (codeString != null && uri != null && !codeString.isEmpty() && !uri.isEmpty()) {
-						severityConcept.setConceptCode(severityCode.getCode());
-					
-						Vocabulary vocabularyCode = new Vocabulary();
-						vocabularyCode.setIdNameBySystemUri(uri);
-						severityConcept.setVocabulary(vocabularyCode);
+						severityConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.CONDITION_OCCURENCE, severityCode.getCode()));
 					} 
 					
 					String display = severityCode.getDisplay();

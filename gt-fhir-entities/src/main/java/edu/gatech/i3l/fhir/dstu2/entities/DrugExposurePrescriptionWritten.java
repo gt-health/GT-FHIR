@@ -9,20 +9,15 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
@@ -30,24 +25,19 @@ import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription;
 import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.Dispense;
+import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 @Entity
-@Table(name="drug_exposure")
-@Inheritance(strategy=InheritanceType.JOINED)
 @Audited
-public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
+@DiscriminatorValue("PrescriptionWritten")
+public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	
 	public static final String RES_TYPE = "MedicationPrescription";
-
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="drug_exposure_id", updatable= false)
-	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="person_id", updatable= false, nullable=false)
 	private Person person;
 	
@@ -70,14 +60,14 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="prescribing_provider_id", updatable= false)
 	private Provider prescribingProvider;
 	
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id", updatable= false, nullable=false)
 	private VisitOccurrenceComplement visitOccurrence;
 	
@@ -149,15 +139,6 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 
 	public void setDrugExposureType(Concept drugExposureType) {
 		this.drugExposureType = drugExposureType;
-	}
-
-	@Override
-	public Long getId() {
-		return this.id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 	
 	public BigDecimal getQuantity() {
@@ -254,7 +235,7 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 		resource.setDateWritten(new DateTimeDt(this.startDate));
 		/*  Begin Setting Dispense */
 		Dispense dispense = new Dispense();
-		dispense.setMedication(new ResourceReferenceDt(new IdDt(this.medication.getId())));
+		dispense.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		if(this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
 		if(this.quantity != null)
@@ -272,12 +253,20 @@ public class DrugExposurePrescriptionWritten extends BaseResourceEntity {
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(new IdDt(this.visitOccurrence.getId())));
-		resource.setPatient(new ResourceReferenceDt(new IdDt(this.person.getId())));
+		resource.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getIdDt()));
+		resource.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
 		if(this.relevantCondition != null)
-			resource.setReason(new ResourceReferenceDt(new IdDt(this.relevantCondition.getId())));
+			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
+			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
 		if(this.prescribingProvider != null)
-			resource.setPrescriber(new ResourceReferenceDt(new IdDt(this.prescribingProvider.getId())));
+			resource.setPrescriber(new ResourceReferenceDt(this.prescribingProvider.getIdDt()));
+		
+		DosageInstruction dosage = new DosageInstruction();
+		QuantityDt dose = new QuantityDt();
+		dose.setValue(this.quantity);
+		dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+		dosage.setDose(dose);
+		resource.addDosageInstruction(dosage);
 		
 		return resource;
 	}
