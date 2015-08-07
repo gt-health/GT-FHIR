@@ -5,6 +5,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -49,11 +50,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_occurrence_id")
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id")
 	private Person person;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id")
 	private Concept conditionConcept;
 	
@@ -63,18 +64,18 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_end_date")
 	private Date endDate;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_type_concept_id")
 	private Concept conditionTypeConcept;
 	
 	@Column(name="stop_reason")
 	private String stopReason;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence encounter;
 	
@@ -305,12 +306,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		if (resource instanceof Condition) {
 			Condition condition = (Condition) resource;
-
-			this.person = new Person();
+			checkNullReferences();
 			this.person.setId(condition.getPatient().getReference().getIdPartAsLong());
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-			this.conditionConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, condition.getCode().getCodingFirstRep().getCode()));
+			this.conditionConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, condition.getCode().getCodingFirstRep().getCode()));//FIXME
 
 			IDatatype onSetDate = condition.getOnset();
 			if (onSetDate instanceof DateTimeDt) {
@@ -341,7 +341,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			if (asserterReference != null) {
 				if (asserterReference.getReference().getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
 					long providerId = asserterReference.getReference().getIdPartAsLong();
-					this.provider = new Provider();
 					this.provider.setId(providerId);
 				}
 			}
@@ -352,10 +351,22 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return this;
 	}
 
+	private void checkNullReferences() {
+		if(this.person == null)
+			this.person =  new Person();
+		if(this.conditionConcept == null)
+			this.conditionConcept = new Concept();
+		if(this.conditionTypeConcept == null)
+			this.conditionTypeConcept = new Concept();
+		if(this.encounter == null)
+			this.encounter = new VisitOccurrence();
+		if(this.provider ==  null)
+			this.provider = new Provider();
+	}
+
 	@Override
 	public FhirVersionEnum getFhirVersion() {
-		// TODO Auto-generated method stub
-		return null;
+		return FhirVersionEnum.DSTU2;
 	}
 
 	@Override

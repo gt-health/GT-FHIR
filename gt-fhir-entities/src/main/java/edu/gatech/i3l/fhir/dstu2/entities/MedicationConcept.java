@@ -2,6 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -44,7 +45,7 @@ public class MedicationConcept extends BaseResourceEntity{
 	@Column(name="concept_class", updatable=false)
 	private String conceptClass;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	

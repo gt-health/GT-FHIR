@@ -2,6 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,11 +13,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 
 @Entity
 @Table(name="concept")
-@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
+@Audited
 public class Concept{
 	
 	@Id
@@ -33,7 +33,7 @@ public class Concept{
 	@Column(name="concept_class", updatable=false)
 	private String conceptClass;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	

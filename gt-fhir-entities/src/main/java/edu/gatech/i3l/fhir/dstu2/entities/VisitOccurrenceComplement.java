@@ -5,16 +5,20 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
@@ -29,7 +33,7 @@ import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
 @Audited
 public class VisitOccurrenceComplement extends VisitOccurrence {
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="episode_of_care_id")
 	private EpisodeOfCare episodeOfCare;
 	
@@ -37,6 +41,7 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 	private String status;
 	
 	@Column(name="note")
+	@Lob
 	private String note;
 	
 	public VisitOccurrenceComplement() {
@@ -107,4 +112,13 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 		
 		return encounter;
 	}
+
+	@Override
+	//Not mandatory
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		//Encounter encounter = (Encounter) resource;
+		return this;
+	}
+	
+	
 }

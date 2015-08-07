@@ -61,7 +61,7 @@ public class Person extends BaseResourceEntity{
 	/**
 	 * Makes the indirect relationship between the person and the Care Site.
 	 */
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
@@ -78,14 +78,14 @@ public class Person extends BaseResourceEntity{
 	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
@@ -306,6 +306,8 @@ public class Person extends BaseResourceEntity{
 			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
+			if(this.genderConcept == null)
+				this.genderConcept = new Concept();
 			this.genderConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender()));
 			
 			LocationComplement location;
