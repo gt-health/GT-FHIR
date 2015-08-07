@@ -27,7 +27,7 @@
 						<th:block th:text="${latencyMs} + 'ms'"/>
 					</div>
 
-					<div th:if="${clientCodeJson} != null" class="panel panel-default">
+					<!-- <div th:if="${clientCodeJson} != null" class="panel panel-default">
 						<div class="panel-heading">
 							Client Code - 
 							<small style="color: #888;">
@@ -42,7 +42,7 @@
 							var jsonClientCode = <th:block th:utext="${clientCodeJson}"/>;
 							generateHapi(jsonClientCode, $('#clientCodeBody'));
 						</script>
-					</div>
+					</div> -->
 					 
 					<div th:if="${requestUrl} != null">
 
@@ -92,7 +92,7 @@
 										<span class="glyphicon glyphicon glyphicon-chevron-left"></span>
 										Response
 									</td>
-									<td>
+									<td><!-- -->
 										<i th:if="${!resultStatus.contains(' 500')}" class="fa fa-check" style="color:#4E4;"/>
 										<i th:if="${resultStatus.contains(' 500')}" class="fa fa-warning" style="color:#E44;"/>
 										<th:block th:text="${resultStatus}"/>

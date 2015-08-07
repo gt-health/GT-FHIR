@@ -145,7 +145,8 @@
 											<ul class="dropdown-menu" role="menu">
 												<li><a href="javascript:updateSort('');">Default Sort</a></li>
 												<li class="divider"></li>
-												<li th:each="param : ${sortParams}"><a th:href="'javascript:updateSort(\'' + ${param} + '\');'" th:text="${param}"></a></li>
+												<!-- <li th:each="param : ${sortParams}"><a th:href="'javascript:updateSort(\'' + ${param} + '\');'" th:text="${param}"></a></li> -->
+												<li><a href="javascript:updateSort('_id');">_id</a></li>
 											</ul>
 										</div>
 										&nbsp;&nbsp;&nbsp;
@@ -249,7 +250,7 @@
 								                </div>
 								            </div>
 								        </div>											
-										<div class='col-sm-4'>
+										<!-- <div class='col-sm-4'>
 								            <div class="form-group">
 								                <div class='input-group date'>
 								                    <div class="input-group-addon">
@@ -258,7 +259,7 @@
 								                    <input type="text" class="form-control" id="read-vid" placeholder="(add for vread)"/>
 								                </div>
 								            </div>
-								        </div>											
+								        </div> -->											
 										<script type="text/javascript">
 											$('#read-btn').click(
 												function() {
@@ -399,7 +400,7 @@
 												Create
 											</button>
 								    	</div>
-										<div class='col-sm-3'>
+										<!-- <div class='col-sm-3'>
 								            <div class="form-group">
 								                <div class='input-group date'>
 								                    <div class="input-group-addon">
@@ -408,7 +409,7 @@
 								                    <input type="text" class="form-control" id="resource-create-id" placeholder="(optional)"/>
 								                </div>
 								            </div>
-								        </div>											
+								        </div>	 -->										
 										<div class='col-sm-7'>
 								            <div class="form-group">
 								                <div class='input-group date'>
@@ -562,12 +563,12 @@
 							<!-- End of other operations tab -->
 							
 							<!-- *************************************************** -->
-							<!-- Queries Tab -->
+							<!-- Tags Tab -->
 							<!-- *************************************************** -->
-							<div class="tab-pane" id="tab-tags">
+							<!-- <div class="tab-pane" id="tab-tags">
 								<div class="container-fluid">
 
-								<!-- Get Tags -->
+								Get Tags
 
 									<div class="row-fluid">
 										Show all of the tags currently in use on the server for this resource type. If an ID is specified,
@@ -617,8 +618,8 @@
 									</div>
 							
 								</div>							
-							</div>
-							<!-- End of queries tab -->
+							</div> -->
+							<!-- End of Tags tab -->
 							
 						</div>
 						<!-- End of tab pane -->
