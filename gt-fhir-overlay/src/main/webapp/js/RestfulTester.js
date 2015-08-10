@@ -357,18 +357,22 @@ function addSearchControls(theConformance, theSearchParamType, theSearchParamNam
 				if (!(nextRes.searchParam)) {
 					continue;
 				}
+				var refResource = getResourceStruct(nextRes.type);
 				for (var paramIdx = 0; paramIdx < nextRes.searchParam.length && !found; paramIdx++) {
 					var nextParam = nextRes.searchParam[paramIdx];
 					if (nextParam.name == nextChain) {
 						if (theSearchParamTarget.length == 0 || theSearchParamTarget.indexOf(nextRes.type) != -1) {
 							var nextName = nextParam.name + '_' + i;
-							nextParam = jQuery.extend({}, nextParam); // clone it so we can add the chain to the name
-							nextParam.name = theSearchParamName + '.' + nextParam.name;
-							params[nextName] = nextParam;
-							select.append(
-								$('<option />', { value: nextName }).text(nextParam.name + ' - ' + nextParam.documentation)														
-							);
-							found = true;
+							if(refResource.providesSearch(nextParam.name)){
+								console.log("option added");
+								nextParam = jQuery.extend({}, nextParam); // clone it so we can add the chain to the name
+								nextParam.name = theSearchParamName + '.' + nextParam.name;
+								params[nextName] = nextParam;
+								select.append(
+									$('<option />', { value: nextName }).text(nextParam.name + ' - ' + nextParam.documentation)														
+								);
+								found = true;
+							}
 						}
 					}
 				}

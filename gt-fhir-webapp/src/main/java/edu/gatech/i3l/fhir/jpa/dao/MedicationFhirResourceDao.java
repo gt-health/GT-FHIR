@@ -4,10 +4,10 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
-import ca.uhn.fhir.jpa.dao.AbstractPredicateBuilder;
 import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
-import ca.uhn.fhir.jpa.dao.PredicateBuilder;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.jpa.query.AbstractPredicateBuilder;
+import ca.uhn.fhir.jpa.query.PredicateBuilder;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept;
 

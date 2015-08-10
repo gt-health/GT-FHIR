@@ -9,6 +9,7 @@ import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -43,11 +44,11 @@ public class Observation extends BaseResourceEntity{
 	@Column(name="observation_id")
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", nullable=false)
 	private Person person;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="observation_concept_id", nullable=false)
 	private Concept observationConcept;
 	
@@ -71,30 +72,30 @@ public class Observation extends BaseResourceEntity{
 	@Column(name="range_high")
 	private BigDecimal rangeHigh;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="value_as_concept_id")
 	private Concept valueAsConcept;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="relevant_condition_concept_id")
 	private Concept relevantCondition;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="observation_type_concept_id", nullable=false)
 	private Concept type;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="visit_occurence_id")
 	private VisitOccurrence visitOccurrence;
 	
 	@Column(name="observation_source_value")
 	private String sourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="unit_concept_id")
 	private Concept unit;
 	
@@ -266,6 +267,7 @@ public class Observation extends BaseResourceEntity{
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
+		checkNullReferences();
 		this.date =((DateTimeDt) observation.getApplies()).getValue();
 		this.time = ((DateTimeDt) observation.getApplies()).getValue();
 		this.person.setId(observation.getSubject().getReference().getIdPartAsLong()); //TODO set subject to the other types of resources specified on fhir
@@ -284,6 +286,13 @@ public class Observation extends BaseResourceEntity{
 			this.valueAsString = ((StringDt)value).getValue();
 		}
 		return this;
+	}
+
+	private void checkNullReferences() {
+		if(this.person ==null)
+			this.person = new Person();
+		if(this.visitOccurrence == null)
+			this.visitOccurrence = new VisitOccurrence();
 	}
 
 	@Override

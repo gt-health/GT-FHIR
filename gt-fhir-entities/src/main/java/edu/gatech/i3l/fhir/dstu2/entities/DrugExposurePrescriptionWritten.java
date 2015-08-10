@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -37,7 +38,7 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	
 	public static final String RES_TYPE = "MedicationPrescription";
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", updatable= false, nullable=false)
 	private Person person;
 	
@@ -46,7 +47,7 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	 * in an Omop v4.0 compliant database, but this implementation is database independent, since we use {@link OmopConceptMapping} to 
 	 * gather the information in the database.
 	 */
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="drug_type_concept_id", updatable= false, nullable=false)
 	private Concept drugExposureType;
 	
@@ -60,14 +61,14 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name="prescribing_provider_id", updatable= false)
 	private Provider prescribingProvider;
 	
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name="visit_occurrence_id", updatable= false, nullable=false)
 	private VisitOccurrenceComplement visitOccurrence;
 	
@@ -76,7 +77,7 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	 * condition concept in the vocabulary.
 	 * @fhir reason
 	 */
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="relevant_condition_concept_id", updatable= false)
 	private Concept relevantCondition; //TODO check other cases where a Concept can be taken as COndition
 	
@@ -88,7 +89,7 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	 * RxNorm.
 	 * Generally in concept class 'Clinical Drug'.
 	 */
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="drug_concept_id", updatable= false, nullable=false)
 	private Concept medication;
 	
@@ -274,9 +275,17 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationPrescription mp = (MedicationPrescription) resource;
-		this.medication.setId(mp.getMedication().getReference().getIdPartAsLong()); //TODO check if id exists, TODO turn MedicationPrescription not updatable
+		checkNullReferences();
+		this.medication.setId(mp.getMedication().getReference().getIdPartAsLong()); //TODO validate existence of id
 		this.person.setId(mp.getPatient().getReference().getIdPartAsLong());
 		return this;
+	}
+
+	private void checkNullReferences() {
+		if(this.medication == null)
+				this.medication = new Concept();
+		if(this.person == null)
+				this.person = new Person();
 	}
 
 }
