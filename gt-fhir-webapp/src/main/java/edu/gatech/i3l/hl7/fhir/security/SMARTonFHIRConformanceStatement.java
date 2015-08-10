@@ -3,6 +3,8 @@
  */
 package edu.gatech.i3l.hl7.fhir.security;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,15 +28,30 @@ import ca.uhn.fhir.rest.server.provider.dstu2.ServerConformanceProvider;
 public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2 {
 
 	static String authorizeURI = "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#authorize";
-	static String authorizeURIvalue = "http://localhost:9085/authorize";
 	static String tokenURI = "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#token";
-	static String tokenURIvalue = "http://localhost:9085/token";
 	static String registerURI = "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#register";
-	static String registerURIvalue = "http://localhost:9085/register";
-	
+
+	String authorizeURIvalue = "http://localhost:9085/authorize";
+	String tokenURIvalue = "http://localhost:9085/token";
+	String registerURIvalue = "http://localhost:9085/register";
+		
 	public SMARTonFHIRConformanceStatement(RestfulServer theRestfulServer, IFhirSystemDao<Bundle> theSystemDao) {
 		super(theRestfulServer, theSystemDao);
 		setCache(false);
+		
+		try {
+			InetAddress addr = java.net.InetAddress.getLocalHost();
+	        System.out.println(addr);
+	        String hostname = addr.getHostName();    
+	        System.out.println("Hostname of system = " + hostname);
+	        
+	    	authorizeURIvalue = "http://"+hostname+":9085/authorize";
+	    	tokenURIvalue = "http://"+hostname+":9085/token";
+	    	registerURIvalue = "http://"+hostname+":9085/register";	        
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}    
 	}
 
 	@Override
