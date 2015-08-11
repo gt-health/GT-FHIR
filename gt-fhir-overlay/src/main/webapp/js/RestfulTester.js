@@ -186,13 +186,13 @@ function addSearchParamRow() {
 				if (restResource.searchParam) {
 					for (var i = 0; i < restResource.searchParam.length; i++) {
 						var searchParam = restResource.searchParam[i];
-						if(refResource.providesSearch(searchParam.name)){
+//						if(refResource.providesSearch(searchParam.name)){
 							var nextName = searchParam.name + '_' + i; 
 							params[nextName] = searchParam;
 							select.append(
 									$('<option />', { value: nextName }).text(searchParam.name + ' - ' + searchParam.documentation)														
 							);
-						}
+//						}
 					}
 					/*
 					restResource.searchParam.forEach(function(searchParam){
@@ -363,7 +363,7 @@ function addSearchControls(theConformance, theSearchParamType, theSearchParamNam
 					if (nextParam.name == nextChain) {
 						if (theSearchParamTarget.length == 0 || theSearchParamTarget.indexOf(nextRes.type) != -1) {
 							var nextName = nextParam.name + '_' + i;
-							if(refResource.providesSearch(nextParam.name)){
+//							if(refResource.providesSearch(nextParam.name)){
 								console.log("option added");
 								nextParam = jQuery.extend({}, nextParam); // clone it so we can add the chain to the name
 								nextParam.name = theSearchParamName + '.' + nextParam.name;
@@ -372,7 +372,7 @@ function addSearchControls(theConformance, theSearchParamType, theSearchParamNam
 									$('<option />', { value: nextName }).text(nextParam.name + ' - ' + nextParam.documentation)														
 								);
 								found = true;
-							}
+//							}
 						}
 					}
 				}
