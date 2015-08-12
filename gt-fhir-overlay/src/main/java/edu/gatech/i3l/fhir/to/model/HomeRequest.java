@@ -1,6 +1,7 @@
 package edu.gatech.i3l.fhir.to.model;
 
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,7 +53,7 @@ public class HomeRequest {
 		if (retVal.contains("${serverBase}")) {
 			IncomingRequestAddressStrategy strategy = new IncomingRequestAddressStrategy();
 			strategy.setServletPath("");
-			String base = strategy.determineServerBase(theRequest.getServletContext(), theRequest);
+			String base = strategy.determineServerBase(theRequest.getSession().getServletContext(), theRequest);
 			if (base.endsWith("/")) {
 				base = base.substring(0, base.length() - 1);
 			}
@@ -64,6 +65,7 @@ public class HomeRequest {
 
 		return retVal;
 	}
+	
 
 	@ModelAttribute("serverId")
 	public String getServerId() {

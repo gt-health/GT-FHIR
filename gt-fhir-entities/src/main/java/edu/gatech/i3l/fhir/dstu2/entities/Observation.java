@@ -5,6 +5,7 @@ import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -357,6 +358,8 @@ public class Observation extends BaseResourceEntity{
 	public String translateSearchParam(String theSearchParam) {
 			switch (theSearchParam) {
 			case SP_SUBJECT:
+				return "person";
+			case SP_PATIENT:
 				return "person";
 			case SP_ENCOUNTER:
 				return "visitOccurrence";
