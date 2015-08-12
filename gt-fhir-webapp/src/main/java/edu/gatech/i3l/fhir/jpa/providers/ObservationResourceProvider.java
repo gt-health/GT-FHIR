@@ -97,9 +97,9 @@ public class ObservationResourceProvider extends
 //			@OptionalParam(name="reliability")
 //			TokenAndListParam theReliability, 
 //  
-//			@Description(shortDefinition="The subject that the observation is about")
-//			@OptionalParam(name="subject", targetTypes={  Patient.class ,   Group.class ,   Device.class ,   Location.class   } )
-//			ReferenceAndListParam theSubject, 
+			@Description(shortDefinition="The subject that the observation is about")
+			@OptionalParam(name="subject", targetTypes={  Patient.class ,   Group.class ,   Device.class ,   Location.class   } )
+			ReferenceAndListParam theSubject, 
 //  
 //			@Description(shortDefinition="Who performed the observation")
 //			@OptionalParam(name="performer", targetTypes={  Practitioner.class ,   Organization.class ,   Patient.class ,   RelatedPerson.class   } )
@@ -188,7 +188,7 @@ public class ObservationResourceProvider extends
 //			paramMap.add("date", theDate);
 //			paramMap.add("status", theStatus);
 //			paramMap.add("reliability", theReliability);
-//			paramMap.add("subject", theSubject);
+			paramMap.add("subject", theSubject);
 //			paramMap.add("performer", thePerformer);
 //			paramMap.add("specimen", theSpecimen);
 //			paramMap.add("related-type", theRelated_type);
