@@ -26,7 +26,7 @@ import ca.uhn.fhir.rest.param.TokenAndListParam;
 // import ca.uhn.fhir.model.api.Bundle;
 
 public class PatientResourceProvider extends 
-	BaseJpaResourceProviderPatientDstu2
+	JpaResourceProviderDstu2<Patient>
 	{
 
 	@Override

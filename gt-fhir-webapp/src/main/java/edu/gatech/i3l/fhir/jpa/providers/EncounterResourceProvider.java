@@ -4,7 +4,6 @@ package edu.gatech.i3l.fhir.jpa.providers;
 import java.util.Set;
 
 import ca.uhn.fhir.jpa.dao.SearchParameterMap;
-import ca.uhn.fhir.jpa.provider.BaseJpaResourceProviderEncounterDstu2;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
@@ -31,7 +30,7 @@ import ca.uhn.fhir.rest.param.TokenAndListParam;
 // import ca.uhn.fhir.model.api.Bundle;
 
 public class EncounterResourceProvider extends 
-	BaseJpaResourceProviderEncounterDstu2
+	JpaResourceProviderDstu2<Encounter>
 	{
 
 	@Override

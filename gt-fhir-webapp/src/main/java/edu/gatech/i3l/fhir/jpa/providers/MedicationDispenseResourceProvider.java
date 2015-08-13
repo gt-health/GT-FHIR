@@ -4,7 +4,7 @@ package edu.gatech.i3l.fhir.jpa.providers;
 import java.util.Set;
 
 import ca.uhn.fhir.jpa.dao.SearchParameterMap;
-import ca.uhn.fhir.jpa.provider.JpaResourceProviderDstu2;
+
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
