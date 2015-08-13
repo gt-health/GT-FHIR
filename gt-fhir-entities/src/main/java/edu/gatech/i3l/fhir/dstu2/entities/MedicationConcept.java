@@ -23,6 +23,8 @@ import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_CODE;
+import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_NAME;
 
 @Entity
 @Table(name="concept")
@@ -164,8 +166,10 @@ public class MedicationConcept extends BaseResourceEntity{
 	@Override
 	public String translateSearchParam(String theSearchParam) {
 		switch (theSearchParam) {
-		case Medication.SP_NAME:
+		case SP_NAME:
 			return "name";
+		case SP_CODE:
+			return "conceptCode";
 		default:
 			break;
 		}

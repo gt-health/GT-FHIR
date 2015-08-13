@@ -52,7 +52,12 @@
 			<version>${parent_version}</version>
 			<type>jar</type>
 		</dependency>
-
+		<dependency>
+			<groupId>com.phloc</groupId>
+			<artifactId>phloc-schematron-validator</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+				
 		<!-- If you are using HAPI narrative generation, you will need to include 
 			Thymeleaf as well. Otherwise the following can be omitted. -->
 		<dependency>
@@ -93,7 +98,7 @@
 			<artifactId>commons-dbcp2</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
