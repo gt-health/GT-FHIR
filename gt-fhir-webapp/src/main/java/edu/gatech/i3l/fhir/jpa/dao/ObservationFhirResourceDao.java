@@ -18,6 +18,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 	public ObservationFhirResourceDao() {
 		super();
 		setResourceEntity(edu.gatech.i3l.fhir.dstu2.entities.Observation.class); //TODO set this automatically; this is error prone since we need to remember to set this on each dao class
+		setValidateBean(true);
 	}
 	
 	@Override

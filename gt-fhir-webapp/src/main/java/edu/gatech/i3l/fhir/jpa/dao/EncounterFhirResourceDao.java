@@ -23,6 +23,7 @@ public class EncounterFhirResourceDao extends BaseFhirResourceDao<Encounter> {
 	public EncounterFhirResourceDao() {
 		super();
 		setResourceEntity(VisitOccurrenceComplement.class);
+		setValidateBean(true);
 	}
 
 	@Override

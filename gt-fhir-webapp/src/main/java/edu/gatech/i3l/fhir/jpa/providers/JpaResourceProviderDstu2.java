@@ -79,26 +79,6 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 		return myDao.getResourceType();
 	}
 
-//	@GetTags
-//	public TagList getTagsForResourceInstance(HttpServletRequest theRequest, @IdParam IdDt theResourceId) {
-//		startRequest(theRequest);
-//		try {
-//			return myDao.getTags(theResourceId);
-//		} finally {
-//			endRequest(theRequest);
-//		}
-//	}
-//
-//	@GetTags
-//	public TagList getTagsForResourceType(HttpServletRequest theRequest) {
-//		startRequest(theRequest);
-//		try {
-//			return myDao.getAllResourceTags();
-//		} finally {
-//			endRequest(theRequest);
-//		}
-//	}
-
 	@Read(version = true)
 	public T read(HttpServletRequest theRequest, @IdParam IdDt theId) {
 		startRequest(theRequest);
@@ -145,53 +125,6 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 			endRequest(theRequest);
 		}
 	}
-
-//	//@formatter:off
-//	@Operation(name="$meta", idempotent=true, returnParameters= {
-//		@OperationParam(name="return", type=MetaDt.class)
-//	})
-//	//@formatter:on
-//	public Parameters meta() {
-//		Parameters parameters = new Parameters();
-//		MetaDt metaGetOperation = getDao().metaGetOperation();
-//		parameters.addParameter().setName("return").setValue(metaGetOperation);
-//		return parameters;
-//	}
-//
-//	//@formatter:off
-//	@Operation(name="$meta", idempotent=true, returnParameters= {
-//		@OperationParam(name="return", type=MetaDt.class)
-//	})
-//	//@formatter:on
-//	public Parameters meta(@IdParam IdDt theId) {
-//		Parameters parameters = new Parameters();
-//		MetaDt metaGetOperation = getDao().metaGetOperation(theId);
-//		parameters.addParameter().setName("return").setValue(metaGetOperation);
-//		return parameters;
-//	}
-//
-//	//@formatter:off
-//	@Operation(name="$meta-add", idempotent=true, returnParameters= {
-//		@OperationParam(name="return", type=MetaDt.class)
-//	})
-//	//@formatter:on
-//	public Parameters metaAdd(@IdParam IdDt theId, @OperationParam(name = "meta") MetaDt theMeta) {
-//		Parameters parameters = new Parameters();
-//		MetaDt metaAddOperation = getDao().metaAddOperation(theId, theMeta);
-//		parameters.addParameter().setName("return").setValue(metaAddOperation);
-//		return parameters;
-//	}
-//
-//	//@formatter:off
-//	@Operation(name="$meta-delete", idempotent=true, returnParameters= {
-//		@OperationParam(name="return", type=MetaDt.class)
-//	})
-//	//@formatter:on
-//	public Parameters metaDelete(@IdParam IdDt theId, @OperationParam(name = "meta") MetaDt theMeta) {
-//		Parameters parameters = new Parameters();
-//		parameters.addParameter().setName("return").setValue(getDao().metaDeleteOperation(theId, theMeta));
-//		return parameters;
-//	}
 
 	@Update
 	public MethodOutcome update(HttpServletRequest theRequest, @ResourceParam T theResource, @IdParam IdDt theId, @ConditionalUrlParam String theConditional) {

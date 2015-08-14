@@ -10,6 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
@@ -17,6 +19,7 @@ import org.hibernate.envers.Audited;
 @Entity
 @Table(name="concept")
 @Audited
+@NamedQueries(value = { @NamedQuery( name = "findConceptByCode", query = "select id from Concept c where c.conceptCode like :code")})
 public class Concept{
 	
 	@Id

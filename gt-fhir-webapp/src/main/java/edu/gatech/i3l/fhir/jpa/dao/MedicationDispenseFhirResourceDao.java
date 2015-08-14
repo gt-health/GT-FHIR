@@ -11,6 +11,7 @@ public class MedicationDispenseFhirResourceDao  extends BaseFhirResourceDao<Medi
 	public MedicationDispenseFhirResourceDao() {
 		super();
 		setResourceEntity(DrugExposurePrescriptionDispensed.class);
+		setValidateBean(true);
 	}
 
 	@Override
