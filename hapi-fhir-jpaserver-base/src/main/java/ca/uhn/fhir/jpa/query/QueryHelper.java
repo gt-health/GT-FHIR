@@ -20,7 +20,6 @@ import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -32,7 +31,6 @@ import ca.uhn.fhir.context.RuntimeChildResourceDefinition;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import ca.uhn.fhir.context.RuntimeSearchParam;
 import ca.uhn.fhir.jpa.dao.BaseFhirDao;
-import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.BaseHapiFhirResourceDao;
 import ca.uhn.fhir.jpa.dao.IFhirDao;
 import ca.uhn.fhir.jpa.dao.IFhirResourceDao;
@@ -303,38 +301,6 @@ public class QueryHelper {
 		return new HashSet<Long>(q.getResultList());
 	}
 	
-//	protected Set<Long> addPredicateParamMissing(Set<Long> thePids, String joinName, String theParamName, Class<? extends BaseResourceIndexedSearchParam> theParamTable) {
-//		String resourceType = myContext.getResourceDefinition(myResourceType).getName();
-//
-//		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-//		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
-//		Root<ResourceTable> from = cq.from(ResourceTable.class);
-//		cq.select(from.get("myId").as(Long.class));
-//
-//		Subquery<Long> subQ = cq.subquery(Long.class);
-//		Root<? extends BaseResourceIndexedSearchParam> subQfrom = subQ.from(theParamTable); 
-//		subQ.select(subQfrom.get("myResourcePid").as(Long.class));
-//		Predicate subQname = builder.equal(subQfrom.get("myParamName"), theParamName);
-//		Predicate subQtype = builder.equal(subQfrom.get("myResourceType"), resourceType);
-//		subQ.where(builder.and(subQtype, subQname));
-//
-//		Predicate joinPredicate = builder.not(builder.in(from.get("myId")).value(subQ));
-//		Predicate typePredicate = builder.equal(from.get("myResourceType"), resourceType);
-//		
-//		if (thePids.size() > 0) {
-//			Predicate inPids = (from.get("myId").in(thePids));
-//			cq.where(builder.and(inPids, typePredicate, joinPredicate));
-//		} else {
-//			cq.where(builder.and(typePredicate, joinPredicate));
-//		}
-//		
-//		ourLog.info("Adding :missing qualifier for parameter '{}'", theParamName);
-//		
-//		TypedQuery<Long> q = myEntityManager.createQuery(cq);
-//		List<Long> resultList = q.getResultList();
-//		HashSet<Long> retVal = new HashSet<Long>(resultList);
-//		return retVal;
-//	}
 	
 	public Set<Long> searchByReference(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
 		assert theParamName.contains(".") == false;
@@ -469,186 +435,7 @@ public class QueryHelper {
 		return new HashSet<Long>(q.getResultList());
 	}
 	
-	private Set<Long> addPredicateParamMissingResourceLink(Set<Long> thePids, String joinName, String theParamName) {
-		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
-		Root<? extends IResourceEntity> from = cq.from(myResourceEntity);
-		cq.select(from.get("id").as(Long.class));
-
-		Subquery<Long> subQ = cq.subquery(Long.class);
-		Root<? extends IResourceEntity> subQfrom = subQ.from(myResourceEntity);
-		subQ.select(subQfrom.get("id").as(Long.class));
-
-		// subQ.where(builder.equal(subQfrom.get("myParamName"), theParamName));
-		Predicate path = createResourceLinkPathPredicate(theParamName, builder, subQfrom);
-		subQ.where(path);
-
-		Predicate joinPredicate = builder.not(builder.in(from.get("id")).value(subQ));
-		//Predicate typePredicate = builder.equal(from.get("myResourceType"), myResourceType);
-
-		if (thePids.size() > 0) {
-			Predicate inPids = (from.get("myId").in(thePids));
-			cq.where(builder.and(inPids, //typePredicate, 
-					joinPredicate));
-		} else {
-			cq.where(builder.and(//typePredicate, 
-					joinPredicate));
-		}
-
-		TypedQuery<Long> q = myEntityManager.createQuery(cq);
-		List<Long> resultList = q.getResultList();
-		HashSet<Long> retVal = new HashSet<Long>(resultList);
-		return retVal;
-	}
 	
-//	private Set<Long> addPredicateReference(String theParamName, Set<Long> thePids, List<List<? extends IQueryParameterType>> nextParamEntry) {
-//		assert theParamName.contains(".") == false;
-//		Set<Long> pids = new HashSet<Long>();
-//		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-//		CriteriaQuery<Long> cq = builder.createQuery(Long.class);
-//		Root<? extends BaseResourceEntity> from = cq.from(myResourceEntity);
-//		cq.select(from.get("id").as(Long.class));
-//	
-//		List<Predicate> codePredicates = new ArrayList<Predicate>();
-//		for (List<? extends IQueryParameterType> nextParam : nextParamEntry) {
-//			for (IQueryParameterType nextOr : nextParam) {
-//				IQueryParameterType params = nextOr;
-//				
-//				if (params instanceof ReferenceParam) {
-//					ReferenceParam ref = (ReferenceParam) params;
-//					
-//					String resourceId = ref.getValueAsQueryToken();//the id of the resource
-//					
-//					
-//					if (isBlank(ref.getChain())) {
-//						if (resourceId.contains("/")) {
-//							IdDt dt = new IdDt(resourceId);
-//							resourceId = dt.getIdPart();
-//						}
-//						
-//					} else {
-//						Predicate predicate = null;
-//						Path<Object> path = null;
-//						Set<Long> joinPids = new HashSet<Long>();
-//	//				String chain = theParamName+"."+ref.getChain();
-//						//chain = (String) new Mirror().on(myResourceEntity).invoke().method("predicateBuilder.translateLink").withArgs(chain);
-//						String[] links = ref.getChain().contains(".") ? ref.getChain().split("\\.") : new String[]{ref.getChain()};
-//						try {
-//							Class<?> classRef = myResourceEntity;
-//							String METHOD_NAME = "predicateBuilder.translateLink";
-//							String link = (String) myResourceEntity.getDeclaredMethod(METHOD_NAME, String.class).invoke(myResourceEntity.newInstance(), theParamName);
-//							path = from.get(link);
-//							for (int i = 0; ; i++) {
-//								classRef = classRef.getDeclaredField(link).getType();
-//								if(i >= links.length - 1) break;
-//								link = (String) classRef.getDeclaredMethod(METHOD_NAME, String.class).invoke(classRef, links[i]);
-//								path = path.get(link);
-//							}
-//							RuntimeResourceDefinition resourceDef = myContext.getResourceDefinition((String)classRef.getDeclaredMethod("getResourceType").invoke(classRef.newInstance()));
-//							String tail = links[links.length - 1];
-//							RuntimeSearchParam paramDef = resourceDef.getSearchParam(tail); 
-////							IFhirResourceDao<?> dao = baseFhirDao.getDao(resourceDef.getImplementingClass());
-////							if (dao == null) {
-////								ourLog.debug("No DAO found for type {}", resourceDef.getImplementingClass().getSimpleName(), paramDef);
-////								continue;
-////							}
-////							if (paramDef != null) {
-////								switch (paramDef.getParamType()) {
-////								case DATE:
-////									joinPids = dao.addPredicateDate(tail, pids, nextParam);
-////									break;
-////								case QUANTITY:
-////									joinPids = dao.addPredicateQuantity(tail, pids, nextParam);
-////									break;
-////								case STRING:
-////									joinPids = dao.addPredicateString(tail, pids, nextParam);
-////									break;
-////								case TOKEN:
-////									joinPids = dao.addPredicateToken(tail, pids, nextParam);
-////									break;
-////								case NUMBER:
-////									joinPids = dao.addPredicateNumber(tail, pids, nextParam);
-////									break;
-////								case COMPOSITE:
-////									joinPids = dao.addPredicateComposite(paramDef, pids, nextParam);
-////									break;
-////								default:
-////									break;
-////								}
-////								if (joinPids.isEmpty()) {
-////									return new HashSet<Long>();
-////								}
-////							}
-//						} catch (NoSuchMethodException e){
-//								
-//						}catch(SecurityException e) {
-//							e.printStackTrace();
-//						} catch (IllegalAccessException e) {
-//							e.printStackTrace();
-//						} catch (IllegalArgumentException e) {
-//							e.printStackTrace();
-//						} catch (InvocationTargetException e) {
-//							e.printStackTrace();
-//						} catch (InstantiationException e) {
-//							e.printStackTrace();
-//						} catch (NoSuchFieldException e) {
-//							e.printStackTrace();
-//						}
-//						predicate = path.get("id").as(Long.class).in(joinPids);
-//						codePredicates.add(predicate);
-//					}
-//					
-//				} else {
-//					throw new IllegalArgumentException("Invalid token type: " + params.getClass());
-//				}
-//				
-//			}
-//			
-//		}
-//	
-//		Predicate masterCodePredicate = builder.or(codePredicates.toArray(new Predicate[0]));
-//		cq.where(builder.and( masterCodePredicate));
-//		TypedQuery<Long> q = myEntityManager.createQuery(cq);
-//		
-//		return new HashSet<Long>(q.getResultList());
-//	}
-//
-//	private boolean addPredicateMissingFalseIfPresent(CriteriaBuilder theBuilder, String theParamName, Root<? extends BaseResourceIndexedSearchParam> from, List<Predicate> codePredicates,
-//			IQueryParameterType nextOr) {
-//		boolean missingFalse = false;
-//		if (nextOr.getMissing() != null) {
-//			if (nextOr.getMissing().booleanValue() == true) {
-//				throw new InvalidRequestException(myContext.getLocalizer().getMessage(BaseHapiFhirResourceDao.class, "multipleParamsWithSameNameOneIsMissingTrue", theParamName));
-//			}
-//			Predicate singleCode = from.get("id").isNotNull();
-//			Predicate name = theBuilder.equal(from.get("myParamName"), theParamName);
-//			codePredicates.add(theBuilder.and(name, singleCode));
-//			missingFalse = true;
-//		}
-//		return missingFalse;
-//	}
-
-	private boolean addPredicateMissingFalseIfPresentForResourceLink(CriteriaBuilder theBuilder, String theParamName, Root<? extends IResourceEntity> from, List<Predicate> codePredicates, IQueryParameterType nextOr) {
-		boolean missingFalse = false;
-		if (nextOr.getMissing() != null) {
-			if (nextOr.getMissing().booleanValue() == true) {
-				throw new InvalidRequestException(myContext.getLocalizer().getMessage(BaseFhirResourceDao.class, "multipleParamsWithSameNameOneIsMissingTrue", theParamName));
-			}
-			Predicate singleCode = from.get("").isNotNull();//FIXME
-			Predicate name = createResourceLinkPathPredicate(theParamName, theBuilder, from);
-			codePredicates.add(theBuilder.and(name, singleCode));
-			missingFalse = true;
-		}
-		return missingFalse;
-	} 
-	
-	private Predicate createResourceLinkPathPredicate(String theParamName, CriteriaBuilder builder, Root<? extends IResourceEntity> subQfrom) {
-		RuntimeSearchParam param = myContext.getResourceDefinition(myResourceType).getSearchParam(theParamName);
-		List<String> path = param.getPathsSplit();
-		Predicate type = subQfrom.get("").in(path);
-		//FIXME
-		return type;
-	}
 	
 	public Set<Long> searchByToken(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
 		if (theList == null || theList.isEmpty()) {

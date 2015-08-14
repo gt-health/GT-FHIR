@@ -26,6 +26,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 
 import net.vidageek.mirror.dsl.Mirror;
 
@@ -76,7 +78,6 @@ import ca.uhn.fhir.model.primitive.UriDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
-import ca.uhn.fhir.parser.IParserErrorHandler.IParseLocation;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
@@ -117,8 +118,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	private Class<? extends IResourceEntity> myResourceEntity;
 	
 	private FhirContext myContext;
-
 	private QueryHelper myQueryHelper ;
+	private Validator myBeanValidator;
+
+	private boolean myValidateBean; 
+
 
 	public abstract PredicateBuilder getPredicateBuilder();
 	
@@ -132,6 +136,22 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			myQueryHelper = new QueryHelper( this.myEntityManager, this.myResourceEntity, this.myResourceType, this.myContext, this.baseFhirDao);
 			myQueryHelper.setPredicateBuilder(getPredicateBuilder());
 		}
+	}
+
+	public Validator getBeanValidator() {
+		return myBeanValidator;
+	}
+
+	public void setBeanValidator(Validator theBeanValidator) { 
+		this.myBeanValidator = theBeanValidator;
+	}
+
+	public boolean isValidateBean() {
+		return myValidateBean;
+	}
+
+	public void setValidateBean(boolean theValidateBean) {
+		this.myValidateBean = theValidateBean;
 	}
 
 	@Override
@@ -198,9 +218,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 	@Override
 	public DaoMethodOutcome create(T theResource, String theIfNoneExist, boolean thePerformIndexing) {
-		if (isNotBlank(theResource.getId().getIdPart())) {
-			throw new InvalidRequestException(baseFhirDao.getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedId", theResource.getId().getIdPart()));
-		}
+//		if (isNotBlank(theResource.getId().getIdPart())) {
+//			throw new InvalidRequestException(baseFhirDao.getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedId", theResource.getId().getIdPart()));
+//		}
 
 		return doCreate(theResource, theIfNoneExist, thePerformIndexing);
 	}
@@ -209,6 +229,16 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		StopWatch w = new StopWatch();
 		BaseResourceEntity entity = (BaseResourceEntity) new Mirror().on(myResourceEntity).invoke().constructor().withoutArgs();
 		entity.constructEntityFromResource(theResource);
+		if(myValidateBean){
+			Set<ConstraintViolation<BaseResourceEntity>> violations = myBeanValidator.validate(entity);
+			if(!violations.isEmpty()){
+				OperationOutcome oo = new OperationOutcome();
+				for (ConstraintViolation<BaseResourceEntity> violation : violations) {
+					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails(violation.getPropertyPath()+" "+ violation.getMessage());
+				}
+				throw new UnprocessableEntityException(oo);
+			}
+		}
 
 		if (isNotBlank(theIfNoneExist)) {//FIXME remove this if not needed
 			Set<Long> match = DaoUtils.processMatchUrl(theIfNoneExist, myResourceType, myContext, getBaseFhirDao().getDao(myResourceType));
