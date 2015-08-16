@@ -29,7 +29,7 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 @Audited
 public class Provider extends BaseResourceEntity {
 
-	public static final String RESOURCE_TYPE = "Practitioner|Organization";
+	public static final String RESOURCE_TYPE = "Practitioner";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
