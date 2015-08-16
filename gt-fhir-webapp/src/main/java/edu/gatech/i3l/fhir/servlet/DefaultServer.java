@@ -21,6 +21,7 @@ import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import edu.gatech.i3l.fhir.dstu2.entities.OmopConceptMapping;
+import edu.gatech.i3l.hl7.fhir.security.SMARTonFHIRConformanceStatement;
 
 public class DefaultServer extends RestfulServer {
 
@@ -66,8 +67,10 @@ public class DefaultServer extends RestfulServer {
 		 * is a nice addition.
 		 */
 			IFhirSystemDao<Bundle> systemDao = myAppCtx.getBean("mySystemDaoDstu2", IFhirSystemDao.class);
-			JpaConformanceProviderDstu2 confProvider = new JpaConformanceProviderDstu2(this, systemDao);
+//			JpaConformanceProviderDstu2 confProvider = new JpaConformanceProviderDstu2(this, systemDao);
+			SMARTonFHIRConformanceStatement confProvider = new SMARTonFHIRConformanceStatement(this, systemDao);
 			confProvider.setImplementationDescription("FHIR JPA Server");
+			confProvider.setPublisher("Georgia Tech - I3L");
 			setServerConformanceProvider(confProvider);
 
 		/*

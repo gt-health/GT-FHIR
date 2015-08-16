@@ -8,7 +8,9 @@ import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -25,9 +27,12 @@ import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
+import ca.uhn.fhir.model.dstu2.valueset.ObservationReliabilityEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -307,9 +312,13 @@ public class Observation extends BaseResourceEntity{
 		observation.setId(this.getIdDt());
 		
 		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(), this.observationConcept.getConceptCode());
-		code.getCodingFirstRep().setDisplay(this.observationConcept.toString());
+		//code.getCodingFirstRep().setDisplay(this.observationConcept.toString());
+		code.getCodingFirstRep().setDisplay(this.observationConcept.getName());
 		observation.setCode(code);
 		observation.setStatus(STATUS);
+		// Smart on FHIR wants reliability. We don't have this in the database. 
+		// So, we put "ok".
+		observation.setReliability(ObservationReliabilityEnum.OK);
 		
 		IDatatype value = null;
 		if (this.valueAsString != null){
@@ -330,6 +339,41 @@ public class Observation extends BaseResourceEntity{
 			value = valueAsConcept;
 		}
 		observation.setValue(value);
+		
+		// We may have related resources within observation. 
+		// If this observation has the relationshipType, it should be specified
+		// in the observation source field with comma separated values.
+		String[] relatedResource = this.sourceValue.split(",");
+		if (relatedResource.length > 1) {
+			ObservationRelationshipTypeEnum obsRelationshipType = null;
+			if (relatedResource[0].equalsIgnoreCase("COMP")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.HAS_COMPONENT;
+			} else if (relatedResource[0].equalsIgnoreCase("MBR")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.HAS_MEMBER;				
+			} else if (relatedResource[0].equalsIgnoreCase("DRIV")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.DERIVED_FROM;				
+			} else if (relatedResource[0].equalsIgnoreCase("SEQL")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;				
+			} else if (relatedResource[0].equalsIgnoreCase("RPLC")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;				
+			} else if (relatedResource[0].equalsIgnoreCase("QUALF")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;				
+			} else if (relatedResource[0].equalsIgnoreCase("INTF")) {
+				obsRelationshipType = ObservationRelationshipTypeEnum.INTERFERED_BY;				
+			} 
+			
+			if (obsRelationshipType != null) {
+				List<Related>relateds = new ArrayList<Related>();
+				for (int i=1; i<relatedResource.length; i++) {
+					Related related = new Related();
+					related.setType(obsRelationshipType);
+					ResourceReferenceDt referencedResDt = new ResourceReferenceDt("Observation/"+relatedResource[i]);
+					related.setTarget(referencedResDt);
+					relateds.add(related);
+				}
+				observation.setRelated(relateds);
+			}
+		}
 		
 		if(//this.date != null && 
 				this.time != null){ //WARNING notice that the resource field 'appliesDate' relies only on the entity field 'time'
