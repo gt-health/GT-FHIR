@@ -16,6 +16,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -31,6 +32,7 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -51,26 +53,37 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="person_id")
+	@JoinColumn(name="person_id", nullable=false)
+	@NotNull
 	private Person person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="condition_concept_id")
+	@JoinColumn(name="condition_concept_id", nullable=false)
+	@NotNull
 	private Concept conditionConcept;
 	
-	@Column(name="condition_start_date")
+	@Column(name="condition_start_date", nullable=false)
+	@NotNull
 	private Date startDate;
 	
-	@Column(name="condition_end_date")
+	@Column(name="condition_end_date", nullable=false)
 	private Date endDate;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="condition_type_concept_id")
+	@JoinColumn(name="condition_type_concept_id", nullable=false)
+	@NotNull
 	private Concept conditionTypeConcept;
 	
 	@Column(name="stop_reason")
 	private String stopReason;
 	
+	/**
+	 * @omop 
+	 * @fhir Asserter:
+	 * 			person who asserts this condition (Practitioner or Patient)
+	 * @fhirVersion 0.4.0
+	 * @omopVersion 4.0
+	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
@@ -103,11 +116,139 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		this.sourceValue = sourceValue;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.gatech.i3l.fhir.dstu2.entities.IResourceTable#getRelatedResource()
-	 */
+	
+	@Override
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	@Override
+	public String getResourceType() {
+		return RESOURCE_TYPE;
+	}
+
+	public Person getPerson() {
+		return person;
+	}
+
+	public void setPerson(Person person) {
+		this.person = person;
+	}
+
+	public Concept getConditionConcept() {
+		return conditionConcept;
+	}
+
+	public void setConditionConcept(Concept conditionConcept) {
+		this.conditionConcept = conditionConcept;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public Concept getConditionTypeConcept() {
+		return conditionTypeConcept;
+	}
+
+	public void setConditionTypeConcept(Concept conditionTypeConcept) {
+		this.conditionTypeConcept = conditionTypeConcept;
+	}
+
+	public String getStopReason() {
+		return stopReason;
+	}
+
+	public void setStopReason(String stopReason) {
+		this.stopReason = stopReason;
+	}
+
+	public Provider getProvider() {
+		return provider;
+	}
+
+	public void setProvider(Provider provider) {
+		this.provider = provider;
+	}
+
+	public VisitOccurrence getEncounter() {
+		return encounter;
+	}
+
+	public void setEncounter(VisitOccurrence encounter) {
+		this.encounter = encounter;
+	}
+
+	public String getSourceValue() {
+		return sourceValue;
+	}
+
+	public void setSourceValue(String sourceValue) {
+		this.sourceValue = sourceValue;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		if (resource instanceof Condition) {
+			Condition condition = (Condition) resource;
+			checkNullReferences();
+			this.person.setId(condition.getPatient().getReference().getIdPartAsLong());
+
+			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
+			this.conditionConcept.setId(ocm.get(condition.getCode().getCodingFirstRep().getCode()));
+
+			IDatatype onSetDate = condition.getOnset();
+			if (onSetDate instanceof DateTimeDt) {
+				DateTimeDt dateTimeDt = (DateTimeDt) onSetDate;
+				this.startDate = dateTimeDt.getValue();
+			} else if (onSetDate instanceof PeriodDt) {
+				PeriodDt periodDt = (PeriodDt) onSetDate;
+				this.startDate = periodDt.getStart();
+				this.endDate = periodDt.getEnd();
+			}
+
+			IdDt encounterReference = condition.getEncounter().getReference();
+			if (encounterReference == null) {
+				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
+				this.conditionTypeConcept.setId(38000245l); // EHR Problem List Entry = 38000245
+			} else {
+				this.conditionTypeConcept.setId(44786627l);
+				this.encounter.setId(encounterReference.getIdPartAsLong());
+			}
+
+			// this.stopReason = stopReason; NOTE: no FHIR parameter for
+			// stopReason.
+
+			IdDt asserterReference = condition.getAsserter().getReference();
+			if (asserterReference != null) {
+				if (asserterReference.getResourceType() != null && asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
+					long providerId = asserterReference.getIdPartAsLong();
+					this.provider.setId(providerId);
+				}
+			}
+
+			this.sourceValue = "FHIRCREATE";
+		}
+
+		return this;
+	}
+	
 	@Override
 	public Condition getRelatedResource() {
 		Condition condition = new Condition();
@@ -115,7 +256,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// Populate condition parameters.
 		// Refer to 4.3.3 at http://hl7-fhir.github.io/condition.html
 
-		// set Identifier
 		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
@@ -202,154 +342,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return condition;
 	}
 
-	public Class<? extends IResource> getRelatedResourceType() {
-		return Condition.class;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getId()
-	 */
-	@Override
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ca.uhn.fhir.jpa.entity.BaseHasResource#getResourceType()
-	 */
-	@Override
-	public String getResourceType() {
-		return RESOURCE_TYPE;
-	}
-
-	public Person getPerson() {
-		return person;
-	}
-
-	public void setPerson(Person person) {
-		this.person = person;
-	}
-
-	public Concept getConditionConcept() {
-		return conditionConcept;
-	}
-
-	public void setConditionConcept(Concept conditionConcept) {
-		this.conditionConcept = conditionConcept;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
-	}
-
-	public Concept getConditionTypeConcept() {
-		return conditionTypeConcept;
-	}
-
-	public void setConditionTypeConcept(Concept conditionTypeConcept) {
-		this.conditionTypeConcept = conditionTypeConcept;
-	}
-
-	public String getStopReason() {
-		return stopReason;
-	}
-
-	public void setStopReason(String stopReason) {
-		this.stopReason = stopReason;
-	}
-
-	public Provider getProvider() {
-		return provider;
-	}
-
-	public void setProvider(Provider provider) {
-		this.provider = provider;
-	}
-
-	public VisitOccurrence getEncounter() {
-		return encounter;
-	}
-
-	public void setEncounter(VisitOccurrence encounter) {
-		this.encounter = encounter;
-	}
-
-	public String getSourceValue() {
-		return sourceValue;
-	}
-
-	public void setSourceValue(String sourceValue) {
-		this.sourceValue = sourceValue;
-	}
-
-	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
-		if (resource instanceof Condition) {
-			Condition condition = (Condition) resource;
-			checkNullReferences();
-			this.person.setId(condition.getPatient().getReference().getIdPartAsLong());
-
-			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-			this.conditionConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, condition.getCode().getCodingFirstRep().getCode()));//FIXME
-
-			IDatatype onSetDate = condition.getOnset();
-			if (onSetDate instanceof DateTimeDt) {
-				DateTimeDt dateTimeDt = (DateTimeDt) onSetDate;
-				this.startDate = dateTimeDt.getValue();
-			} else if (onSetDate instanceof PeriodDt) {
-				PeriodDt periodDt = (PeriodDt) onSetDate;
-				this.startDate = periodDt.getStart();
-				this.endDate = periodDt.getEnd();
-			}
-
-			ResourceReferenceDt encounterReference = condition.getEncounter();
-			if (encounterReference == null) {
-				// No Resource Reference for Encounter.
-				// We just assumed that this is EHR Problem List Entry =
-				// 38000245
-				this.conditionTypeConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, "38000245")); 
-			} else {
-				this.conditionTypeConcept.setId(ocm.get(OmopConceptMapping.CONDITION_OCCURENCE, "44786627"));
-				long encounterId = encounterReference.getReference().getIdPartAsLong();
-				this.encounter.setId(encounterId);
-			}
-
-			// this.stopReason = stopReason; NOTE: no FHIR parameter for
-			// stopReason.
-
-			ResourceReferenceDt asserterReference = condition.getAsserter();
-			if (asserterReference != null) {
-				if (asserterReference.getReference().getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
-					long providerId = asserterReference.getReference().getIdPartAsLong();
-					this.provider.setId(providerId);
-				}
-			}
-
-			this.sourceValue = "FHIRCREATE";
-		}
-
-		return this;
-	}
 
 	private void checkNullReferences() {
 		if(this.person == null)

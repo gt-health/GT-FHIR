@@ -22,7 +22,9 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 
 
 	public PatientFhirResourceDao() {
+		super();
 		setResourceEntity(PersonComplement.class);
+		setValidateBean(true);
 	}
 
 	@Override

@@ -23,6 +23,7 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 	public ConditionFhirResourceDao() {
 		super();
 		setResourceEntity(ConditionOccurrenceComplement.class);
+		setValidateBean(true);
 	}
 	
 	@Override

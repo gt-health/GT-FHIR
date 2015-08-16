@@ -22,7 +22,7 @@
 	<bean id="mySystemProviderDstu2" class="ca.uhn.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
-
+	<bean id="myBeanValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 	<!-- The following beans' definitions are ordered alphabetically -->
 
  	<util:list id="myResourceProvidersDstu2">
@@ -43,6 +43,7 @@
  
     
 	<bean id="myConditionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ConditionFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Condition"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -53,6 +54,7 @@
 	</bean>
 	
 	<bean id="myEncounterDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.EncounterFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Encounter"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -73,6 +75,7 @@
 	</bean> -->
 	
 	<bean id="myMedicationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Medication"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -83,6 +86,7 @@
 	</bean>
 	
 	<bean id="myMedicationDispenseDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationDispenseFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationDispense"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -93,6 +97,7 @@
 	</bean>
 	
 	<bean id="myMedicationPrescriptionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationPrescriptionFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationPrescription"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -103,6 +108,7 @@
 	</bean>
 	
 	<bean id="myObservationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ObservationFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Observation"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
@@ -113,6 +119,7 @@
 	</bean>
  
 	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Patient"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
