@@ -37,9 +37,7 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 	private FhirContext myContext;
 	private IFhirResourceDao<T> myDao;
 
-	public JpaResourceProviderDstu2() {
-		// nothing
-	}
+	public JpaResourceProviderDstu2() {}
 
 	@CoverageIgnore
 	public JpaResourceProviderDstu2(IFhirResourceDao<T> theDao) {

@@ -67,7 +67,6 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	private Date startDate;
 	
 	@Column(name="condition_end_date", nullable=false)
-	@NotNull
 	private Date endDate;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -78,6 +77,13 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="stop_reason")
 	private String stopReason;
 	
+	/**
+	 * @omop 
+	 * @fhir Asserter:
+	 * 			person who asserts this condition (Practitioner or Patient)
+	 * @fhirVersion 0.4.0
+	 * @omopVersion 4.0
+	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="associated_provider_id")
 	private Provider provider;

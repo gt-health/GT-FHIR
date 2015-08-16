@@ -1362,7 +1362,11 @@ public class Controller {
 			theModelMap.put("resultBodyIsLong", resultBodyText.length() > 1000);
 			theModelMap.put("requestHeaders", requestHeaders);
 			theModelMap.put("responseHeaders", responseHeaders);
-			theModelMap.put("narrative", narrativeString);
+			if(narrativeString != null){
+				theModelMap.put("narrative", narrativeString);
+			} else {
+				theModelMap.put("resultMessage", "div");
+			}
 			theModelMap.put("latencyMs", theLatency);
 
 		} catch (Exception e) {
