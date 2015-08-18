@@ -90,6 +90,12 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>net.sourceforge.cobertura</groupId>
+			<artifactId>cobertura</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+
 		<!-- You may not need this if you are deploying to an application server 
 			which provides database connection pools itself. -->
 		<dependency>

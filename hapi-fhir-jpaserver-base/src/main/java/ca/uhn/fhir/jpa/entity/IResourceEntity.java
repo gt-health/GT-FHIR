@@ -47,7 +47,7 @@ public interface IResourceEntity {
 	 * Version to support History features.
 	 * @return The entity's version in the history of updates.
 	 */
-	public long getVersion();
+	public Long getVersion();
 
 	public IdDt getIdDt();
 }

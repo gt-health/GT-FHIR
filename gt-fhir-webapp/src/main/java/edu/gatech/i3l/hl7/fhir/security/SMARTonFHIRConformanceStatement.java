@@ -42,7 +42,7 @@ public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2
 		try {
 			InetAddress addr = java.net.InetAddress.getLocalHost();
 	        System.out.println(addr);
-	        String hostname = addr.getHostName();    
+	        String hostname = addr.getCanonicalHostName();    
 	        System.out.println("Hostname of system = " + hostname);
 	        
 	    	authorizeURIvalue = "http://"+hostname+":9085/authorize";
