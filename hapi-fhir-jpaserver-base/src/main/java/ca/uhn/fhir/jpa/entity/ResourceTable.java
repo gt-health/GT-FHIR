@@ -215,7 +215,7 @@ public class ResourceTable extends BaseHasResource implements Serializable {
 		return myTags;
 	}
 
-	public long getVersion() {
+	public Long getVersion() {
 		return myVersion;
 	}
 

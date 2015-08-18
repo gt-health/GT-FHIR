@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 
@@ -46,6 +47,7 @@ public class Person extends BaseResourceEntity{
 	private Long id;
 	
 	@Column(name="year_of_birth", nullable=false)
+	@NotNull
 	private Integer yearOfBirth;
 	
 	@Column(name="month_of_birth")
@@ -72,7 +74,8 @@ public class Person extends BaseResourceEntity{
 	private String genderSourceValue;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="gender_concept_id")
+	@JoinColumn(name="gender_concept_id", nullable= false)
+	@NotNull
 	private Concept genderConcept;
 	
 	@Column(name="ethnicity_source_value")

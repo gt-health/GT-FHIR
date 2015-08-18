@@ -21,6 +21,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
@@ -52,18 +55,21 @@ public class Observation extends BaseResourceEntity{
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", nullable=false)
+	@NotNull
 	private Person person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="observation_concept_id", nullable=false)
+	@NotNull
 	private Concept observationConcept;
 	
 	@Column(name="observation_date", nullable=false)
-	//@Type(type="org.joda.time.contrib.hibernate.PersistentLocalDate")
+	@Temporal(TemporalType.DATE)
+	@NotNull
 	private Date date;
 	
 	@Column(name="observation_time")
-	//@Type(type="org.joda.time.contrib.hibernate.PersistentLocalTimeAsTime")
+	@Temporal(TemporalType.TIME)
 	private Date time;
 	
 	@Column(name="value_as_string")
@@ -88,6 +94,7 @@ public class Observation extends BaseResourceEntity{
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="observation_type_concept_id", nullable=false)
+	@NotNull
 	private Concept type;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -95,7 +102,7 @@ public class Observation extends BaseResourceEntity{
 	private Provider provider;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="visit_occurence_id")
+	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 	
 	@Column(name="observation_source_value")
@@ -279,15 +286,21 @@ public class Observation extends BaseResourceEntity{
 		this.person.setId(observation.getSubject().getReference().getIdPartAsLong()); //TODO set subject to the other types of resources specified on fhir
 		this.visitOccurrence.setId(observation.getEncounter().getReference().getIdPartAsLong());
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-//		this.observationConcept.setId(ocm.get(OmopConceptMapping.GENDER, observation.getCode().getCodingFirstRep().getCode())); 
+		Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(), OmopConceptMapping.LOINC_CODE);
+		if(observationConceptId != null)
+			this.observationConcept.setId(observationConceptId); 
 		IDatatype value = observation.getValue();
 		if(value instanceof QuantityDt){
+			Long unitId = ocm.get(((QuantityDt) value).getUnits(), OmopConceptMapping.UCUM_CODE, OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
 			this.valueAsNumber = ((QuantityDt) value).getValue();
-//			this.unit.setId(ocm.get(OmopConceptMapping.GENDER, ((QuantityDt) value).getUnits())); 
+			if(unitId != null)
+				this.unit.setId(unitId); 
 			this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
 			this.rangeLow = observation.getReferenceRangeFirstRep().getLow().getValue();
 		} else if(value instanceof CodeableConceptDt){
-//			this.valueAsConcept.setId(ocm.get(OmopConceptMapping.GENDER, ((CodeableConceptDt) value).getCodingFirstRep().getCode()));
+			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(), OmopConceptMapping.CLINICAL_FINDING);
+			if(valueAsConceptId != null)
+				this.valueAsConcept.setId(valueAsConceptId);
 		} else {
 			this.valueAsString = ((StringDt)value).getValue();
 		}

@@ -114,7 +114,7 @@ public class ResourceHistoryTable extends BaseHasResource implements Serializabl
 	}
 
 	@Override
-	public long getVersion() {
+	public Long getVersion() {
 		return myResourceVersion;
 	}
 

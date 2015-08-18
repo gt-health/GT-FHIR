@@ -119,7 +119,7 @@ public abstract class BaseHasResource extends BaseResourceEntity{
 		return new InstantDt(myUpdated);
 	}
 
-	public abstract long getVersion();
+	public abstract Long getVersion();
 
 	public boolean isHasTags() {
 		return myHasTags;

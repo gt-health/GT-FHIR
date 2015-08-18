@@ -38,16 +38,25 @@ public class OmopConceptMapping implements Runnable {
 	public static final String MARITAL_STATUS = "Marital Status";
 	public static final String DRUG_EXPOSURE_TYPE = "Drug Exposure Type";
 	public static final String CLINICAL_FINDING = "Clinical finding";
+	public static final String QUALIFIER_VALUE = "Qualifier value";
 	public static final String PROCEDURE = "Procedure";
 	public static final String OBSERVABLE_ENTITY = "Observable entity";
 	public static final String CONDITION_TYPE = "Condition Occurrence Type";
+	public static final String LOINC_CODE = "LOINC Code";
+	public static final String UCUM_CODE = "UCUM";
+	public static final String UCUM_CODE_STANDARD = "UCUM Standard";
+	public static final String UCUM_CODE_CUSTOM = "UCUM Custom";
+	
 	
 	/*
 	 * Vocabularies
 	 */
-	public static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
-	public static final String SNOMED_CT = "SNOMED-CT";
-	public static final String OMOP_CONDITION_TYPE = "OMOP Condition Occurrence Type";
+	private static final String OMOP_4_5 = "OMOP Vocabulary v4.5 20-Oct-2014";
+	private static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
+	private static final String SNOMED_CT = "SNOMED-CT";
+	private static final String LOINC = "LOINC";
+	private static final String OMOP_CONDITION_TYPE = "OMOP Condition Occurrence Type";
+	private static final String UCUM = "UCUM";
 	
 	/**
 	 * A mapping for some of the existing concepts in the database. The key for the outter mapping is the Concept Class.
@@ -61,8 +70,13 @@ public class OmopConceptMapping implements Runnable {
 		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 		concepts.put(GENDER, findConceptMap(builder, GENDER, GENDER_VOCABULARY));
 		concepts.put(DRUG_EXPOSURE_TYPE, findConceptMap(builder, DRUG_EXPOSURE_TYPE, null));
-//		concepts.put(CLINICAL_FINDING, findConceptMap(builder, CLINICAL_FINDING, SNOMED_CT));
+		concepts.put(CLINICAL_FINDING, findConceptMap(builder, CLINICAL_FINDING, SNOMED_CT)); //TODO test size of the object/map
 		concepts.put(CONDITION_TYPE, findConceptMap(builder, CONDITION_TYPE, OMOP_CONDITION_TYPE));
+		concepts.put(QUALIFIER_VALUE, findConceptMap(builder, QUALIFIER_VALUE, OMOP_4_5));
+		concepts.put(LOINC_CODE, findConceptMap(builder, LOINC_CODE, LOINC));
+		concepts.put(UCUM_CODE, findConceptMap(builder, UCUM_CODE, UCUM));
+		concepts.put(UCUM_CODE_STANDARD, findConceptMap(builder, UCUM_CODE, UCUM));
+		concepts.put(UCUM_CODE_CUSTOM, findConceptMap(builder, UCUM_CODE, UCUM));
 	}
 	
 	public static OmopConceptMapping getInstance(){
@@ -106,17 +120,18 @@ public class OmopConceptMapping implements Runnable {
 		loadConcepts();
 	}
 
-	public Long get(String conceptClass, String conceptValue) {
+	public Long get(String conceptValue, String... conceptClass) {
 		Long retVal = null;
-		Map<String, Long> concepts = this.concepts.get(conceptClass);
-		if(concepts != null){
-			retVal = concepts.get(conceptValue.toLowerCase()); 
-			if(retVal == null){
-				ourLog.warn("A respective value for ? '?' could not be found in the database.", conceptClass, conceptValue);
+		for (int i = 0; i < conceptClass.length; i++) {
+			Map<String, Long> concepts = this.concepts.get(conceptClass[i]);
+			if(concepts != null){
+				retVal = concepts.get(conceptValue.toLowerCase()); 
+				if(retVal != null){
+					return retVal;
+				}
 			}
-		}else {
-			ourLog.warn("Unknown class ?", conceptClass);
 		}
+		ourLog.warn("A respective value for {} '{}' could not be found in the database.", conceptClass, conceptValue);
 		return retVal;
 	}
 	
