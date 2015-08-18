@@ -151,9 +151,12 @@ public class ConditionOccurrenceComplement extends ConditionOccurrence {
 					String codeString = severityCode.getCode();
 					String uri = severityCode.getSystem();
 					if (codeString != null && uri != null && !codeString.isEmpty() && !uri.isEmpty()) {
-						if(severityConcept == null)
-							severityConcept = new Concept();
-						severityConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.CLINICAL_FINDING, severityCode.getCode()));//FIXME
+						Long severityConceptId = OmopConceptMapping.getInstance().get(severityCode.getCode(), OmopConceptMapping.QUALIFIER_VALUE);
+						if(severityConceptId != null){
+							if(severityConcept == null)
+								severityConcept = new Concept();
+							severityConcept.setId(severityConceptId);
+						}
 					} 
 					
 					String display = severityCode.getDisplay();
