@@ -30,6 +30,7 @@ import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Audited

@@ -1,11 +1,11 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
+import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
 import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,8 +38,11 @@ import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationReliabilityEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
+import edu.gatech.i3l.omop.enums.Omop4FixedIds;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Table(name="observation")
@@ -69,7 +72,7 @@ public class Observation extends BaseResourceEntity{
 	private Date date;
 	
 	@Column(name="observation_time")
-	@Temporal(TemporalType.TIME)
+//	@Temporal(TemporalType.TIME)
 	private Date time;
 	
 	@Column(name="value_as_string")
@@ -280,38 +283,77 @@ public class Observation extends BaseResourceEntity{
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
+		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 		checkNullReferences();
+		
 		this.date =((DateTimeDt) observation.getApplies()).getValue();
 		this.time = ((DateTimeDt) observation.getApplies()).getValue();
-		this.person.setId(observation.getSubject().getReference().getIdPartAsLong()); //TODO set subject to the other types of resources specified on fhir
-		this.visitOccurrence.setId(observation.getEncounter().getReference().getIdPartAsLong());
-		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
+		
+		/* Set subject: person 
+		 * TODO create entity-complement to specify other types of subjects */
+		IdDt reference = observation.getSubject().getReference();
+		if("Patient".equals(reference.getResourceType())){
+			this.person.setId(reference.getIdPartAsLong());
+		} else if("Group".equals(reference.getResourceType())){
+			//
+		} else if("Device".equals(reference.getResourceType())){
+			//
+		} else if("Location".equals(reference.getResourceType())){
+			//
+		}
+		
+		/*Set visit occurrence */
+		Long visitOccurrenceId = observation.getEncounter().getReference().getIdPartAsLong();
+		if(visitOccurrenceId != null){
+			if(this.visitOccurrence == null)
+				this.visitOccurrence = new VisitOccurrence();
+			this.visitOccurrence.setId(visitOccurrenceId);
+		}
+		
 		Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(), OmopConceptMapping.LOINC_CODE);
 		if(observationConceptId != null)
 			this.observationConcept.setId(observationConceptId); 
+		
+		/* Set the type of the observation */
+		if(observation.getMethod().getCodingFirstRep() != null){
+			this.type.setId(Omop4FixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); //assuming all results on this table are quantitative: http://hl7.org/fhir/2015May/valueset-observation-methods.html
+		} else {
+			this.type.setId(Omop4FixedIds.OBSERVATION_FROM_EHR.getConceptId());
+		}
+		
+		/* Set the value of the observation */
 		IDatatype value = observation.getValue();
 		if(value instanceof QuantityDt){
 			Long unitId = ocm.get(((QuantityDt) value).getUnits(), OmopConceptMapping.UCUM_CODE, OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
 			this.valueAsNumber = ((QuantityDt) value).getValue();
-			if(unitId != null)
+			if(unitId != null){
+				if(this.unit == null)
+					this.unit = new Concept();
 				this.unit.setId(unitId); 
+			}
 			this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
 			this.rangeLow = observation.getReferenceRangeFirstRep().getLow().getValue();
 		} else if(value instanceof CodeableConceptDt){
 			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(), OmopConceptMapping.CLINICAL_FINDING);
-			if(valueAsConceptId != null)
+			if(valueAsConceptId != null){
+				if(this.valueAsConcept == null)
+					this.valueAsConcept = new Concept();
 				this.valueAsConcept.setId(valueAsConceptId);
+			}
 		} else {
 			this.valueAsString = ((StringDt)value).getValue();
 		}
+		
 		return this;
 	}
 
 	private void checkNullReferences() {
 		if(this.person ==null)
 			this.person = new Person();
-		if(this.visitOccurrence == null)
-			this.visitOccurrence = new VisitOccurrence();
+		if(this.observationConcept == null)
+			this.observationConcept = new Concept();
+		if(this.type == null)
+			this.type = new Concept();
 	}
 
 	@Override
@@ -329,6 +371,8 @@ public class Observation extends BaseResourceEntity{
 		code.getCodingFirstRep().setDisplay(this.observationConcept.getName());
 		observation.setCode(code);
 		observation.setStatus(STATUS);
+//		observation.setMethod(new CodeableConceptDt(theSystem, theCode));
+		
 		// Smart on FHIR wants reliability. We don't have this in the database. 
 		// So, we put "ok".
 		observation.setReliability(ObservationReliabilityEnum.OK);

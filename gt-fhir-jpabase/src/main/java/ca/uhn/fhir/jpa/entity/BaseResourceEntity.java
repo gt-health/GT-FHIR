@@ -9,11 +9,11 @@ import ca.uhn.fhir.model.primitive.IdDt;
 public abstract class BaseResourceEntity implements IResourceEntity{
 
 	@Transient
-	private Long version = 0l;
+	private Long version = 0L;
 	
 	@Override
 	public IdDt getIdDt() {
-		if(version != 0l)
+		if(version != 0L)
 			return new IdDt(this.getResourceType(), String.valueOf(this.getId()), String.valueOf(this.getVersion()));
 		return new IdDt(getResourceType(), this.getId());
 	}

@@ -10,7 +10,6 @@ import org.springframework.web.context.WebApplicationContext;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.jpa.dao.IFhirSystemDao;
-import ca.uhn.fhir.jpa.provider.JpaConformanceProviderDstu2;
 import ca.uhn.fhir.jpa.provider.JpaSystemProviderDstu2;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
@@ -20,7 +19,7 @@ import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
-import edu.gatech.i3l.fhir.dstu2.entities.OmopConceptMapping;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import edu.gatech.i3l.hl7.fhir.security.SMARTonFHIRConformanceStatement;
 
 public class DefaultServer extends RestfulServer {

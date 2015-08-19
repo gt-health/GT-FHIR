@@ -22,7 +22,7 @@
 		</repository>
 	</repositories>
 
-	<artifactId>hapi-fhir-jpaserver-base</artifactId>
+	<artifactId>gt-fhir-jpabase</artifactId>
 	<packaging>jar</packaging>
 
 	<name>HAPI FHIR JPA Server</name>

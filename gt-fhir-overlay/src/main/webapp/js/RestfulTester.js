@@ -32,29 +32,21 @@ function Location(){
 function Observation(){
 	
 	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "code", "subject", "value-concept", "value-string", "value-quantity"];
-		return (searchParams.indexOf(searchParam) != -1);
 	}
 }
 
 function Medication(){
 	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "name"];
-		return (searchParams.indexOf(searchParam) != -1);
 	}
 }
 
 function MedicationPrescription(){
 	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "encounter", "patient", "medication"];
-		return (searchParams.indexOf(searchParam) != -1);
 	}
 }
 
 function MedicationDispense(){
 	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "patient", "medication"];
-		return (searchParams.indexOf(searchParam) != -1);
 	}
 }
 
@@ -115,8 +107,6 @@ function Patient(){
     active: Boolean;
     
     this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "name", "family", "given", "gender", "birthdate"];
-		return (searchParams.indexOf(searchParam) != -1);
 	}   
     
     this.buildFromJSON = function(params) {

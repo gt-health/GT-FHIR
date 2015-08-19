@@ -9,7 +9,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
-import ca.uhn.fhir.jpa.conf.HapiFhirContextHelper;
+import ca.uhn.fhir.jpa.conf.FhirContextHelper;
 import ca.uhn.fhir.jpa.dao.GZipUtil;
 import ca.uhn.fhir.jpa.entity.BaseHasResource;
 import ca.uhn.fhir.jpa.entity.BaseTag;
@@ -28,13 +28,13 @@ public class ResourceTransformer {
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ResourceTransformer.class);
 
 	public static IBaseResource toResource(BaseHasResource theEntity) {
-		FhirContext fhirContext = HapiFhirContextHelper.getContext(theEntity.getFhirVersion());
+		FhirContext fhirContext = FhirContextHelper.getContext(theEntity.getFhirVersion());
 		RuntimeResourceDefinition type = fhirContext.getResourceDefinition(theEntity.getResourceType());
 		return toResource(type.getImplementingClass(), theEntity);
 	}
 
 	public static <T extends IBaseResource> T toResource(Class<T> theResourceType, BaseHasResource theEntity) {
-		FhirContext fhirContext = HapiFhirContextHelper.getContext(theEntity.getFhirVersion());
+		FhirContext fhirContext = FhirContextHelper.getContext(theEntity.getFhirVersion());
 		String resourceText = null;
 		switch (theEntity.getEncoding()) {
 		case JSON:
