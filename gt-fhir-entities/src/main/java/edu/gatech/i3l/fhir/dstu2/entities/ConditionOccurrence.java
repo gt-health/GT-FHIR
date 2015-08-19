@@ -34,6 +34,8 @@ import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.omop.enums.Omop4FixedIds;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**
  * @author Myung Choi
@@ -226,9 +228,9 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			IdDt encounterReference = condition.getEncounter().getReference();
 			if (encounterReference == null) {
 				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
-				this.conditionTypeConcept.setId(38000245l); // EHR Problem List Entry = 38000245
+				this.conditionTypeConcept.setId(Omop4FixedIds.EHR_PROBLEM_ENTRY.getConceptId());
 			} else {
-				this.conditionTypeConcept.setId(44786627l);
+				this.conditionTypeConcept.setId(Omop4FixedIds.PRIMARY_CONDITION.getConceptId());
 				this.encounter.setId(encounterReference.getIdPartAsLong());
 			}
 

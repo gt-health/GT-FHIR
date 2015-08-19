@@ -89,19 +89,13 @@
 	<ul class="nav nav-sidebar">
 		<th:block
 			th:each="resource, resIterStat : ${conf.restFirstRep.resource}">
-			<li th:class="${resourceName} == ${resource.typeElement.valueAsString} ? 'active' : ''">
+			<li th:if="${resource.typeElement.valueAsString} != 'StructureDefinition'" th:class="${resourceName} == ${resource.typeElement.valueAsString} ? 'active' : ''">
 				<a href="#" th:onclick="'doAction(this, \'resource\', \'' + ${resource.typeElement.valueAsString} + '\');'">
 					<th:block th:text="${resource.typeElement.valueAsString}" ></th:block>
 					<span class="badge" th:if="${resourceCounts[resource.typeElement.valueAsString]} != null" th:text="${resourceCounts[resource.typeElement.valueAsString]}"/>
 				</a>
 			</li>
 		</th:block>
-		<!-- <li><a href="#" onclick="doAction(this, 'resource', 'Condition');">Condition</a></li>
-		<li><a href="#" onclick="doAction(this, 'resource', 'MedicationPrescription');">MedicationPrescription</a></li>
-		<li><a href="#" onclick="doAction(this, 'resource', 'Observation');">Observation</a></li> -->
-		<!-- <th:block><li><a href="#" onclick="doAction(this, 'resource', 'Patient');">
-			Patient<span class="badge" th:if="${resourceCounts[patient]} != null" th:text="${resourceCounts[resource.typeElement.valueAsString]}"/>
-		</a></li></th:block> -->
 	</ul>
 	
 	<input th:if="${resourceName.empty} == false" type="hidden" id="resource" name="resource" th:value="${resourceName}"/>

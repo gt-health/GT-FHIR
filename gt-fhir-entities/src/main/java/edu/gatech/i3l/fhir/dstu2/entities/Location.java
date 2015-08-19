@@ -22,9 +22,9 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 @Table(name="location")
 @Inheritance(strategy=InheritanceType.JOINED)
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-public class Location extends BaseResourceEntity{ 
+public class Location{ 
 	
-	public static final String RESOURCE_TYPE = "Location";
+	public static final String DATA_TYPE = "AddressDt";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -133,43 +133,19 @@ public class Location extends BaseResourceEntity{
 		this.id = id;
 	}
 
-	@Override
 	public ca.uhn.fhir.model.dstu2.resource.Location getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Location location =  new ca.uhn.fhir.model.dstu2.resource.Location();
-		location.setId(this.getIdDt());
+//		location.setId(this.getIdDt());
 		location.getAddress().addLine(this.getAddress1()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
 		if(this.getAddress2() != null)
 			location.getAddress().addLine(this.getAddress2()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
 		return location;
 	}
 
-	@Override
-	public String getResourceType() {
-		return RESOURCE_TYPE;
-	}
-
-	@Override
-	public FhirVersionEnum getFhirVersion() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public InstantDt getUpdated() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public String translateSearchParam(String chain) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

@@ -19,6 +19,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -31,6 +32,7 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
 /**
@@ -51,23 +53,35 @@ public class VisitOccurrence extends BaseResourceEntity {
 	private Long id;
 	
 	@ManyToOne(cascade=CascadeType.MERGE)
-	@JoinColumn(name="person_id")
+	@JoinColumn(name="person_id", nullable=false)
+	@NotNull
 	private Person person;
 	
-	@Column(name="visit_start_date")
+	@Column(name="visit_start_date", nullable=false)
+	@NotNull
 	private Date startDate;
 	
-	@Column(name="visit_end_date")
+	@Column(name="visit_end_date", nullable=false)
+	@NotNull
 	private Date endDate;
 	
 	@ManyToOne
-	@JoinColumn(name="place_of_service_concept_id")
+	@JoinColumn(name="place_of_service_concept_id", nullable=false)
 	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
+	@NotNull
 	private Concept placeOfServiceConcept;
 	
+	/**
+	 * The location (care site) here is set as required, since the field 'placeOfServiceConcept' is required in Omop v4.0 and it is derived
+	 * from {@link CareSite#getPlaceOfServiceConcept()}.
+	 * 
+	 * @fhir Location, List of locations the patient has been at
+	 * @fhirVersion 0.5.0
+	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="care_site_id")
-	private CareSite careSite;
+	@NotNull
+	private CareSite careSite; //FIXME field names should reflect fhir names, for validation purposes.
 	
 	@Column(name="place_of_service_source_value")
 	private String placeOfServiceSourceValue;
@@ -137,9 +151,55 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.placeOfServiceSourceValue = placeOfServiceSourceValue;
 	}
 	
-	/* (non-Javadoc)
-	 * @see edu.gatech.i3l.fhir.dstu2.entities.IResourceTable#getRelatedResource()
-	 */
+	@Override
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	@Override
+	public String getResourceType() {
+		return RESOURCE_TYPE;
+	}
+
+	@Override
+	public FhirVersionEnum getFhirVersion() {
+		return FhirVersionEnum.DSTU2;
+	}
+
+	@Override
+	public InstantDt getUpdated() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		Encounter encounter = (Encounter) resource;
+		checkNullReferences();
+		
+		this.id = encounter.getId().getIdPartAsLong();
+		this.person.setId(encounter.getPatient().getReference().getIdPartAsLong());
+		/* Set Period */
+		this.startDate = encounter.getPeriod().getStart();
+		this.endDate = encounter.getPeriod().getEnd();
+
+		/* Set care site */
+		ResourceReferenceDt location = encounter.getLocationFirstRep().getLocation();
+		IdDt locationRef = location.getReference();
+		if(locationRef != null){
+			this.careSite.setId(locationRef.getIdPartAsLong());
+		}
+		/* Set place of service concept */
+		this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
+		
+		
+		return this;
+	}
+	
 	@Override
 	public Encounter getRelatedResource() {
 		Encounter encounter = new Encounter();
@@ -185,13 +245,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		CareSite careSite = getCareSite();
 		if (careSite != null) {
 			// set Location
-			Location location = careSite.getLocation();
-			if (location != null) {
-				Encounter.Location encounterLocation = new Encounter.Location();
-				ResourceReferenceDt locationReference = new ResourceReferenceDt(location.getIdDt());
-				encounterLocation.setLocation(locationReference);
-				encounter.addLocation(encounterLocation);
-			}
+			encounter.getLocationFirstRep().getLocation().setReference(careSite.getIdDt());
 			
 			// set serviceProvider
 			Organization organization = careSite.getOrganization();
@@ -204,55 +258,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 		return encounter;
 	}
 
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getId()
-	 */
-	@Override
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getResourceType()
-	 */
-	@Override
-	public String getResourceType() {
-		return RESOURCE_TYPE;
-	}
-
-	@Override
-	public FhirVersionEnum getFhirVersion() {
-		return FhirVersionEnum.DSTU2;
-	}
-
-	@Override
-	public InstantDt getUpdated() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
-		Encounter encounter = (Encounter) resource;
-		checkNullReferences();
-		this.id = encounter.getId().getIdPartAsLong();
-		this.person.setId(encounter.getPatient().getReference().getIdPartAsLong());
-		//Fhir Dstu 2 doesn't have related attribute for place_of_service_concept
-		this.startDate = encounter.getPeriod().getStart();
-		this.endDate = encounter.getPeriod().getEnd();
-//		this.careSite.setId(loadReference("careSite", 	encounter.getServiceProvider().getReference().getIdPartAsLong(),
-//														encounter.getLocationFirstRep().getLocation().getReference().getIdPartAsLong()));
-		return this;
-	}
-
 	private void checkNullReferences() {
 		if(this.person == null)
 			this.person = new Person();
+		if(this.placeOfServiceConcept == null)
+			this.placeOfServiceConcept = new Concept();
 		if(this.careSite == null)
 			this.careSite = new CareSite();
 	}

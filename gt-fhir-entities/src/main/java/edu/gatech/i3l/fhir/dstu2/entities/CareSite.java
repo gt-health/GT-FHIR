@@ -9,21 +9,27 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.primitive.InstantDt;
+
 
 @Entity
 @Table(name="care_site")
 @Audited
-@NamedQueries(value={
-		@NamedQuery(name="loadCareSiteReference", query="select c.id from CareSite c WHERE c.organization.id = :serviceProvider AND c.location.id = :location")
-})
-public class CareSite {
+//@NamedQueries(value={
+//		@NamedQuery(name="loadCareSiteReference", query="select c.id from CareSite c WHERE c.organization.id = :serviceProvider AND c.location.id = :location")
+//})
+public class CareSite extends BaseResourceEntity{
+	
+	public static final String RES_TYPE = "Location";
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -110,5 +116,39 @@ public class CareSite {
 	
 	public void setPlaceOfServiceSourceValue(String placeOfServiceSourceValue) {
 		this.placeOfServiceSourceValue = placeOfServiceSourceValue;
+	}
+
+	@Override
+	public FhirVersionEnum getFhirVersion() {
+		return FhirVersionEnum.DSTU2;
+	}
+
+	@Override
+	public String getResourceType() {
+		return RES_TYPE;
+	}
+
+	@Override
+	public InstantDt getUpdated() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String translateSearchParam(String theSearchParam) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResource getRelatedResource() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

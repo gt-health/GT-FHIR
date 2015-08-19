@@ -20,7 +20,7 @@ import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
-import edu.gatech.i3l.fhir.dstu2.entities.OmopConceptMapping;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 public class DefaultServer extends RestfulServer {
 
