@@ -6,7 +6,7 @@ import java.util.Map;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 
-public class HapiFhirContextHelper {
+public class FhirContextHelper {
 
 	private static final Map<FhirVersionEnum, FhirContext> ourRetrievalContexts = new HashMap<FhirVersionEnum, FhirContext>();
 	
