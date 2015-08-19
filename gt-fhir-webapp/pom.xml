@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>edu.gatech.i3l</groupId> 
+		<groupId>edu.gatech.i3l</groupId>
 		<artifactId>gt-fhir</artifactId>
 		<version>1.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
@@ -56,13 +56,25 @@
 			<artifactId>phloc-schematron-validator</artifactId>
 			<version>2.7.0</version>
 		</dependency>
-				
+
 		<!-- If you are using HAPI narrative generation, you will need to include 
 			Thymeleaf as well. Otherwise the following can be omitted. -->
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf</artifactId>
 			<version>2.1.4.RELEASE</version>
+		</dependency>
+
+		<!-- Security OAuth2 related libraries -->
+		<dependency>
+			<groupId>org.apache.oltu.oauth2</groupId>
+			<artifactId>org.apache.oltu.oauth2.common</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.oltu.oauth2</groupId>
+			<artifactId>org.apache.oltu.oauth2.resourceserver</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Used for CORS support -->
@@ -78,6 +90,12 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>net.sourceforge.cobertura</groupId>
+			<artifactId>cobertura</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+
 		<!-- You may not need this if you are deploying to an application server 
 			which provides database connection pools itself. -->
 		<dependency>
@@ -85,12 +103,19 @@
 			<artifactId>commons-dbcp2</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.6</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>net.sourceforge.cobertura</groupId>
+			<artifactId>cobertura</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+		
 		<dependency>
 		    <groupId>org.hibernate</groupId>
 		    <artifactId>hibernate-validator</artifactId>
