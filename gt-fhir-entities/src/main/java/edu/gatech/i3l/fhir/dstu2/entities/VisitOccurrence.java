@@ -34,6 +34,7 @@ import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**
  * @author Myung Choi
@@ -188,14 +189,13 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.endDate = encounter.getPeriod().getEnd();
 
 		/* Set care site */
-		ResourceReferenceDt location = encounter.getLocationFirstRep().getLocation();
-		IdDt locationRef = location.getReference();
-		if(locationRef != null){
-			this.careSite.setId(locationRef.getIdPartAsLong());
+		IdDt locationRef = encounter.getLocationFirstRep().getLocation().getReference();
+		CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, locationRef.getIdPartAsLong());
+		if(careSite != null){
+			this.careSite = careSite;
+			/* Set place of service concept */
+			this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
 		}
-		/* Set place of service concept */
-		this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
-		
 		
 		return this;
 	}
@@ -204,12 +204,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 	public Encounter getRelatedResource() {
 		Encounter encounter = new Encounter();
 		
-		// http://hl7-fhir.github.io/encounter.html
-		//
 		encounter.setId(this.getIdDt());
-		
-		// set class
-		String place_of_service = getPlaceOfServiceConcept().getName().toLowerCase();
+		String place_of_service = this.placeOfServiceConcept.getName().toLowerCase();
 		if (place_of_service.contains("inpatient")) {
 			encounter.setClassElement(EncounterClassEnum.INPATIENT);			
 		} else if (place_of_service.contains("outpatient")) {

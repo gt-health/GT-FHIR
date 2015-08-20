@@ -374,6 +374,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		switch (link) {
 		case Condition.SP_CODE:
 			return "conditionConcept.conceptCode";
+		case Condition.SP_ONSET:
+			return "startDate";
 		case Condition.SP_ENCOUNTER:
 			return "encounter";
 		case Condition.SP_PATIENT:

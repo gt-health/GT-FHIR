@@ -14,7 +14,9 @@ import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.jpa.query.AbstractPredicateBuilder;
 import ca.uhn.fhir.jpa.query.PredicateBuilder;
+import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
 
 @Transactional(propagation = Propagation.REQUIRED)
@@ -67,81 +69,64 @@ public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {
 				return singleCode;
 			}
 
-			@Override
-			public Predicate translatePredicateDateLessThan(Class<? extends IResourceEntity> entity, String theParamName, Date upperBound,
-					From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder, boolean inclusive) {
-				Calendar c = Calendar.getInstance();
-				c.setTime(upperBound);
-				Predicate ub = null;
-				switch (theParamName) {
-				case Patient.SP_DEATHDATE:
-					if(inclusive){
-						ub = theBuilder.lessThanOrEqualTo(from.get("death_date").as(Date.class), upperBound);
-					} else{
-						ub = theBuilder.lessThan(from.get("death_date").as(Date.class), upperBound);
-					}
-					break;
-				case Patient.SP_BIRTHDATE:
-					Predicate lt1 = theBuilder.lessThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
-					
-					Predicate lt2 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
-							theBuilder.lessThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
-					
-					Predicate predicateDay = null;
-					if(inclusive){
-						predicateDay = theBuilder.lessThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
-					} else{
-						predicateDay = theBuilder.lessThan(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
-					}
-					Predicate lt3 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
-							theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)), predicateDay);
-					
-					ub = theBuilder.or(lt1, lt2, lt3);
-					break;
-				default:
-					break;
-				}
-				return ub;
-			}
 
 			@Override
-			public Predicate translatePredicateDateGreaterThan(Class<? extends IResourceEntity> entity, String theParamName, Date lowerBound,
-					From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder, boolean inclusive) {
+			public Predicate translatePredicateDate(Class<? extends IResourceEntity> entity, CriteriaBuilder theBuilder, From<? extends IResourceEntity, ? extends IResourceEntity> from, DateRangeParam theRange, String theParamName,
+					IQueryParameterType theParam) {
+				Date lowerBound = theRange.getLowerBoundAsInstant();
+				Date upperBound = theRange.getUpperBoundAsInstant();
 				Calendar c = Calendar.getInstance();
-				c.setTime(lowerBound);
+				Predicate ub = null;
 				Predicate lb = null;
 				switch (theParamName) {
 				case Patient.SP_DEATHDATE:
-					if(inclusive){
-						lb = theBuilder.greaterThanOrEqualTo(from.get("death_date").as(Date.class), lowerBound);
-					} else {
-						lb = theBuilder.greaterThan(from.get("death_date").as(Date.class), lowerBound);
-					}
-					break;
+					return super.translatePredicateDate(entity, theBuilder, from, theRange, theParamName, theParam);
+					
 				case Patient.SP_BIRTHDATE:
-					Predicate gt1 = theBuilder.greaterThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
-					
-					Predicate gt2 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
-							theBuilder.greaterThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
-					
-					Predicate predicateDay = null;
-					if(inclusive){
+					if (lowerBound != null) {
+						c.setTime(lowerBound);
+						Predicate gt1 = theBuilder.greaterThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
+						
+						Predicate gt2 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+								theBuilder.greaterThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
+						
+						Predicate predicateDay = null;
 						predicateDay = theBuilder.greaterThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
-					} else{
-						predicateDay = theBuilder.greaterThan(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
+						Predicate gt3 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+								theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)),
+								predicateDay);
+						
+						lb = theBuilder.or(gt1, gt2, gt3);
 					}
-					Predicate gt3 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
-							theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)),
-							predicateDay);
+
+					if (upperBound != null) {
+						c.setTime(upperBound);
+						Predicate lt1 = theBuilder.lessThan(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR));
+						
+						Predicate lt2 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+								theBuilder.lessThan(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)));
+						
+						Predicate predicateDay = null;
+						predicateDay = theBuilder.lessThanOrEqualTo(from.get("dayOfBirth").as(Integer.class), c.get(Calendar.DAY_OF_MONTH));
+						Predicate lt3 = theBuilder.and(theBuilder.equal(from.get("yearOfBirth").as(Integer.class), c.get(Calendar.YEAR)),
+								theBuilder.equal(from.get("monthOfBirth").as(Integer.class), c.get(Calendar.MONTH)), predicateDay);
+						
+						ub = theBuilder.or(lt1, lt2, lt3);
+					}
 					
-					lb = theBuilder.or(gt1, gt2, gt3);
 					break;
 				default:
 					break;
 				}
-				return lb;
-			}
 
+				if (lb != null && ub != null) {
+					return (theBuilder.and(lb, ub));
+				} else if (lb != null) {
+					return (lb);
+				} else {
+					return (ub);
+				}
+			}
 
 		};
 	}

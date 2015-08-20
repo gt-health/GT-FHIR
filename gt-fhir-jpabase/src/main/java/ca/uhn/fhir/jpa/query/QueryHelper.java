@@ -1,13 +1,10 @@
 package ca.uhn.fhir.jpa.query;
 
-import static ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum.GREATERTHAN_OR_EQUALS;
-import static ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum.LESSTHAN_OR_EQUALS;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -176,46 +173,20 @@ public class QueryHelper {
 			DateParam date = (DateParam) theParam;
 			if (!date.isEmpty()) {
 				DateRangeParam range = new DateRangeParam(date);
-				p = createPredicateDateFromRange(theBuilder, from, range, theParamName, theParam);
+				p = predicateBuilder.translatePredicateDate(myResourceEntity, theBuilder, from, range, theParamName, theParam);
 			} else {
 				// From original method: TODO: handle missing date param?
 				p = null;
 			}
 		} else if (theParam instanceof DateRangeParam) {
 			DateRangeParam range = (DateRangeParam) theParam;
-			p = createPredicateDateFromRange(theBuilder, from, range, theParamName, theParam);
+			p = predicateBuilder.translatePredicateDate(myResourceEntity, theBuilder, from, range, theParamName, theParam);
 		} else {
 			throw new IllegalArgumentException("Invalid token type: " + theParam.getClass());
 		}
 		return p;
 	}
 	
-	protected Predicate createPredicateDateFromRange(CriteriaBuilder theBuilder, From<? extends IResourceEntity, ? extends IResourceEntity> from, DateRangeParam theRange, String theParamName, IQueryParameterType theParam) {
-		Date lowerBound = theRange.getLowerBoundAsInstant();
-		Date upperBound = theRange.getUpperBoundAsInstant();
-		
-		Predicate lb = null;
-		if (lowerBound != null) {
-			QuantityCompararatorEnum comparator = theRange.getLowerBound().getComparator();
-			boolean inclusive  = (comparator.equals(GREATERTHAN_OR_EQUALS) || comparator.equals(LESSTHAN_OR_EQUALS)) ? true : false;
-			lb = predicateBuilder.translatePredicateDateGreaterThan(myResourceEntity, theParamName, lowerBound, from, theBuilder, inclusive); 
-		}
-
-		Predicate ub = null;
-		if (upperBound != null) {
-			QuantityCompararatorEnum comparator = theRange.getUpperBound().getComparator();
-			boolean inclusive  = (comparator.equals(GREATERTHAN_OR_EQUALS) || comparator.equals(LESSTHAN_OR_EQUALS)) ? true : false;
-			ub = predicateBuilder.translatePredicateDateLessThan(myResourceEntity, theParamName, upperBound, from, theBuilder, inclusive); 
-		}
-
-		if (lb != null && ub != null) {
-			return (theBuilder.and(lb, ub));
-		} else if (lb != null) {
-			return (lb);
-		} else {
-			return (ub);
-		}
-	}
 	
 	private Predicate createPredicateString(IQueryParameterType theParameter, String theParamName, CriteriaBuilder theBuilder,
 			From<? extends IResourceEntity, ? extends IResourceEntity> stringJoin) {
