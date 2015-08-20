@@ -209,12 +209,20 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		if (resource instanceof Condition) {
 			Condition condition = (Condition) resource;
-			checkNullReferences();
-			this.person.setId(condition.getPatient().getReference().getIdPartAsLong());
+			IdDt patientRef = condition.getPatient().getReference();
+			if(patientRef != null){
+				if(this.person == null)
+					this.person =  new Person();
+				this.person.setId(patientRef.getIdPartAsLong());
+			}
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-			this.conditionConcept.setId(ocm.get(condition.getCode().getCodingFirstRep().getCode()));
-
+			Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());
+			if(conditionConceptRef != null){
+				if(this.conditionConcept == null)
+					this.conditionConcept = new Concept();
+				this.conditionConcept.setId(conditionConceptRef);
+			}
 			IDatatype onSetDate = condition.getOnset();
 			if (onSetDate instanceof DateTimeDt) {
 				DateTimeDt dateTimeDt = (DateTimeDt) onSetDate;
@@ -226,11 +234,15 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			}
 
 			IdDt encounterReference = condition.getEncounter().getReference();
+			if(this.conditionTypeConcept == null)
+				this.conditionTypeConcept = new Concept();
 			if (encounterReference == null) {
 				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
 				this.conditionTypeConcept.setId(Omop4FixedIds.EHR_PROBLEM_ENTRY.getConceptId());
 			} else {
 				this.conditionTypeConcept.setId(Omop4FixedIds.PRIMARY_CONDITION.getConceptId());
+				if(this.encounter == null)
+					this.encounter = new VisitOccurrence();
 				this.encounter.setId(encounterReference.getIdPartAsLong());
 			}
 
@@ -241,6 +253,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			if (asserterReference != null) {
 				if (asserterReference.getResourceType() != null && asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
 					long providerId = asserterReference.getIdPartAsLong();
+					if(this.provider ==  null)
+						this.provider = new Provider();
 					this.provider.setId(providerId);
 				}
 			}
@@ -343,21 +357,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 		return condition;
 	}
-
-
-	private void checkNullReferences() {
-		if(this.person == null)
-			this.person =  new Person();
-		if(this.conditionConcept == null)
-			this.conditionConcept = new Concept();
-		if(this.conditionTypeConcept == null)
-			this.conditionTypeConcept = new Concept();
-		if(this.encounter == null)
-			this.encounter = new VisitOccurrence();
-		if(this.provider ==  null)
-			this.provider = new Provider();
-	}
-
+		
+		
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
