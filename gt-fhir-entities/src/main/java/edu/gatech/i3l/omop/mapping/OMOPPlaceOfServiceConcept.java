@@ -13,7 +13,7 @@ import org.hl7.fhir.instance.model.valuesets.V3RoleCode;
  * @author Ismael Sarmento
  *
  */
-public enum OMOPPlaceOfServiceConcept {
+public enum OmopPlaceOfServiceConcept {
 
 	HOME("Home", "12"),
 	SCHOOL("School", "3"),
@@ -58,7 +58,7 @@ public enum OMOPPlaceOfServiceConcept {
 	String conceptName;
 	String conceptCode;
 
-	OMOPPlaceOfServiceConcept(String conceptName, String conceptCode) {
+	OmopPlaceOfServiceConcept(String conceptName, String conceptCode) {
 		this.conceptName = conceptName;
 		this.conceptCode = conceptCode;
 	}
@@ -138,7 +138,7 @@ public enum OMOPPlaceOfServiceConcept {
 	 * returned as HL7.Pharmacy.
 	 * @param placeOfServiceConcept the CMS concept for place of service to be converted
 	 */
-	public static V3RoleCode getServiceLocationRoleTypeCodeHL7(OMOPPlaceOfServiceConcept placeOfServiceConcept ){
+	public static V3RoleCode getServiceLocationRoleTypeCodeHL7(OmopPlaceOfServiceConcept placeOfServiceConcept ){
 		V3RoleCode retVal = null;
 		if(placeOfServiceConcept == null)
 			return retVal;

@@ -17,6 +17,7 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.jpa.dao.BaseFhirDao;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.dstu2.entities.Concept;
 
 /**
@@ -145,5 +146,9 @@ public class OmopConceptMapping implements Runnable {
 
 	public Map<String, Long> getConceptsForClass(String conceptClass) {
 		return concepts.get(conceptClass);
+	}
+	
+	public Object loadEntityById(Class<? extends BaseResourceEntity> class1, Long primaryKey){
+		return entityManager.find(class1, primaryKey);
 	}
 }

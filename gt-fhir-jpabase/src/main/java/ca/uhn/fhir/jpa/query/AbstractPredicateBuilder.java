@@ -11,7 +11,9 @@ import javax.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 
 import ca.uhn.fhir.jpa.entity.IResourceEntity;
+import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 
 public abstract class AbstractPredicateBuilder implements PredicateBuilder{
 
@@ -22,32 +24,32 @@ public abstract class AbstractPredicateBuilder implements PredicateBuilder{
 		return theBuilder.like(getPath(entity, theParamName, from).as(String.class), likeExpression);
 	}
 
-	@Override
-	public Predicate translatePredicateDateLessThan(Class<? extends IResourceEntity> entity, String theParamName, Date upperBound,
-			From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder, boolean inclusive) {
-		Predicate predicate = null;
-		Path<? extends Object> path = getPath(entity, theParamName, from);
-		if(inclusive){
-			predicate = theBuilder.greaterThanOrEqualTo(path.as(Date.class), upperBound);
-		} else {
-			predicate = theBuilder.greaterThan(path.as(Date.class), upperBound);
-		}
-		return predicate;
-	}
 
 	@Override
-	public Predicate translatePredicateDateGreaterThan(Class<? extends IResourceEntity> entity, String theParamName, Date lowerBound,
-			From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder, boolean inclusive) {
-		Predicate predicate = null;
+	public Predicate translatePredicateDate(Class<? extends IResourceEntity> entity, CriteriaBuilder theBuilder, From<? extends IResourceEntity, ? extends IResourceEntity> from, DateRangeParam theRange, String theParamName, IQueryParameterType theParam) {
+		Date lowerBound = theRange.getLowerBoundAsInstant();
+		Date upperBound = theRange.getUpperBoundAsInstant();
+		
+		Predicate lb = null;
 		Path<? extends Object> path = getPath(entity, theParamName, from);
-		if(inclusive){
-			predicate = theBuilder.lessThanOrEqualTo(path.as(Date.class), lowerBound);
-		} else {
-			predicate = theBuilder.lessThan(path.as(Date.class), lowerBound);
+		if (lowerBound != null) {
+			lb = theBuilder.greaterThanOrEqualTo(path.as(Date.class), lowerBound);
 		}
-		return predicate;
-	}
 
+		Predicate ub = null;
+		if (upperBound != null) {
+			ub = theBuilder.lessThanOrEqualTo(path.as(Date.class), upperBound);
+		}
+
+		if (lb != null && ub != null) {
+			return (theBuilder.and(lb, ub));
+		} else if (lb != null) {
+			return (lb);
+		} else {
+			return (ub);
+		}
+	}
+	
 	@Override
 	public Predicate translatePredicateTokenSystem(Class<? extends IResourceEntity> entity, String theParamName, String system,
 			From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder) {
