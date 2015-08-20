@@ -4,6 +4,7 @@
 package edu.gatech.i3l.hl7.fhir.security;
 
 import java.nio.charset.Charset;
+import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -110,6 +111,10 @@ public class OIDCInterceptor extends InterceptorAdapter {
 			return true;
 		}
 
+		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
+			return true;
+		}
+		
 		String err_msg = "";
 		try {
 			OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(

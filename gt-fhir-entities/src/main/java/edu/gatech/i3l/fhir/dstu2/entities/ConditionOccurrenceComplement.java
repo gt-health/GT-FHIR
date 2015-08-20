@@ -20,6 +20,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionClinicalStatusEnum;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**
  * @author Myung Choi

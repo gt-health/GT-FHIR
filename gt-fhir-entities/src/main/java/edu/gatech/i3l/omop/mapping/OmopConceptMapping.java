@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.omop.mapping;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +17,8 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.jpa.dao.BaseFhirDao;
+import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.dstu2.entities.Concept;
 
 /**
  * This class serves as cache for Concept values in Omop schema based database.
@@ -46,6 +48,7 @@ public class OmopConceptMapping implements Runnable {
 	public static final String UCUM_CODE = "UCUM";
 	public static final String UCUM_CODE_STANDARD = "UCUM Standard";
 	public static final String UCUM_CODE_CUSTOM = "UCUM Custom";
+	public static final String PLACE_OF_SERVICE = "Place of Service";
 	
 	
 	/*
@@ -57,6 +60,7 @@ public class OmopConceptMapping implements Runnable {
 	private static final String LOINC = "LOINC";
 	private static final String OMOP_CONDITION_TYPE = "OMOP Condition Occurrence Type";
 	private static final String UCUM = "UCUM";
+	private static final String CMS_PLACE_OF_SERVICE = "CMS Place of Service";
 	
 	/**
 	 * A mapping for some of the existing concepts in the database. The key for the outter mapping is the Concept Class.
@@ -94,12 +98,12 @@ public class OmopConceptMapping implements Runnable {
 		CriteriaQuery<Object[]> criteria = builder.createQuery(Object[].class);
 		Root<Concept> from = criteria.from(Concept.class);
 		Path<Long> idPath = from.get("id");
-		Path<String> namePath = from.get("name");
-		criteria.multiselect(namePath, idPath); //TODO unit test, order matters here
+		Path<String> codePath = from.get("conceptCode");
+		criteria.multiselect(codePath, idPath); //TODO unit test, order matters here
 		Predicate p1 = builder.like(from.get("conceptClass").as(String.class), conceptClass);
 		if(vocabularyName != null){
 			Predicate p2 = builder.like(from.get("vocabulary").get("name").as(String.class), vocabularyName);  
-			criteria.where(builder.and(p1, p2));
+			criteria.where(builder.and(p1, p2)); 
 		} else{
 			criteria.where(builder.and(p1));
 		}
@@ -138,5 +142,13 @@ public class OmopConceptMapping implements Runnable {
 	public Long get(String conceptCode){
 		Query query = entityManager.createNamedQuery("findConceptByCode", Long.class).setParameter("code", conceptCode);
 		return (Long) query.getSingleResult();
+	}
+
+	public Map<String, Long> getConceptsForClass(String conceptClass) {
+		return concepts.get(conceptClass);
+	}
+	
+	public Object loadEntityById(Class<? extends BaseResourceEntity> class1, Long primaryKey){
+		return entityManager.find(class1, primaryKey);
 	}
 }

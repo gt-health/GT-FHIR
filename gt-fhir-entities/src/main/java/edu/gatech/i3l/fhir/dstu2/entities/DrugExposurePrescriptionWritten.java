@@ -30,6 +30,7 @@ import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Audited
@@ -275,17 +276,20 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationPrescription mp = (MedicationPrescription) resource;
-		checkNullReferences();
-		this.medication.setId(mp.getMedication().getReference().getIdPartAsLong()); //TODO validate existence of id
-		this.person.setId(mp.getPatient().getReference().getIdPartAsLong());
+		IdDt medicationRef = mp.getMedication().getReference();
+		if(medicationRef != null){
+			if(this.medication == null)
+				this.medication = new Concept();
+			this.medication.setId(medicationRef.getIdPartAsLong()); 
+		}
+		IdDt patientRef = mp.getPatient().getReference();
+		if(patientRef != null){
+			if(this.person == null)
+				this.person = new Person();
+			this.person.setId(patientRef.getIdPartAsLong());
+		}
 		return this;
 	}
 
-	private void checkNullReferences() {
-		if(this.medication == null)
-				this.medication = new Concept();
-		if(this.person == null)
-				this.person = new Person();
-	}
 
 }

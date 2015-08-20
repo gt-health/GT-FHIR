@@ -22,7 +22,8 @@
 		</repository>
 	</repositories>
 
-	<artifactId>hapi-fhir-jpaserver-base</artifactId>
+	<artifactId>gt-fhir-jpabase</artifactId>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>HAPI FHIR JPA Server</name>
@@ -501,5 +502,4 @@
 		</profile>
 	</profiles>
 
-	<version>1.1</version>
 </project>

@@ -14,6 +14,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 
@@ -37,7 +38,8 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 	@JoinColumn(name="episode_of_care_id")
 	private EpisodeOfCare episodeOfCare;
 	
-	@Column(name="status")
+	@Column(name="status", nullable=false)
+	@NotNull
 	private String status;
 	
 	@Column(name="note")
@@ -87,19 +89,13 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 		Encounter encounter = super.getRelatedResource();
 
 		// set status
-		if (status.equalsIgnoreCase("planned"))
-			encounter.setStatus(EncounterStateEnum.PLANNED);
-		else if (status.equalsIgnoreCase("arrived"))
-			encounter.setStatus(EncounterStateEnum.ARRIVED);
-		else if (status.equalsIgnoreCase("in-progress"))
-			encounter.setStatus(EncounterStateEnum.IN_PROGRESS);
-		else if (status.equalsIgnoreCase("onleave"))
-			encounter.setStatus(EncounterStateEnum.ON_LEAVE);
-		else if (status.equalsIgnoreCase("finished"))
-			encounter.setStatus(EncounterStateEnum.FINISHED);
-		else if (status.equalsIgnoreCase("cancelled"))
-			encounter.setStatus(EncounterStateEnum.CANCELLED);
-		
+		EncounterStateEnum[] states = EncounterStateEnum.values();
+		for (int i = 0; i < states.length; i++) {
+			if (status.equalsIgnoreCase(states[i].getCode())){
+				encounter.setStatus(states[i]);
+				break;
+			}
+		}
 		// set episode of care.
 		EpisodeOfCare episodeOfCare = getEpisodeOfCare();
 		if (episodeOfCare != null) {
@@ -114,11 +110,20 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 	}
 
 	@Override
-	//Not mandatory
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		//Encounter encounter = (Encounter) resource;
+		super.constructEntityFromResource(resource);
+		Encounter encounter = (Encounter) resource;
+		String status = encounter.getStatus();
+		if(status != null){
+			EncounterStateEnum[] values = EncounterStateEnum.values();
+			for (int i = 0; i < values.length; i++) {
+				if(status.equals(values[i].getCode())){
+					this.setStatus(values[i].getCode());
+					break;
+				}
+			}
+		}
 		return this;
 	}
-	
 	
 }
