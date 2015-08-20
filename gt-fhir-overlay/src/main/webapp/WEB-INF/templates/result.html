@@ -93,8 +93,9 @@
 										Response
 									</td>
 									<td><!-- -->
-										<i th:if="${!resultStatus.contains(' 500')}" class="fa fa-check" style="color:#4E4;"/>
-										<i th:if="${resultStatus.contains(' 500')}" class="fa fa-warning" style="color:#E44;"/>
+										<i th:if="${!resultStatus.contains(' 2')} and ${!resultStatus.contains(' 5')}" class="fa fa-warning" style="color:#EE4;"/>
+										<i th:if="${resultStatus.contains(' 2')}" class="fa fa-check" style="color:#4E4;"/>
+										<i th:if="${resultStatus.contains(' 5')}" class="fa fa-warning" style="color:#E44;"/>
 										<th:block th:text="${resultStatus}"/>
 									</td>
 								</tr>

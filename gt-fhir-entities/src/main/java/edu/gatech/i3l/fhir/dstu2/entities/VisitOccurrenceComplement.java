@@ -91,8 +91,10 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 		// set status
 		EncounterStateEnum[] states = EncounterStateEnum.values();
 		for (int i = 0; i < states.length; i++) {
-			if (status.equalsIgnoreCase(states[i].getCode()))
+			if (status.equalsIgnoreCase(states[i].getCode())){
 				encounter.setStatus(states[i]);
+				break;
+			}
 		}
 		// set episode of care.
 		EpisodeOfCare episodeOfCare = getEpisodeOfCare();
@@ -110,7 +112,17 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		super.constructEntityFromResource(resource);
-		this.setStatus(EncounterStateEnum.FINISHED.getCode());
+		Encounter encounter = (Encounter) resource;
+		String status = encounter.getStatus();
+		if(status != null){
+			EncounterStateEnum[] values = EncounterStateEnum.values();
+			for (int i = 0; i < values.length; i++) {
+				if(status.equals(values[i].getCode())){
+					this.setStatus(values[i].getCode());
+					break;
+				}
+			}
+		}
 		return this;
 	}
 	

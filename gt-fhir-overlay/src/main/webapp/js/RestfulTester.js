@@ -1,3 +1,62 @@
+
+function Encounter(){
+		
+	this.getResourceTemplate = function(){
+		return 
+"{\n"+
+"      \"resourceType\":\"Encounter\",\n"+         
+"      \"status\":\"<http://hl7.org/fhir/2015May/encounter-state.html>\",\n"+
+"      \"class\":\"<http://hl7.org/fhir/2015May/encounter-class.html>\",\n"+
+"         \"patient\":{\n"+
+"              \"reference\":\"Patient/<id>\"\n"+
+"         },\n"+
+"         \"period\":{\n"+
+"             \"start\":\"yyyy-MM-dd hh:mm:ss\",\n"+
+"             \"end\":\"yyyy-MM-dd hh:mm:ss\"\n"+
+"        },\n"+
+"         \"location\":[\n"+
+"             {\n"+
+"                \"location\":{\n"+
+"                     \"reference\":\"Location/<id>\"\n"+
+"                 }\n"+
+"             }\n"+
+"         ],\n"+
+"         \"serviceProvider\":{\n"+
+"             \"reference\":\"Organization/<id>\"\n"+
+"         }\n"+
+"}";
+	}
+}
+
+function Observation(){
+	
+	this.getResourceTemplate = function(){
+		return
+"{\n"+
+"     \"resourceType\":\"Observation\",\n"+
+"     \"code\":{\n"+
+"         \"coding\":[\n"+
+"             {\n"+
+"                 \"system\":\"http://loinc.org\",\n"+
+"                 \"code\":\"8302-2\"\n"+
+"             }\n"+
+"         ]\n"+
+"     },\n"+
+"     \"valueQuantity\":{\n"+
+"         \"value\":160.0,\n"+
+"         \"units\":\"cm\",\n"+
+"         \"system\":\"http://unitsofmeasure.org\",\n"+
+"         \"code\":\"cm\"\n"+
+"     },\n"+
+"     \"appliesDateTime\":\"2005-06-30T19:45:00-04:00\",\n"+
+"     \"status\":\"final\",\n"+
+"     \"subject\":{\n"+
+"         \"reference\":\"Patient/1\"\n"+
+"     }\n"+
+"}";
+	}
+}
+
 function Condition(){
 	
 	identifier: [{
@@ -7,46 +66,86 @@ function Condition(){
         value: String
     }];
 	
-	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "code", "subject", "encounter"];
-		return (searchParams.indexOf(searchParam) != -1);
-	}
-}
-
-function Encounter(){
-		
-	this.providesSearch = function(searchParam){
-		var searchParams = ["_id", "date", "patient"];
-		return (searchParams.indexOf(searchParam) != -1);
-	}
-}
-
-function Location(){
-	
-	this.providesSearch = function(searchParam){
-		var searchParams = ["_id"];
-		return (searchParams.indexOf(searchParam) != -1);
-	}
-}
-
-function Observation(){
-	
-	this.providesSearch = function(searchParam){
+	this.getResourceTemplate = function(){
+		return "{\n \"resourceType\":\"Condition\",\n    \"patient\":{        \"reference\":\"Patient/<id>\"\n    },"+
+    "\n\"encounter\":{\n        \"reference\":\"Encounter/<id>\"\n    },\n    \"asserter\":{\n        \"reference\":" +
+    "\"Practitioner/<id>\"\n    },\n    \"code\":{\n        \"coding\":[\n            {\n                \"system\":" +
+    "\"http://snomed.info/sct\",\n                \"code\":\"<99999999>\"" +
+    "\n            }\n        ]\n    },\n    \"clinicalStatus\":" +
+    "\"http://hl7.org/fhir/2015May/condition-status.html\",\n    \"severity\":{\n        \"coding\":[\n            {\n                \"system\":" +
+    "\"http://snomed.info/sct\",\n                \"code\":\"<99999999>\"" +
+    "\n            }\n        ]\n    },\n    \"onsetDateTime\":" +
+    "\"<yyyy-MM-dd hh:mm:ss>\",\n    \"notes\":\"<notes>\"\n}";
 	}
 }
 
 function Medication(){
-	this.providesSearch = function(searchParam){
+	this.getResourceTemplate = function(){
+		return "Since all medications are existent concepts in database, this resource doesn't provide Create or Update operation."
 	}
 }
 
 function MedicationPrescription(){
-	this.providesSearch = function(searchParam){
+	this.getResourceTemplate = function(){
+		return
+		"{\n"+
+		"     \"resourceType\":\"MedicationPrescription\",\n"+
+		"     \"dateWritten\":\"<yyyy-MM-dd hh:mm:ss>\",\n"+
+		"     \"patient\":{\n"+
+		"        \"reference\":\"Patient/<id>\"\n"+
+		"      },\n"+
+		"      \"prescriber\":{\n"+
+		"         \"reference\":\"Practitioner/<id>\"\n"+
+		"      },\n"+
+		"     \"encounter\":{\n"+
+		"          \"reference\":\"Encounter/<id>\"\n"+
+		"      },\n"+
+		"     \"dosageInstruction\":[\n"+
+		"         {\n"+
+		"             \"doseQuantity\":{\n"+
+		"                 \"value\":<99.9>\n"+
+		"                 \"units\":\"<unit>\"\n"+
+		"                 \"system\":\"<system>\"\n"+
+		"              }\n"+
+		"          }\n"+
+		"      ],\n"+
+		"     \"dispense\":{\n"+
+		"         \"medication\":{\n"+
+		"             \"reference\":\"Medication/<id>\"\n"+
+		"         },\n"+
+		"         \"validityPeriod\":{\n"+
+		"             \"start\":\"<yyyy-MM-dd hh:mm:ss>\"\n"+
+		"         },\n"+
+		"        \"numberOfRepeatsAllowed\":<number>,\n"+
+		"        \"quantity\":{\n"+
+		"             \"value\":<99.9>\n"+
+		"          }\n"+
+		"     }\n"+
+		"}"		
+		;
 	}
 }
 
 function MedicationDispense(){
-	this.providesSearch = function(searchParam){
+	this.getResourceTemplate = function(){
+		return
+"{\n"+
+"     \"resourceType\":\"MedicationDispense\",\n"+
+"     \"patient\":{\n"+
+"         \"reference\":\"Patient/<id>\"\n"+
+"     },\n"+
+"     \"quantity\":{\n"+
+"         \"value\":<quantity>,\n"+
+"         \"units\":\"<units>\"\n"+
+"         \"system\":\"<system>\"\n"+
+"     },\n"+
+"     \"daysSupply\":{\n"+
+"         \"value\":<99>\n"+
+"     },\n"+
+"     \"medication\":{\n"+
+"         \"reference\":\"Medication/<id>\"\n"+
+"     }\n"+
+"}";
 	}
 }
 
@@ -106,7 +205,34 @@ function Patient(){
     }];
     active: Boolean;
     
-    this.providesSearch = function(searchParam){
+    this.getResourceTemplate = function(){
+    	return
+"{\n"+
+"     \"resourceType\":\"Patient\",\n"+
+"     \"name\":[\n"+
+"         {\n"+
+"             \"family\":[\n"+
+"                 \"<family name>\"\n"+
+"             ],\n"+
+"             \"given\":[\n"+
+"                 \"<given name 1>\"\n"+
+"             ]\n"+
+"         }\n"+
+"     ],\n"+
+"     \"gender\":\"<http://hl7.org/fhir/2015May/administrative-gender.html>\",\n"+
+"     \"birthDate\":\"yyyy-MM-dd\",\n"+
+"     \"address\":[\n"+
+"         {\n"+
+"             \"line\":[\n"+
+"                 \"<address>\"\n"+
+"             ],\n"+
+"             \"city\":\"<city>\",\n"+
+"             \"state\":\"<ST>\",\n"+
+"             \"postalCode\":\"<99999>\"\n"+
+"        }\n"+
+"    ],\n"+
+"    \"active\":<true|false>\n"+
+"}";
 	}   
     
     this.buildFromJSON = function(params) {
@@ -148,6 +274,25 @@ function Patient(){
 	}
 }
 
+
+function getResourceStruct(resourceName){
+	if(resourceName == 'Patient'){
+		return new Patient();
+	} else if (resourceName == 'Observation'){
+		return new Observation();
+	} else if (resourceName == 'Condition') {
+		return new Condition();
+	} else if (resourceName == 'Encounter'){
+		return new Encounter();
+	} else if (resourceName == 'Medication'){
+		return new Medication();
+	} else if (resourceName == 'MedicationPrescription'){
+		return new MedicationPrescription();
+	} else if (resourceName == 'MedicationDispense'){
+		return new MedicationDispense();
+	} 
+}
+
 var numRows = 0;
 function addSearchParamRow() {
 	var nextRow = numRows++;
@@ -169,7 +314,7 @@ function addSearchParamRow() {
 	});
 	
 	var params = new Array();
-	var refResource = getResourceStruct(resourceName);
+	//var refResource = getResourceStruct(resourceName);
 	conformance.rest.forEach(function(rest){
 		rest.resource.forEach(function(restResource){
 			if (restResource.type == resourceName) {
@@ -208,6 +353,13 @@ function updateSearchDateQualifier(qualifierBtn, qualifierInput, qualifier) {
 	} else {
 		qualifierInput.val(qualifier);
 	}
+}
+
+function fillUpTextArea() {
+	var refResource = getResourceStruct(resourceName);
+	var resTmpl = refResource.getResourceTemplate();
+	$('#resource-create-body').val(resTmpl);
+	$('#resource-update-body').val(resTmpl);
 }
 
 function addSearchControls(theConformance, theSearchParamType, theSearchParamName, theSearchParamChain, theSearchParamTarget, theContainerRowNum, theRowNum) {
@@ -560,25 +712,6 @@ function buildFromJSON(params) {
     return createResource;
 }
 
-function getResourceStruct(resourceName){
-	if(resourceName == 'Patient'){
-		return new Patient();
-	} else if (resourceName == 'Observation'){
-		return new Observation();
-	} else if (resourceName == 'Condition') {
-		return new Condition();
-	} else if (resourceName == 'Encounter'){
-		return new Encounter();
-	} else if (resourceName == 'Medication'){
-		return new Medication();
-	} else if (resourceName == 'MedicationPrescription'){
-		return new MedicationPrescription();
-	} else if (resourceName == 'MedicationDispense'){
-		return new MedicationDispense();
-	} else if (resourceName == 'Location'){
-		return new Location();
-	}
-}
 
 /*function updateTableEntry(source, type, id, vid){
 			var btn = $(source);

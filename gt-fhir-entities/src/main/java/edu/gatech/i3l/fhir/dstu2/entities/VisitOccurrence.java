@@ -180,10 +180,14 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		Encounter encounter = (Encounter) resource;
-		checkNullReferences();
 		
 		this.id = encounter.getId().getIdPartAsLong();
-		this.person.setId(encounter.getPatient().getReference().getIdPartAsLong());
+		IdDt patientRef = encounter.getPatient().getReference();
+		if(patientRef != null){
+			if(this.person == null)
+				this.person = new Person();
+			this.person.setId(patientRef.getIdPartAsLong());
+		}
 		/* Set Period */
 		this.startDate = encounter.getPeriod().getStart();
 		this.endDate = encounter.getPeriod().getEnd();
@@ -194,6 +198,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 		if(careSite != null){
 			this.careSite = careSite;
 			/* Set place of service concept */
+			if(this.placeOfServiceConcept == null)
+				this.placeOfServiceConcept = new Concept();
 			this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
 		}
 		
@@ -254,14 +260,6 @@ public class VisitOccurrence extends BaseResourceEntity {
 		return encounter;
 	}
 
-	private void checkNullReferences() {
-		if(this.person == null)
-			this.person = new Person();
-		if(this.placeOfServiceConcept == null)
-			this.placeOfServiceConcept = new Concept();
-		if(this.careSite == null)
-			this.careSite = new CareSite();
-	}
 
 	@Override
 	public String translateSearchParam(String param) {

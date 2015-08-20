@@ -284,7 +284,6 @@ public class Observation extends BaseResourceEntity{
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-		checkNullReferences();
 		
 		this.date =((DateTimeDt) observation.getApplies()).getValue();
 		this.time = ((DateTimeDt) observation.getApplies()).getValue();
@@ -293,6 +292,8 @@ public class Observation extends BaseResourceEntity{
 		 * TODO create entity-complement to specify other types of subjects */
 		IdDt reference = observation.getSubject().getReference();
 		if("Patient".equals(reference.getResourceType())){
+			if(this.person ==null)
+				this.person = new Person();
 			this.person.setId(reference.getIdPartAsLong());
 		} else if("Group".equals(reference.getResourceType())){
 			//
@@ -311,10 +312,15 @@ public class Observation extends BaseResourceEntity{
 		}
 		
 		Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(), OmopConceptMapping.LOINC_CODE);
-		if(observationConceptId != null)
+		if(observationConceptId != null){
+			if(this.observationConcept == null)
+				this.observationConcept = new Concept();
 			this.observationConcept.setId(observationConceptId); 
+		}
 		
 		/* Set the type of the observation */
+		if(this.type == null)
+			this.type = new Concept();
 		if(observation.getMethod().getCodingFirstRep() != null){
 			this.type.setId(Omop4FixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); //assuming all results on this table are quantitative: http://hl7.org/fhir/2015May/valueset-observation-methods.html
 		} else {
@@ -347,15 +353,7 @@ public class Observation extends BaseResourceEntity{
 		return this;
 	}
 
-	private void checkNullReferences() {
-		if(this.person ==null)
-			this.person = new Person();
-		if(this.observationConcept == null)
-			this.observationConcept = new Concept();
-		if(this.type == null)
-			this.type = new Concept();
-	}
-
+		
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
