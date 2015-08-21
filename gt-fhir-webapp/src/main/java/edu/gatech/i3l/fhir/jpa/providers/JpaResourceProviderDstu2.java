@@ -10,8 +10,6 @@ import net.sourceforge.cobertura.CoverageIgnore;
 import org.springframework.beans.factory.annotation.Required;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.jpa.dao.IFhirResourceDao;
-import ca.uhn.fhir.jpa.provider.BaseJpaProvider;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
@@ -30,6 +28,8 @@ import ca.uhn.fhir.rest.server.EncodingEnum;
 import ca.uhn.fhir.rest.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
+import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
+import edu.gatech.i3l.fhir.jpa.provider.BaseJpaProvider;
 
 public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvider implements IResourceProvider {
 

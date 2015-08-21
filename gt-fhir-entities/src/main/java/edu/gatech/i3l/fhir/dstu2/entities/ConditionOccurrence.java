@@ -22,8 +22,6 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
@@ -34,7 +32,9 @@ import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
-import edu.gatech.i3l.omop.enums.Omop4FixedIds;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**
@@ -209,11 +209,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		if (resource instanceof Condition) {
 			Condition condition = (Condition) resource;
-			IdDt patientRef = condition.getPatient().getReference();
+			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
 			if(patientRef != null){
 				if(this.person == null)
 					this.person =  new Person();
-				this.person.setId(patientRef.getIdPartAsLong());
+				this.person.setId(patientRef);
 			}
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
@@ -233,31 +233,30 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				this.endDate = periodDt.getEnd();
 			}
 
-			IdDt encounterReference = condition.getEncounter().getReference();
+			Long encounterReference = condition.getEncounter().getReference().getIdPartAsLong();
 			if(this.conditionTypeConcept == null)
 				this.conditionTypeConcept = new Concept();
 			if (encounterReference == null) {
 				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
-				this.conditionTypeConcept.setId(Omop4FixedIds.EHR_PROBLEM_ENTRY.getConceptId());
+				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
 			} else {
-				this.conditionTypeConcept.setId(Omop4FixedIds.PRIMARY_CONDITION.getConceptId());
+				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
 				if(this.encounter == null)
 					this.encounter = new VisitOccurrence();
-				this.encounter.setId(encounterReference.getIdPartAsLong());
+				this.encounter.setId(encounterReference);
 			}
 
 			// this.stopReason = stopReason; NOTE: no FHIR parameter for
 			// stopReason.
 
 			IdDt asserterReference = condition.getAsserter().getReference();
-			if (asserterReference != null) {
-				if (asserterReference.getResourceType() != null && asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
+				if (asserterReference.getIdPartAsLong() != null && asserterReference.getResourceType() != null 
+						&& asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
 					long providerId = asserterReference.getIdPartAsLong();
 					if(this.provider ==  null)
 						this.provider = new Provider();
 					this.provider.setId(providerId);
 				}
-			}
 
 			this.sourceValue = "FHIRCREATE";
 		}

@@ -64,7 +64,6 @@
 			<artifactId>thymeleaf</artifactId>
 			<version>2.1.4.RELEASE</version>
 		</dependency>
-
 		<!-- Security OAuth2 related libraries -->
 		<dependency>
 			<groupId>org.apache.oltu.oauth2</groupId>
@@ -94,6 +93,12 @@
 			<groupId>net.sourceforge.cobertura</groupId>
 			<artifactId>cobertura</artifactId>
 			<version>2.1.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>tools</artifactId>
+					<groupId>com.sun</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- You may not need this if you are deploying to an application server 
@@ -125,7 +130,7 @@
 
 	<build>
 
-		<finalName>gt-fhir-webapp</finalName>
+		<finalName>gt-fhir-webapp-1.0.2-SNAPSHOT</finalName>
 		<plugins>
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
 				overlay. You can omit it if you are not using that feature. -->

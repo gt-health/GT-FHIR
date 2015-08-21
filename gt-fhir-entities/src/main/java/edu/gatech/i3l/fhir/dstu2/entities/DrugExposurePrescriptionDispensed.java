@@ -9,41 +9,45 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionDispensed")
-public class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
+public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
 	
 	public static final String RES_TYPE = "MedicationDispense";
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_type_concept_id", updatable= false, nullable=false)
+	@JoinColumn(name="drug_type_concept_id", nullable=false)
+	@NotNull
 	private Concept drugExposureType;
 	
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="person_id", updatable=false, nullable=false)
+	@JoinColumn(name="person_id", nullable=false)
+	@NotNull
 	private Person person;
 	
-	@Column(name="quantity", updatable=false)
+	@Column(name="quantity")
 	private BigDecimal quantity;
 	
-	@Column(name="days_supply",updatable=false)
+	@Column(name="days_supply")
 	private Integer daysSupply;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_concept_id", updatable=false)
+	@JoinColumn(name="drug_concept_id")
 	private Concept medication;
 	
 	public Person getPerson() {
@@ -131,13 +135,28 @@ public class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
 		return resource;
 	}
 
-	/*
-	 * Not Updatable or Insertable. So this is not meant to be implemented. //TODO
-	 * @see ca.uhn.fhir.jpa.entity.IResourceEntity#constructEntityFromResource(ca.uhn.fhir.model.api.IResource)
-	 */
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		return null;
+		MedicationDispense md = (MedicationDispense) resource;
+		
+		/* Set drup exposure type */
+		if(this.drugExposureType == null)
+			this.drugExposureType = new Concept();
+		Long destinationRef = md.getDestination().getReference().getIdPartAsLong();
+		if(destinationRef != null){
+			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_MAIL_ORDER.getConceptId());
+		} else {
+			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_PHARMACY.getConceptId());
+		}
+		/* Set patient */
+		Long patientRef = md.getPatient().getReference().getIdPartAsLong();
+		if(patientRef != null){
+			if(this.person == null)
+				this.person = new Person();
+			this.person.setId(patientRef);
+		}
+		
+		return this;
 	}
 
 }

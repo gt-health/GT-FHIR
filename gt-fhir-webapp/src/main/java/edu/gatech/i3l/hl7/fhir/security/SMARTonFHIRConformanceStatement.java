@@ -9,8 +9,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import ca.uhn.fhir.jpa.dao.IFhirSystemDao;
-import ca.uhn.fhir.jpa.provider.JpaConformanceProviderDstu2;
 import ca.uhn.fhir.model.api.ExtensionDt;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.model.dstu2.resource.Conformance;
@@ -20,7 +18,8 @@ import ca.uhn.fhir.model.dstu2.valueset.RestfulSecurityServiceEnum;
 import ca.uhn.fhir.model.primitive.StringDt;
 import ca.uhn.fhir.model.primitive.UriDt;
 import ca.uhn.fhir.rest.server.RestfulServer;
-import ca.uhn.fhir.rest.server.provider.dstu2.ServerConformanceProvider;
+import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
+import edu.gatech.i3l.fhir.jpa.provider.JpaConformanceProviderDstu2;
 
 /**
  * @author mc142local

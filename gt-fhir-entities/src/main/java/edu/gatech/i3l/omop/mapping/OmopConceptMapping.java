@@ -16,9 +16,9 @@ import javax.persistence.criteria.Root;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
-import ca.uhn.fhir.jpa.dao.BaseFhirDao;
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.dstu2.entities.Concept;
+import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 
 /**
  * This class serves as cache for Concept values in Omop schema based database.

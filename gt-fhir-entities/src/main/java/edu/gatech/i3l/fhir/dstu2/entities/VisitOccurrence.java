@@ -25,15 +25,14 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**
@@ -182,25 +181,28 @@ public class VisitOccurrence extends BaseResourceEntity {
 		Encounter encounter = (Encounter) resource;
 		
 		this.id = encounter.getId().getIdPartAsLong();
-		IdDt patientRef = encounter.getPatient().getReference();
+		Long patientRef = encounter.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
 			if(this.person == null)
 				this.person = new Person();
-			this.person.setId(patientRef.getIdPartAsLong());
+			this.person.setId(patientRef);
 		}
 		/* Set Period */
 		this.startDate = encounter.getPeriod().getStart();
 		this.endDate = encounter.getPeriod().getEnd();
 
 		/* Set care site */
-		IdDt locationRef = encounter.getLocationFirstRep().getLocation().getReference();
-		CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, locationRef.getIdPartAsLong());
-		if(careSite != null){
-			this.careSite = careSite;
-			/* Set place of service concept */
-			if(this.placeOfServiceConcept == null)
-				this.placeOfServiceConcept = new Concept();
-			this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
+		Long locationRef = encounter.getLocationFirstRep().getLocation().getReference().getIdPartAsLong();
+		if(locationRef != null){
+			CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, locationRef);
+			if(careSite != null){
+				this.careSite = careSite;
+				/* Set place of service concept */
+				if(this.placeOfServiceConcept == null)
+					this.placeOfServiceConcept = new Concept();
+				this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
+			}
+			
 		}
 		
 		return this;

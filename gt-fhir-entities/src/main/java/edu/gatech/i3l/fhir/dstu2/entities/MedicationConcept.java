@@ -1,5 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_CODE;
+import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_NAME;
+
 import java.util.Date;
 
 import javax.persistence.CascadeType;
@@ -16,20 +19,18 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.primitive.InstantDt;
-import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_CODE;
-import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_NAME;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 @Entity
 @Table(name="concept")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-public class MedicationConcept extends BaseResourceEntity{
+public final class MedicationConcept extends BaseResourceEntity{
 	
 	private static final String RES_TYPE = "Medication";
 	

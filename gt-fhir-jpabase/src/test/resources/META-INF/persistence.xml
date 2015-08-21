@@ -6,20 +6,20 @@
 
 	<persistence-unit name="FHIR_UT" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		<!-- <class>ca.uhn.fhir.jpa.entity.PatientResourceTable</class>  -->
+		<!-- <class>edu.gatech.i3l.fhir.jpa.entity.PatientResourceTable</class>  -->
 		
-		<class>ca.uhn.fhir.jpa.entity.ForcedId</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceTable</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceHistoryTable</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceHistoryTag</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamDate</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamNumber</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamQuantity</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamString</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceIndexedSearchParamToken</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceLink</class>
-		<class>ca.uhn.fhir.jpa.entity.ResourceTag</class>
-		<class>ca.uhn.fhir.jpa.entity.TagDefinition</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ForcedId</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceTable</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceHistoryTable</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceHistoryTag</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceIndexedSearchParamDate</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceIndexedSearchParamNumber</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceIndexedSearchParamQuantity</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceIndexedSearchParamString</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceIndexedSearchParamToken</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceLink</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.ResourceTag</class>
+		<class>edu.gatech.i3l.fhir.jpa.entity.TagDefinition</class>
 		
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
@@ -35,7 +35,7 @@
 			<property name="hibernate.cache.use_second_level_cache" value="false" />
 			<property name="hibernate.cache.use_structured_entries" value="false" />
 			<!-- 
-			<property name="hibernate.ejb.naming_strategy" value="ca.uhn.fhir.jpa.util.CustomNamingStrategy" />
+			<property name="hibernate.ejb.naming_strategy" value="edu.gatech.i3l.fhir.jpa.util.CustomNamingStrategy" />
 			 -->
 			<!-- 
 			<property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory" />

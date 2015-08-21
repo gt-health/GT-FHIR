@@ -15,11 +15,11 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
@@ -30,17 +30,20 @@ import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionWritten")
-public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
+public final class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	
 	public static final String RES_TYPE = "MedicationPrescription";
 	
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="person_id", updatable= false, nullable=false)
+	@JoinColumn(name="person_id", nullable=false)
+	@NotNull
 	private Person person;
 	
 	/**
@@ -49,28 +52,31 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	 * gather the information in the database.
 	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_type_concept_id", updatable= false, nullable=false)
+	@JoinColumn(name="drug_type_concept_id",nullable=false)
+	@NotNull
 	private Concept drugExposureType;
 	
 	/**
 	 * Reflects the date the prescription was written.
 	 * @fhir dateWritten
 	 */
-	@Column(name="drug_exposure_start_date", updatable= false, nullable=false)
+	@Column(name="drug_exposure_start_date", nullable=false)
+	@NotNull
 	private Date startDate;
 	
 	/**
 	 * @fhir prescriber
 	 */
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="prescribing_provider_id", updatable= false)
+	@JoinColumn(name="prescribing_provider_id")
 	private Provider prescribingProvider;
 	
 	/**
 	 * @fhir encounter
 	 */
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="visit_occurrence_id", updatable= false, nullable=false)
+	@JoinColumn(name="visit_occurrence_id", nullable=false)
+	@NotNull
 	private VisitOccurrenceComplement visitOccurrence;
 	
 	/**
@@ -79,7 +85,7 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	 * @fhir reason
 	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="relevant_condition_concept_id", updatable= false)
+	@JoinColumn(name="relevant_condition_concept_id")
 	private Concept relevantCondition; //TODO check other cases where a Concept can be taken as COndition
 	
 	/*
@@ -91,27 +97,28 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	 * Generally in concept class 'Clinical Drug'.
 	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_concept_id", updatable= false, nullable=false)
+	@JoinColumn(name="drug_concept_id", nullable=false)
+	@NotNull
 	private Concept medication;
 	
 	/**
 	 * @fhir quantity
 	 */
-	@Column(name="quantity", updatable= false)
+	@Column(name="quantity")
 	private BigDecimal quantity;
 	
 	/**
 	 * The period of validity of the prescription, in days, counting from the initial date of this prescription.
 	 * @fhir validityPeriod
 	 */
-	@Column(name="days_supply", updatable= false)
+	@Column(name="days_supply")
 	private Integer daysSupply;
 	
 	/**
 	 * @omop The number of refills after the initial prescription. The initial prescription is not counted, values start with 0.
 	 * @fhir numberOfRepeatsAllowed
 	 */
-	@Column(name="refills", updatable= false)
+	@Column(name="refills")
 	private Integer refills;
 	
 	/*
@@ -276,17 +283,32 @@ public class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationPrescription mp = (MedicationPrescription) resource;
-		IdDt medicationRef = mp.getMedication().getReference();
+		/* Set drup exposure type */
+		if(this.drugExposureType == null)
+			this.drugExposureType = new Concept();
+		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
+		/* Set start date of prescription */
+		this.startDate = mp.getDateWritten();
+		/* Set VisitOccurrence */
+		Long encounterRef = mp.getEncounter().getReference().getIdPartAsLong();
+		if(encounterRef != null){
+			if(this.visitOccurrence == null)
+				this.visitOccurrence = new VisitOccurrenceComplement();
+			this.visitOccurrence.setId(encounterRef);
+		}
+		/* Set Medication */
+		Long medicationRef = mp.getMedication().getReference().getIdPartAsLong();
 		if(medicationRef != null){
 			if(this.medication == null)
 				this.medication = new Concept();
-			this.medication.setId(medicationRef.getIdPartAsLong()); 
+			this.medication.setId(medicationRef); 
 		}
-		IdDt patientRef = mp.getPatient().getReference();
+		/* Set patient */
+		Long patientRef = mp.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
 			if(this.person == null)
 				this.person = new Person();
-			this.person.setId(patientRef.getIdPartAsLong());
+			this.person.setId(patientRef);
 		}
 		return this;
 	}

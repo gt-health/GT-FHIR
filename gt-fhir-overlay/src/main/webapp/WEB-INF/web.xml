@@ -6,8 +6,7 @@
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>
-			/WEB-INF/hapi-fhir-application-context.xml
-			<!-- /WEB-INF/hapi-fhir-config.xml -->
+			/WEB-INF/fhir-application-context.xml
 		</param-value>
   </context-param>
   <servlet>
@@ -16,8 +15,7 @@
     <init-param>
       <param-name>contextConfigLocation</param-name>
       <param-value>
-				/WEB-INF/hapi-fhir-application-context.xml
-				<!-- /WEB-INF/hapi-fhir-config.xml -->
+				/WEB-INF/fhir-application-context.xml
 			</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
