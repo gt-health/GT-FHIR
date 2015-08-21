@@ -12,14 +12,14 @@
 	>
 
 	<bean id="myFhirContextDstu2" class="ca.uhn.fhir.context.FhirContext" factory-method="forDstu2"/>
-	<bean id="myBaseDao" class="ca.uhn.fhir.jpa.dao.BaseFhirDao">
+	<bean id="myBaseDao" class="edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao">
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
-	<bean id="mySystemDaoDstu2" class="ca.uhn.fhir.jpa.dao.BaseFhirSystemDao">
+	<bean id="mySystemDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.DefaultFhirSystemDao">
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
-	<bean id="mySystemProviderDstu2" class="ca.uhn.fhir.jpa.provider.JpaSystemProviderDstu2">
+	<bean id="mySystemProviderDstu2" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
 	<bean id="myBeanValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>

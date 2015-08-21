@@ -1,7 +1,6 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
-import ca.uhn.fhir.jpa.dao.SearchParameterMap;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
@@ -16,6 +15,7 @@ import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenAndListParam;
 // import ca.uhn.fhir.model.dstu2.resource.Bundle;
 // import ca.uhn.fhir.model.api.Bundle;
+import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 
 public class PatientResourceProvider extends 
 	JpaResourceProviderDstu2<Patient>

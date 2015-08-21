@@ -1,34 +1,22 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
-import java.util.Set;
-
-import ca.uhn.fhir.jpa.dao.SearchParameterMap;
-
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
-import ca.uhn.fhir.model.dstu2.resource.Immunization;
-import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
-import ca.uhn.fhir.model.dstu2.resource.MedicationStatement;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.dstu2.resource.Procedure;
 import ca.uhn.fhir.rest.annotation.Count;
-import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
-import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
-import ca.uhn.fhir.rest.param.StringAndListParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenAndListParam;
 // import ca.uhn.fhir.model.dstu2.resource.Bundle;
 // import ca.uhn.fhir.model.api.Bundle;
+import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 
 public class ConditionResourceProvider extends 
 	JpaResourceProviderDstu2<Condition>
