@@ -11,11 +11,11 @@ import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.StringDt;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 /** 
  * This class adds some properties to the Omop data model Person, in order to provide

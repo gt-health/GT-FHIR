@@ -10,14 +10,13 @@ import javax.persistence.criteria.Predicate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import ca.uhn.fhir.jpa.dao.BaseFhirResourceDao;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
-import ca.uhn.fhir.jpa.query.AbstractPredicateBuilder;
-import ca.uhn.fhir.jpa.query.PredicateBuilder;
 import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
+import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
 @Transactional(propagation = Propagation.REQUIRED)
 public class PatientFhirResourceDao extends BaseFhirResourceDao<Patient> {

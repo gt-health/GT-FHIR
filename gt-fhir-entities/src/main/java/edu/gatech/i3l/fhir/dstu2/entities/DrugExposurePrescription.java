@@ -15,7 +15,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.envers.Audited;
 
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+
 
 @Audited
 @Entity

@@ -11,8 +11,8 @@
 	<bean class="edu.gatech.i3l.fhir.to.TesterConfig">
 		<property name="servers">
 			<list>
-				<value>home     , DSTU2 , Local Server                    , ${serverBase}/base</value>
-				<!-- <value>healthintersections       , DSTU1 , Health Intersections            , http://fhir.healthintersections.com.au/open</value> -->
+				<value>gatechreadonly		, DSTU2,	Read-Only Gatech,		http://localhost:8081/gt-fhir-webapp/base</value>
+				<value>gatechopenserver 	, DSTU2,	Open Server Gatech,		http://polaris.i3l.gatech.edu:8080/gt-fhir-webapp</value>
 			</list>
 		</property>
 	</bean>

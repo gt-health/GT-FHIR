@@ -9,12 +9,11 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			<!-- classpath:hapi-fhir-server-resourceproviders-dstu1.xml -->
-			/WEB-INF/hapi-fhir-server-resourceproviders-dstu2.xml
-			/WEB-INF/hapi-fhir-server-database-config.xml
-			/WEB-INF/hapi-fhir-server-config.xml
-			/WEB-INF/hapi-fhir-application-context.xml
-			/WEB-INF/hapi-fhir-config.xml
+			/WEB-INF/fhir-server-resourceproviders-dstu2.xml
+			/WEB-INF/fhir-server-database-config.xml
+			/WEB-INF/fhir-server-config.xml
+			/WEB-INF/fhir-application-context.xml
+			/WEB-INF/fhir-webapp-config.xml
 		</param-value>
 	</context-param>
 
@@ -26,8 +25,8 @@
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
 			<param-value>
-				/WEB-INF/hapi-fhir-application-context.xml
-				/WEB-INF/hapi-fhir-config.xml
+				/WEB-INF/fhir-application-context.xml
+				/WEB-INF/fhir-webapp-config.xml
 			</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
