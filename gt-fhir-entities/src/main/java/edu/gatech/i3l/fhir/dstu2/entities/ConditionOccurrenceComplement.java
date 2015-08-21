@@ -14,12 +14,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionClinicalStatusEnum;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**

@@ -18,11 +18,11 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 /**
  * @author Myung Choi

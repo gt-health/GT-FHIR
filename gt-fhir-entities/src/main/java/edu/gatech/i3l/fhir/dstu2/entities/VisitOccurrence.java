@@ -25,15 +25,14 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.BaseResourceEntity;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**

@@ -20,7 +20,6 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.jpa.entity.IResourceEntity;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
@@ -31,6 +30,7 @@ import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
