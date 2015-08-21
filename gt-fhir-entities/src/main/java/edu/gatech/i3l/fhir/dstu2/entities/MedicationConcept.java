@@ -29,7 +29,7 @@ import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_NAME;
 @Entity
 @Table(name="concept")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-public class MedicationConcept extends BaseResourceEntity{
+public final class MedicationConcept extends BaseResourceEntity{
 	
 	private static final String RES_TYPE = "Medication";
 	

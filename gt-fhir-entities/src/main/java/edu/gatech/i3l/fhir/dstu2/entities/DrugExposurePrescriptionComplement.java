@@ -21,7 +21,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 @Entity
 @Table(name = "f_drug_exposure")
 @Audited
-public class DrugExposurePrescriptionComplement {
+public final class DrugExposurePrescriptionComplement {
 	
 	@Id
 	@Column(name = "drug_exposure_id")

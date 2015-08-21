@@ -41,7 +41,7 @@ import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import edu.gatech.i3l.omop.enums.Omop4FixedIds;
+import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
@@ -288,19 +288,21 @@ public class Observation extends BaseResourceEntity{
 		this.date =((DateTimeDt) observation.getApplies()).getValue();
 		this.time = ((DateTimeDt) observation.getApplies()).getValue();
 		
-		/* Set subject: person 
+		/* Set subject: currently supporting only type Person 
 		 * TODO create entity-complement to specify other types of subjects */
 		IdDt reference = observation.getSubject().getReference();
-		if("Patient".equals(reference.getResourceType())){
-			if(this.person ==null)
-				this.person = new Person();
-			this.person.setId(reference.getIdPartAsLong());
-		} else if("Group".equals(reference.getResourceType())){
-			//
-		} else if("Device".equals(reference.getResourceType())){
-			//
-		} else if("Location".equals(reference.getResourceType())){
-			//
+		if(reference.getIdPartAsLong() != null){
+			if("Patient".equals(reference.getResourceType())){
+				if(this.person ==null)
+					this.person = new Person();
+				this.person.setId(reference.getIdPartAsLong());
+			} else if("Group".equals(reference.getResourceType())){
+				//
+			} else if("Device".equals(reference.getResourceType())){
+				//
+			} else if("Location".equals(reference.getResourceType())){
+				//
+			}
 		}
 		
 		/*Set visit occurrence */
@@ -322,9 +324,9 @@ public class Observation extends BaseResourceEntity{
 		if(this.type == null)
 			this.type = new Concept();
 		if(observation.getMethod().getCodingFirstRep() != null){
-			this.type.setId(Omop4FixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); //assuming all results on this table are quantitative: http://hl7.org/fhir/2015May/valueset-observation-methods.html
+			this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); //assuming all results on this table are quantitative: http://hl7.org/fhir/2015May/valueset-observation-methods.html
 		} else {
-			this.type.setId(Omop4FixedIds.OBSERVATION_FROM_EHR.getConceptId());
+			this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_EHR.getConceptId());
 		}
 		
 		/* Set the value of the observation */
