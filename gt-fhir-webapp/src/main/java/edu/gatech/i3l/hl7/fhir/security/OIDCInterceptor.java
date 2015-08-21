@@ -26,6 +26,7 @@ import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -62,9 +63,14 @@ public class OIDCInterceptor extends InterceptorAdapter {
 	}
 	
 	private String process_IntrospectToken(ResponseEntity<String> response) {
-		System.out.println("checking expiration time");
-
 		
+		HttpStatus statusCode = response.getStatusCode();
+		if (statusCode.is2xxSuccessful() == false) {
+			return "Connection Error";
+		}
+		
+		
+		System.out.println("Instropecting Token: "+response.getBody());
 		
 //		Timestamp ts = rs.getTimestamp("token_expiration");
 //		if (ts != null) {
@@ -105,15 +111,15 @@ public class OIDCInterceptor extends InterceptorAdapter {
 			return true;
 		}
 		
-		// Quick Hack for request from localhost overlay site.
-		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
-				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
-			return true;
-		}
-
-		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
-			return true;
-		}
+//		// Quick Hack for request from localhost overlay site.
+//		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
+//				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
+//			return true;
+//		}
+//
+//		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
+//			return true;
+//		}
 		
 		String err_msg = "";
 		try {
