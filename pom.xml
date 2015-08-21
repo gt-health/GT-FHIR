@@ -19,11 +19,7 @@
 		
 		<skip-hib4>false</skip-hib4>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		
-		<!-- For site-deploy -->
-		<siteMainDirectory>${user.home}/sites/hapi-fhir</siteMainDirectory>
-		<scmPubCheckoutDirectory>${user.home}/sites/scm/hapi-fhir</scmPubCheckoutDirectory>
-
+	
 		<!-- Plugin Versions -->
 		<apache_httpclient_version>4.4</apache_httpclient_version>
 		<apache_httpcore_version>4.4</apache_httpcore_version>
@@ -124,6 +120,17 @@
 			<artifactId>junit</artifactId>
 			<version>${junit_version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.cobertura</groupId>
+			<artifactId>cobertura</artifactId>
+			<version>2.1.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>tools</artifactId>
+					<groupId>com.sun</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>
@@ -294,6 +301,8 @@
 	</build>
 
 </project>
+
+
 
 
 

@@ -64,7 +64,6 @@
 			<artifactId>thymeleaf</artifactId>
 			<version>2.1.4.RELEASE</version>
 		</dependency>
-
 		<!-- Security OAuth2 related libraries -->
 		<dependency>
 			<groupId>org.apache.oltu.oauth2</groupId>

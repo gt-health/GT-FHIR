@@ -2,8 +2,7 @@
 function Encounter(){
 		
 	this.getResourceTemplate = function(){
-		return 
-"{\n"+
+		return "{\n"+
 "      \"resourceType\":\"Encounter\",\n"+         
 "      \"status\":\"<http://hl7.org/fhir/2015May/encounter-state.html>\",\n"+
 "      \"class\":\"<http://hl7.org/fhir/2015May/encounter-class.html>\",\n"+
@@ -31,8 +30,7 @@ function Encounter(){
 function Observation(){
 	
 	this.getResourceTemplate = function(){
-		return
-"{\n"+
+		return "{\n"+
 "     \"resourceType\":\"Observation\",\n"+
 "     \"code\":{\n"+
 "         \"coding\":[\n"+
@@ -87,8 +85,7 @@ function Medication(){
 
 function MedicationPrescription(){
 	this.getResourceTemplate = function(){
-		return
-		"{\n"+
+		return "{\n"+
 		"     \"resourceType\":\"MedicationPrescription\",\n"+
 		"     \"dateWritten\":\"<yyyy-MM-dd hh:mm:ss>\",\n"+
 		"     \"patient\":{\n"+
@@ -128,8 +125,7 @@ function MedicationPrescription(){
 
 function MedicationDispense(){
 	this.getResourceTemplate = function(){
-		return
-"{\n"+
+		return "{\n"+
 "     \"resourceType\":\"MedicationDispense\",\n"+
 "     \"patient\":{\n"+
 "         \"reference\":\"Patient/<id>\"\n"+
@@ -206,8 +202,7 @@ function Patient(){
     active: Boolean;
     
     this.getResourceTemplate = function(){
-    	return
-"{\n"+
+    	return "{\n"+
 "     \"resourceType\":\"Patient\",\n"+
 "     \"name\":[\n"+
 "         {\n"+
@@ -357,7 +352,10 @@ function updateSearchDateQualifier(qualifierBtn, qualifierInput, qualifier) {
 
 function fillUpTextArea() {
 	var refResource = getResourceStruct(resourceName);
+	console.log(resourceName);
+	console.log(refResource);
 	var resTmpl = refResource.getResourceTemplate();
+	console.log(resTmpl);
 	$('#resource-create-body').val(resTmpl);
 	$('#resource-update-body').val(resTmpl);
 }
