@@ -130,7 +130,8 @@
 
 	<build>
 
-		<finalName>gt-fhir-webapp-1.0.2-SNAPSHOT</finalName>
+		<finalName>gt-fhir-webapp</finalName>
+		<!-- finalName>gt-fhir-webapp-1.0.2-SNAPSHOT</finalName -->
 		<plugins>
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
 				overlay. You can omit it if you are not using that feature. -->
