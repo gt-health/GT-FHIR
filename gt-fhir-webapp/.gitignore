@@ -128,3 +128,5 @@ target
 # TeXlipse plugin
 .texlipse
 
+#Database config
+fhir-server-database-config.xml

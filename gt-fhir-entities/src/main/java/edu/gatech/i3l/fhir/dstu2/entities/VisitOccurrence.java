@@ -8,6 +8,8 @@ import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;
 
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +32,7 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -50,6 +53,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="visit_occurrence_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@ManyToOne(cascade=CascadeType.MERGE)
@@ -236,7 +240,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		}
 		
 		// set Patient Reference
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(person.getIdDt()); 
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, person.getId())); 
 		encounter.setPatient(patientReference);
 		
 		// set Period
@@ -249,12 +253,12 @@ public class VisitOccurrence extends BaseResourceEntity {
 		CareSite careSite = getCareSite();
 		if (careSite != null) {
 			// set Location
-			encounter.getLocationFirstRep().getLocation().setReference(careSite.getIdDt());
+			encounter.getLocationFirstRep().getLocation().setReference(new IdDt(CareSite.RES_TYPE, careSite.getId()));
 			
 			// set serviceProvider
 			Organization organization = careSite.getOrganization();
 			if (organization != null) {
-				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(organization.getIdDt());
+				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(Organization.RESOURCE_TYPE, organization.getId()));
 				encounter.setServiceProvider(serviceProviderReference);
 			}
 		}

@@ -3,6 +3,8 @@
  */
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,6 +37,7 @@ public class Organization extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="organization_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})

@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.concepts;
+package edu.gatech.i3l.omop.mapping;
 
 /**
  * This enumeration lists the concept-classes according to the elements in the vocabulary domanin RxNorm

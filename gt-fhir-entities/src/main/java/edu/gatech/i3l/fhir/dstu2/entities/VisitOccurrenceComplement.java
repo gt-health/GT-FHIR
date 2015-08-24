@@ -22,6 +22,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 /**
@@ -99,7 +100,7 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 		// set episode of care.
 		EpisodeOfCare episodeOfCare = getEpisodeOfCare();
 		if (episodeOfCare != null) {
-			ResourceReferenceDt episodeReference = new ResourceReferenceDt(episodeOfCare.getIdDt());
+			ResourceReferenceDt episodeReference = new ResourceReferenceDt(new IdDt(EpisodeOfCare.RES_TYPE, episodeOfCare.getId()));
 			encounter.setEpisodeOfCare(episodeReference);
 		}
 

@@ -3,6 +3,8 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import java.util.Calendar;
 import java.util.Set;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -45,6 +47,7 @@ public class Person extends BaseResourceEntity{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="person_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@Column(name="year_of_birth", nullable=false)

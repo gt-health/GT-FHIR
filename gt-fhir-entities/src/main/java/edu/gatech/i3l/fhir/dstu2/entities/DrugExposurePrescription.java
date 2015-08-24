@@ -1,5 +1,7 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,6 +31,7 @@ public abstract class DrugExposurePrescription extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="drug_exposure_id", updatable= false)
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@OneToOne(mappedBy="prescription", 
