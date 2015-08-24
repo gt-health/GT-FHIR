@@ -123,7 +123,7 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 	public IResource getRelatedResource() {
 		MedicationDispense resource = new MedicationDispense();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		if(this.quantity != null){
 			QuantityDt quantity = new QuantityDt();

@@ -3,6 +3,8 @@
  */
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,9 +32,12 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 @Audited
 public class EpisodeOfCare extends BaseResourceEntity {
 	
+	public static final String RES_TYPE = "EpisodeOfCare";
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="episode_of_care_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -82,10 +87,6 @@ public class EpisodeOfCare extends BaseResourceEntity {
 		return episodeOfCare;
 	}
 
-	public Class<? extends IResource> getRelatedResourceType() {
-		return ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare.class;
-	}
-
 	/* (non-Javadoc)
 	 * @see ca.uhn.fhir.jpa.entity.BaseHapiResourceTable#getId()
 	 */
@@ -103,7 +104,7 @@ public class EpisodeOfCare extends BaseResourceEntity {
 	 */
 	@Override
 	public String getResourceType() {
-		return "EpisodeOfCare";
+		return RES_TYPE;
 	}
 
 	@Override
@@ -114,8 +115,7 @@ public class EpisodeOfCare extends BaseResourceEntity {
 
 	@Override
 	public FhirVersionEnum getFhirVersion() {
-		// TODO Auto-generated method stub
-		return null;
+		return FhirVersionEnum.DSTU2;
 	}
 
 	@Override

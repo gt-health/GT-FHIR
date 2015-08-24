@@ -262,13 +262,13 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getIdDt()));
-		resource.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
+		resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if(this.relevantCondition != null)
 			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
 			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
 		if(this.prescribingProvider != null)
-			resource.setPrescriber(new ResourceReferenceDt(this.prescribingProvider.getIdDt()));
+			resource.setPrescriber(new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
 		
 		DosageInstruction dosage = new DosageInstruction();
 		QuantityDt dose = new QuantityDt();

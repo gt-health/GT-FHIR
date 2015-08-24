@@ -12,9 +12,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -54,14 +57,15 @@ public class Observation extends BaseResourceEntity{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="observation_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private Person person;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="observation_concept_id", nullable=false)
 	@NotNull
 	private Concept observationConcept;
@@ -87,31 +91,31 @@ public class Observation extends BaseResourceEntity{
 	@Column(name="range_high")
 	private BigDecimal rangeHigh;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="value_as_concept_id")
 	private Concept valueAsConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="relevant_condition_concept_id")
 	private Concept relevantCondition;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="observation_type_concept_id", nullable=false)
 	@NotNull
 	private Concept type;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 	
 	@Column(name="observation_source_value")
 	private String sourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="unit_concept_id")
 	private Concept unit;
 	
@@ -438,9 +442,9 @@ public class Observation extends BaseResourceEntity{
 			observation.setApplies(appliesDate);
 		}
 		if(this.person != null)
-			observation.setSubject(new ResourceReferenceDt(this.person.getIdDt()));  
+			observation.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));  
 		if(this.visitOccurrence != null)
-			observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
+			observation.getEncounter().setReference(new IdDt(this.visitOccurrence.getId()));
 		return observation;
 	}
 

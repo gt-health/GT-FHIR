@@ -1,5 +1,7 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,6 +24,7 @@ public class Vocabulary {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="vocabulary_id", updatable=false)
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@Column(name="vocabulary_name", updatable=false)

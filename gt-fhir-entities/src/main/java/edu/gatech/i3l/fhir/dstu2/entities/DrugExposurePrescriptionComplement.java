@@ -1,5 +1,7 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -26,6 +28,7 @@ public final class DrugExposurePrescriptionComplement {
 	@Id
 	@Column(name = "drug_exposure_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@OneToOne(fetch=FetchType.LAZY)

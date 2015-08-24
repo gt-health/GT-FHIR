@@ -5,6 +5,8 @@ import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_NAME;
 
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,6 +39,7 @@ public final class MedicationConcept extends BaseResourceEntity{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="concept_id", updatable=false)
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@Column(name="concept_name", updatable=false)
