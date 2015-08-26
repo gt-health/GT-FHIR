@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.gatech.i3l.hl7.fhir.security;
+package edu.gatech.i3l.fhir.security;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -51,9 +51,9 @@ public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2
 	        String hostname = addr.getCanonicalHostName();    
 	        System.out.println("Hostname of system = " + hostname);
 	        
-	    	authorizeURIvalue = "http://"+hostname+":9085/authorize";
-	    	tokenURIvalue = "http://"+hostname+":9085/token";
-	    	registerURIvalue = "http://"+hostname+":9085/register";	        
+//	    	authorizeURIvalue = "http://"+hostname+":9085/authorize";
+//	    	tokenURIvalue = "http://"+hostname+":9085/token";
+//	    	registerURIvalue = "http://"+hostname+":9085/register";	        
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
