@@ -52,6 +52,10 @@ public class Authorization {
 	private boolean is_admin = false;
 	private Set<String> scopeSet;
 
+	public Authorization(String url) {
+		this.url = url;
+	}
+
 	public Authorization(String url, String clientId, String clientSecret) {
 		this.url = url;
 		this.clientId = clientId;

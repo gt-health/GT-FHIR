@@ -17,8 +17,11 @@ import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
 import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
+import org.json.JSONObject;
 
 import com.google.gson.Gson;
+
+import edu.gatech.i3l.fhir.security.Authorization;
 
 /**
  * Servlet implementation class SmartServices
@@ -26,7 +29,7 @@ import com.google.gson.Gson;
  */
 public class SmartServices extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private LaunchContextService launchContextService;
+	private LaunchContextDao launchContextService;
 	
     /**
      * @see HttpServlet#HttpServlet()
@@ -61,44 +64,34 @@ public class SmartServices extends HttpServlet {
 			buffer.append(line);
 		}
 		
-		// TODO: Convert the body content to JSON and create launch context in database.
-		//
 		System.out.println("LaunchContext: "+buffer.toString());
+
+		// Convert the body content to JSON and create launch context in database.
+		//
+		JSONObject servReq = new JSONObject(buffer.toString());
 		
 		// According to SMART on FHIR folks in Harvard. They want to support both
 		// basic AUTH and bearer AUTH for the internal communication for this.
 		
-		OAuthAccessResourceRequest oauthRequest;
-		try {
-			oauthRequest = new OAuthAccessResourceRequest(request, ParameterStyle.HEADER);
-	        // Get the access token
-	        String accessToken = oauthRequest.getAccessToken();
-	        System.out.println("Token value?: "+accessToken);
-	        
-		} catch (OAuthSystemException | OAuthProblemException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Authorization smartAuth = new Authorization(getServletConfig().getInitParameter("introspectUrl"));
+		if (smartAuth.asBasicAuth(request) == true || smartAuth.asBearerAuth(request) == true) {
+			// TODO: createLaunchContext(); 
+			// response..
+			
+			return;
 		}
 
+//		Enumeration<String> headerNames = request.getHeaderNames();
+//		while (headerNames.hasMoreElements()) {
+//			String headerName = headerNames.nextElement();
+//			System.out.println(headerName);
+//			Enumeration<String> headers = request.getHeaders(headerName);
+//			while (headers.hasMoreElements()) {
+//				String headerValue = headers.nextElement();
+//				System.out.println("  "+headerValue);
+//			}
+//		}
 		
-		Enumeration<String> headerNames = request.getHeaderNames();
-		while (headerNames.hasMoreElements()) {
-			String headerName = headerNames.nextElement();
-			System.out.println(headerName);
-			Enumeration<String> headers = request.getHeaders(headerName);
-			while (headers.hasMoreElements()) {
-				String headerValue = headers.nextElement();
-				System.out.println("  "+headerValue);
-			}
-		}
-		
-
-//		Gson gson = new Gson();
-//
-//		String myBean = gson.fromJson(reader, String.class);
-//		System.out.println ("Received Request: "+myBean);
-		
-		doGet(request, response);
 	}
 
 }

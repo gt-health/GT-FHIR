@@ -27,6 +27,10 @@
 	<servlet>
 		<servlet-name>SmartServices</servlet-name>
 		<servlet-class>edu.gatech.i3l.fhir.smart.servlet.SmartServices</servlet-class>
+		<init-param>
+			<param-name>introspectUrl</param-name>
+			<param-value>http://localhost:9085/introspect</param-value>
+		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet-mapping>
