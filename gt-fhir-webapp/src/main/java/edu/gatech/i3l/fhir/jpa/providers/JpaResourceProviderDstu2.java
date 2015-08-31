@@ -5,8 +5,6 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sourceforge.cobertura.CoverageIgnore;
-
 import org.springframework.beans.factory.annotation.Required;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -39,7 +37,6 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 
 	public JpaResourceProviderDstu2() {}
 
-	@CoverageIgnore
 	public JpaResourceProviderDstu2(IFhirResourceDao<T> theDao) {
 		myDao = theDao;
 	}

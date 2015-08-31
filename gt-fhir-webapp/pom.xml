@@ -52,6 +52,12 @@
 			<type>jar</type>
 		</dependency>
 		<dependency>
+			<groupId>edu.gatech.i3l</groupId>
+			<artifactId>gt-fhir-jpabase</artifactId>
+			<version>${parent_version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-schematron-validator</artifactId>
 			<version>2.7.0</version>
@@ -89,18 +95,6 @@
 			</exclusions>
 		</dependency>
 
-		<dependency>
-			<groupId>net.sourceforge.cobertura</groupId>
-			<artifactId>cobertura</artifactId>
-			<version>2.1.1</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>tools</artifactId>
-					<groupId>com.sun</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<!-- You may not need this if you are deploying to an application server 
 			which provides database connection pools itself. -->
 		<dependency>
@@ -114,13 +108,6 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.6</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>net.sourceforge.cobertura</groupId>
-			<artifactId>cobertura</artifactId>
-			<version>2.1.1</version>
-		</dependency>
-		
 		<dependency>
 		    <groupId>org.hibernate</groupId>
 		    <artifactId>hibernate-validator</artifactId>

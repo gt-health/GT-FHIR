@@ -1,21 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-
-import edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement;
-import edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionDispensed;
-import edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionWritten;
-import edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept;
-import edu.gatech.i3l.fhir.dstu2.entities.Observation;
-import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
-import edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence;
-import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 
 public class DefaultFhirSystemDao<T> extends BaseFhirSystemDao<T>{
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(DefaultFhirSystemDao.class);
