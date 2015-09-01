@@ -71,7 +71,6 @@ public class VisitOccurrence extends BaseResourceEntity {
 	
 	@ManyToOne
 	@JoinColumn(name="place_of_service_concept_id", nullable=false)
-	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 	@NotNull
 	private Concept placeOfServiceConcept;
 	
@@ -187,8 +186,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.id = encounter.getId().getIdPartAsLong();
 		Long patientRef = encounter.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
-			if(this.person == null)
-				this.person = new Person();
+			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		/* Set Period */
@@ -202,8 +200,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			if(careSite != null){
 				this.careSite = careSite;
 				/* Set place of service concept */
-				if(this.placeOfServiceConcept == null)
-					this.placeOfServiceConcept = new Concept();
+				this.placeOfServiceConcept = new Concept();
 				this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
 			}
 			
