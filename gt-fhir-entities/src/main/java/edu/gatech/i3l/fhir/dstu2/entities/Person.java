@@ -313,8 +313,7 @@ public class Person extends BaseResourceEntity{
 			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
-			if(this.genderConcept == null)
-				this.genderConcept = new Concept();
+			this.genderConcept = new Concept();
 			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender(), OmopConceptMapping.GENDER));
 			
 			LocationComplement location;

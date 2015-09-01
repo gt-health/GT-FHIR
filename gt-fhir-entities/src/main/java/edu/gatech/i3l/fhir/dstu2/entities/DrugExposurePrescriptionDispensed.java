@@ -156,8 +156,7 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		MedicationDispense md = (MedicationDispense) resource;
 		
 		/* Set drup exposure type */
-		if(this.drugExposureType == null)
-			this.drugExposureType = new Concept();
+		this.drugExposureType = new Concept();
 		Long destinationRef = md.getDestination().getReference().getIdPartAsLong();
 		if(destinationRef != null){
 			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_MAIL_ORDER.getConceptId());
@@ -167,15 +166,13 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		/* Set drug concept(medication) */
 		Long medicationRef = md.getMedication().getReference().getIdPartAsLong();
 		if(medicationRef != null){
-			if(this.medication == null)
-				this.medication = new Concept();
+			this.medication = new Concept();
 			this.medication.setId(medicationRef);
 		}
 		/* Set patient */
 		Long patientRef = md.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
-			if(this.person == null)
-				this.person = new Person();
+			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		

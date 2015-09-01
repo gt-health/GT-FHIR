@@ -287,30 +287,26 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationPrescription mp = (MedicationPrescription) resource;
 		/* Set drup exposure type */
-		if(this.drugExposureType == null)
-			this.drugExposureType = new Concept();
+		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
 		/* Set start date of prescription */
 		this.startDate = mp.getDateWritten();
 		/* Set VisitOccurrence */
 		Long encounterRef = mp.getEncounter().getReference().getIdPartAsLong();
 		if(encounterRef != null){
-			if(this.visitOccurrence == null)
-				this.visitOccurrence = new VisitOccurrenceComplement();
+			this.visitOccurrence = new VisitOccurrenceComplement();
 			this.visitOccurrence.setId(encounterRef);
 		}
 		/* Set Medication */
 		Long medicationRef = mp.getMedication().getReference().getIdPartAsLong();
 		if(medicationRef != null){
-			if(this.medication == null)
-				this.medication = new Concept();
+			this.medication = new Concept();
 			this.medication.setId(medicationRef); 
 		}
 		/* Set patient */
 		Long patientRef = mp.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
-			if(this.person == null)
-				this.person = new Person();
+			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		return this;

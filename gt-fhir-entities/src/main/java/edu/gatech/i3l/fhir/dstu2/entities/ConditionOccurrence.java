@@ -214,16 +214,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			Condition condition = (Condition) resource;
 			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
 			if(patientRef != null){
-				if(this.person == null)
-					this.person =  new Person();
+				this.person =  new Person();
 				this.person.setId(patientRef);
 			}
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 			Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());
 			if(conditionConceptRef != null){
-				if(this.conditionConcept == null)
-					this.conditionConcept = new Concept();
+				this.conditionConcept = new Concept();
 				this.conditionConcept.setId(conditionConceptRef);
 			}
 			IDatatype onSetDate = condition.getOnset();
@@ -237,15 +235,13 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			}
 
 			Long encounterReference = condition.getEncounter().getReference().getIdPartAsLong();
-			if(this.conditionTypeConcept == null)
-				this.conditionTypeConcept = new Concept();
+			this.conditionTypeConcept = new Concept();
 			if (encounterReference == null) {
 				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
 				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
 			} else {
 				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
-				if(this.encounter == null)
-					this.encounter = new VisitOccurrence();
+				this.encounter = new VisitOccurrence();
 				this.encounter.setId(encounterReference);
 			}
 
@@ -256,8 +252,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				if (asserterReference.getIdPartAsLong() != null && asserterReference.getResourceType() != null 
 						&& asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
 					long providerId = asserterReference.getIdPartAsLong();
-					if(this.provider ==  null)
-						this.provider = new Provider();
+					this.provider = new Provider();
 					this.provider.setId(providerId);
 				}
 
