@@ -55,6 +55,14 @@ public final class DrugExposurePrescriptionComplement {
 		return dose;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	public void setDose(String dose) {
 		this.dose = dose;
 	}
