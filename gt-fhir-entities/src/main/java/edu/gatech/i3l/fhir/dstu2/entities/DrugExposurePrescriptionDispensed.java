@@ -1,6 +1,7 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,6 +19,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -40,6 +42,10 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 	@NotNull
 	private Person person;
 	
+	@Column(name="drug_exposure_start_date", nullable=false)
+	@NotNull
+	private Date startDate;
+	
 	@Column(name="quantity")
 	private BigDecimal quantity;
 	
@@ -48,6 +54,7 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="drug_concept_id")
+	@NotNull
 	private Concept medication;
 	
 	public Person getPerson() {
@@ -90,6 +97,14 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		this.drugExposureType = drugExposureType;
 	}
 
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
@@ -112,7 +127,7 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		case MedicationDispense.SP_PATIENT:
 			return "person";
 		case MedicationDispense.SP_MEDICATION:
-			return "medication.name";
+			return "medication";
 		default:
 			break;
 		}
@@ -125,6 +140,7 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		resource.setId(this.getIdDt());
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
+		resource.setWhenPrepared(new DateTimeDt(this.startDate));
 		if(this.quantity != null){
 			QuantityDt quantity = new QuantityDt();
 			quantity.setValue(this.quantity);
@@ -148,6 +164,13 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		} else {
 			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_PHARMACY.getConceptId());
 		}
+		/* Set drug concept(medication) */
+		Long medicationRef = md.getMedication().getReference().getIdPartAsLong();
+		if(medicationRef != null){
+			if(this.medication == null)
+				this.medication = new Concept();
+			this.medication.setId(medicationRef);
+		}
 		/* Set patient */
 		Long patientRef = md.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
@@ -156,6 +179,7 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 			this.person.setId(patientRef);
 		}
 		
+		this.startDate = md.getWhenPrepared();
 		return this;
 	}
 

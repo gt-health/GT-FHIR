@@ -76,8 +76,7 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	 * @fhir encounter
 	 */
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="visit_occurrence_id", nullable=false)
-	@NotNull
+	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrenceComplement visitOccurrence;
 	
 	/**
