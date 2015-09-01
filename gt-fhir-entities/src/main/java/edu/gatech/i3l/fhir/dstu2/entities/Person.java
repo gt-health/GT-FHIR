@@ -315,7 +315,7 @@ public class Person extends BaseResourceEntity{
 //			this.death = patient.getDeceased(); 
 			if(this.genderConcept == null)
 				this.genderConcept = new Concept();
-			this.genderConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender()));
+			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender(), OmopConceptMapping.GENDER));
 			
 			LocationComplement location;
 			if(this.location != null){
