@@ -15,6 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
@@ -119,6 +120,7 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	 * @fhir numberOfRepeatsAllowed
 	 */
 	@Column(name="refills")
+	@Min(0L)
 	private Integer refills;
 	
 	/*
@@ -243,8 +245,10 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
 		/*  Begin Setting Dispense */
+		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
+		resource.setMedication(medicationRef);
 		Dispense dispense = new Dispense();
-		dispense.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
+		dispense.setMedication(medicationRef);
 		if(this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
 		if(this.quantity != null)
