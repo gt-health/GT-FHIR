@@ -11,8 +11,12 @@
 	<bean class="edu.gatech.i3l.fhir.to.TesterConfig">
 		<property name="servers">
 			<list>
-				<value>gatechrealease	, DSTU2,	Release Server,		http://polaris.i3l.gatech.edu:8080/gt-fhir-webapp/base</value>
+				<value>gatechrealease	, DSTU2,	Release Server,		http://localhost:8080/gt-fhir-webapp/base</value>
+				
+<!-- 				
 				<value>gatechsnapshot 	, DSTU2,	Next Release(Unstable) Server,		http://polaris.i3l.gatech.edu:8080/gt-fhir-webapp-test/base</value>
+				
+ -->				
 			</list>
 		</property>
 	</bean>
