@@ -21,6 +21,13 @@
 	</bean>
 	<tx:annotation-driven transaction-manager="myTxManager" />
 
+<!-- 
+	<bean id="SmartTxManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+	<tx:annotation-driven transaction-manager="SmartTxManager" />
+
+ -->	
 	<util:list id="myServerInterceptors">
 		<ref bean="myLoggingInterceptor"/>
 		<ref bean="myOAuthInterceptor"/>

@@ -32,7 +32,7 @@ import edu.gatech.i3l.fhir.security.Authorization;
  */
 public class SmartServices extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private LaunchContextDao launchContextService;
+	private SmartLaunchContextDao launchContextService;
 	
     /**
      * @see HttpServlet#HttpServlet()
@@ -102,6 +102,7 @@ public class SmartServices extends HttpServlet {
 				smartLaunchContextParams.add(smartLaunchContextParam);
 			}
 			smartLaunchContext.setSmartLaunchContextParams(smartLaunchContextParams);
+			
 			
 			return;
 		}
