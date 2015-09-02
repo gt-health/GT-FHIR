@@ -2,7 +2,10 @@ package edu.gatech.i3l.fhir.smart.servlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -72,11 +75,33 @@ public class SmartServices extends HttpServlet {
 		
 		// According to SMART on FHIR folks in Harvard. They want to support both
 		// basic AUTH and bearer AUTH for the internal communication for this.
-		
-		Authorization smartAuth = new Authorization(getServletConfig().getInitParameter("introspectUrl"));
+		String url = getServletConfig().getInitParameter("introspectUrl");
+		String client_id = getServletConfig().getInitParameter("client_id");
+		String client_secret = getServletConfig().getInitParameter("client_secret");
+		Authorization smartAuth = new Authorization(url, client_id, client_secret);
 		if (smartAuth.asBasicAuth(request) == true || smartAuth.asBearerAuth(request) == true) {
-			// TODO: createLaunchContext(); 
-			// response..
+			String launchContextClientId = servReq.getString("client_id");
+			String launchContextCreatedBy = smartAuth.getClientId();
+			String launchContextUsername = smartAuth.getUserId();
+			SmartLaunchContext smartLaunchContext = new SmartLaunchContext();
+			smartLaunchContext.setClientId(launchContextClientId);
+			smartLaunchContext.setCreatedBy(launchContextCreatedBy);
+			smartLaunchContext.setUsername(launchContextUsername);
+
+			List<SmartLaunchContextParam> smartLaunchContextParams = new ArrayList<SmartLaunchContextParam>();
+			JSONObject paramsJSON = servReq.getJSONObject("parameters");
+			Iterator<?> paramsIter = paramsJSON.keys();
+			while (paramsIter.hasNext()) {
+				String key = (String) paramsIter.next();
+				String val = paramsJSON.getString(key);
+				System.out.println ("Parameters: key: "+key+" val:"+val);
+				
+				SmartLaunchContextParam smartLaunchContextParam = new SmartLaunchContextParam();
+				smartLaunchContextParam.setParamName(key);
+				smartLaunchContextParam.setParamValue(val);
+				smartLaunchContextParams.add(smartLaunchContextParam);
+			}
+			smartLaunchContext.setSmartLaunchContextParams(smartLaunchContextParams);
 			
 			return;
 		}

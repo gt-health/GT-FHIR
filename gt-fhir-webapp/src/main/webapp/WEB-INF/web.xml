@@ -31,6 +31,14 @@
 			<param-name>introspectUrl</param-name>
 			<param-value>http://localhost:9085/introspect</param-value>
 		</init-param>
+		<init-param>
+			<param-name>client_id</param-name>
+			<param-value>client</param-value>
+		</init-param>
+		<init-param>
+			<param-name>client_secret</param-name>
+			<param-value>secret</param-value>
+		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet-mapping>

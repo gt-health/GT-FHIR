@@ -26,7 +26,7 @@ public class SmartLaunchContextParam implements Serializable {
 
 	//bi-directional many-to-one association to SmartLaunchContext
 	@ManyToOne
-	@JoinColumn(name="launch_context")
+	@JoinColumn(name="launch_context_id")
 	private SmartLaunchContext smartLaunchContext;
 
 	public SmartLaunchContextParam() {

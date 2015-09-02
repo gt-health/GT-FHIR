@@ -42,18 +42,19 @@ public class Authorization {
 	private String clientId;
 	private String clientSecret;
 	private String token;
-	private String user_id;
-	private String client_id;
+	private String userId;
+	private String password;
 	private String token_type;
 	private int myTimeSkewAllowance = 300;
 	private boolean active = false;
 	private boolean expired = true;
-	private String password;
 	private boolean is_admin = false;
 	private Set<String> scopeSet;
 
 	public Authorization(String url) {
 		this.url = url;
+		this.clientId = "client";
+		this.clientSecret = "secret";
 	}
 
 	public Authorization(String url, String clientId, String clientSecret) {
@@ -62,16 +63,32 @@ public class Authorization {
 		this.clientSecret = clientSecret;
 	}
 	
+	public String getClientId() {
+		return clientId;
+	}
+	
+	public String getUserId() {
+		return userId;
+	}
+		
 	private HttpHeaders createHeaders () {
-		return new HttpHeaders() {
-			{
-				String auth = clientId+":"+clientSecret;
-				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
-				String authHeader = "Basic " + new String(encodedAuth);
-				set("Authorization", authHeader);
-				setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-			}
-		};
+		HttpHeaders httpHeaders = new HttpHeaders();
+		String auth = clientId+":"+clientSecret;
+		byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+		String authHeader = "Basic " + new String(encodedAuth);
+		httpHeaders.set("Authorization", authHeader);
+		httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		
+		return httpHeaders;
+//		return new HttpHeaders() {
+//			{
+//				String auth = clientId+":"+clientSecret;
+//				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+//				String authHeader = "Basic " + new String(encodedAuth);
+//				set("Authorization", authHeader);
+//				setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+//			}
+//		};
 	}
 
 	public String introspectToken(HttpServletRequest request) {
@@ -144,8 +161,8 @@ public class Authorization {
 		}
 		
 		// Store the received information such as scope, user_id, client_id, etc...
-		user_id = jsonObject.getString("sub");
-		client_id = jsonObject.getString("client_id");
+		userId = jsonObject.getString("sub");
+		clientId = jsonObject.getString("client_id");
 		token_type = jsonObject.getString("token_type");
 
 		String[] scopeValues = jsonObject.getString("scope")
@@ -188,7 +205,7 @@ public class Authorization {
 		String[] credential = OAuthUtils.decodeClientAuthenticationHeader(authString);
 		if (credential == null) return false;
 		
-		user_id = credential[0];
+		userId = credential[0];
 		password = credential[1];
 		
 		return true;
