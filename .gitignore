@@ -147,3 +147,4 @@ local.properties
 
 # Local configuration files
 gt-fhir-webapp/src/main/webapp/WEB-INF/hapi-fhir-server-database-config.xml
+gt-fhir-webapp/src/main/webapp/WEB-INF/fhir-server-database-config.xml

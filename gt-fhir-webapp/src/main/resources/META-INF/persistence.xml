@@ -26,6 +26,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.RiskAssessment</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
