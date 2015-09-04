@@ -21,9 +21,13 @@ import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
 import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.google.gson.Gson;
 
+import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
 import edu.gatech.i3l.fhir.security.Authorization;
 
 /**
@@ -32,17 +36,35 @@ import edu.gatech.i3l.fhir.security.Authorization;
  */
 public class SmartServices extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-//	private SmartLaunchContextDao launchContextService;
+
+	private WebApplicationContext myAppCtx;
+	private SmartOnFhirLaunchContextProvider launchContextProvider;
+	
+	private String url;
+	private String client_id;
+	private String client_secret;
 	
     /**
      * @see HttpServlet#HttpServlet()
      */
     public SmartServices() {
         super();
-        
-//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("GT_FHIR_UT");
-//        EntityManager em = emf.createEntityManager();
-//        launchContextService = new LaunchContextService(em);
+    }
+
+    public void init() throws ServletException {
+		// According to SMART on FHIR folks in Harvard. They want to support both
+		// basic AUTH and bearer AUTH for the internal communication for this.
+    	url = getServletConfig().getInitParameter("introspectUrl");
+    	client_id = getServletConfig().getInitParameter("client_id");
+    	client_secret = getServletConfig().getInitParameter("client_secret");
+    	
+    	myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+    	launchContextProvider = myAppCtx.getBean("mySmartService", SmartOnFhirLaunchContextProvider.class);
+    	
+//        bookDB = (BookDBAO)getServletContext().
+//            getAttribute("bookDB");
+//        if (bookDB == null) throw new
+//            UnavailableException("Couldn’t get database.");
     }
 
 	/**
@@ -73,11 +95,9 @@ public class SmartServices extends HttpServlet {
 		//
 		JSONObject servReq = new JSONObject(buffer.toString());
 		
-		// According to SMART on FHIR folks in Harvard. They want to support both
-		// basic AUTH and bearer AUTH for the internal communication for this.
-		String url = getServletConfig().getInitParameter("introspectUrl");
-		String client_id = getServletConfig().getInitParameter("client_id");
-		String client_secret = getServletConfig().getInitParameter("client_secret");
+//		String url = getServletConfig().getInitParameter("introspectUrl");
+//		String client_id = getServletConfig().getInitParameter("client_id");
+//		String client_secret = getServletConfig().getInitParameter("client_secret");
 		Authorization smartAuth = new Authorization(url, client_id, client_secret);
 		if (smartAuth.asBasicAuth(request) == true || smartAuth.asBearerAuth(request) == true) {
 			String launchContextClientId = servReq.getString("client_id");
@@ -89,6 +109,7 @@ public class SmartServices extends HttpServlet {
 			smartLaunchContext.setUsername(launchContextUsername);
 
 			List<SmartLaunchContextParam> smartLaunchContextParams = new ArrayList<SmartLaunchContextParam>();
+			smartLaunchContext.setSmartLaunchContextParams(smartLaunchContextParams);
 			JSONObject paramsJSON = servReq.getJSONObject("parameters");
 			Iterator<?> paramsIter = paramsJSON.keys();
 			while (paramsIter.hasNext()) {
@@ -99,10 +120,9 @@ public class SmartServices extends HttpServlet {
 				SmartLaunchContextParam smartLaunchContextParam = new SmartLaunchContextParam();
 				smartLaunchContextParam.setParamName(key);
 				smartLaunchContextParam.setParamValue(val);
-				smartLaunchContextParams.add(smartLaunchContextParam);
+				smartLaunchContext.addSmartLaunchContextParam(smartLaunchContextParam);
 			}
-			smartLaunchContext.setSmartLaunchContextParams(smartLaunchContextParams);
-			
+			launchContextProvider.setContext(smartLaunchContext);
 			
 			return;
 		}

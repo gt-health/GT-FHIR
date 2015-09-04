@@ -33,7 +33,7 @@ public class SmartLaunchContext implements Serializable {
 	private String username;
 
 	//bi-directional many-to-one association to SmartLaunchContextParam
-	@OneToMany(mappedBy="smartLaunchContext")
+	@OneToMany(cascade=CascadeType.ALL,mappedBy="smartLaunchContext")
 	private List<SmartLaunchContextParam> smartLaunchContextParams;
 
 	public SmartLaunchContext() {

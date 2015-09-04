@@ -22,6 +22,15 @@
 	<bean id="mySystemProviderDstu2" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
+	<bean id="mySmartOnFhirLaunchContext" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextDao">
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySmartService" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextProvider">
+		<property name="dao" ref="mySmartOnFhirLaunchContext"/>
+	</bean>
+	
+	
 	<bean id="myBeanValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 	<!-- The following beans' definitions are ordered alphabetically -->
 

@@ -31,7 +31,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import ca.uhn.fhir.rest.method.RequestDetails;
-import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 
 /**
  * @author MC142
@@ -124,7 +123,7 @@ public class Authorization {
 		HttpEntity<String> reqAuth = new HttpEntity<String>(createHeaders());
 		ResponseEntity<String> response;
 		
-		String introspectTokenUrl = url+"?token="+token;
+		String introspectTokenUrl = url+"?token="+this.token;
 		response = restTemplate.exchange(introspectTokenUrl, HttpMethod.POST, reqAuth, String.class);
 		HttpStatus statusCode = response.getStatusCode();
 		if (statusCode.is2xxSuccessful() == false) {
@@ -140,6 +139,7 @@ public class Authorization {
 			active = false;
 			return false;
 		}
+		active = true;
 		
 		// Get the expiration time.
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -195,9 +195,14 @@ public class Authorization {
 			return true;
 		}
 		
+		// TODO: Check the request detail and compare with scope. If out of scope, then
+		//       return false.
+		
 		return false;
 	}
 	
+	// Belows are for out-of-band authorization to support Smart on FHIR internal communications.
+	// This is not Smart on FHIR standard. This is to support Smart on FHIR's authorization server.
 	public boolean asBasicAuth(HttpServletRequest request) {
 		String authString = request.getHeader("Authorization");
 		if (authString == null) return false;
@@ -205,10 +210,15 @@ public class Authorization {
 		String[] credential = OAuthUtils.decodeClientAuthenticationHeader(authString);
 		if (credential == null) return false;
 		
+		if (credential.length != 2) return false;
+		
 		userId = credential[0];
 		password = credential[1];
 		
-		return true;
+		if (userId.equalsIgnoreCase(clientId) && password.equalsIgnoreCase(clientSecret))
+			return true;
+		else 
+			return false;
 	}
 	
 	public boolean asBearerAuth(HttpServletRequest request) {
