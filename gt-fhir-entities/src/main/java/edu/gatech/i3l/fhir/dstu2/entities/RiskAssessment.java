@@ -25,7 +25,10 @@ import javax.validation.constraints.NotNull;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.DecimalDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -50,16 +53,13 @@ public class RiskAssessment extends BaseResourceEntity{
 	@NotNull
 	private Person person;
 	
-	@Column(name="risk_assessment_date", nullable=false)
-	@Temporal(TemporalType.DATE)
-	@NotNull
-	private Date date;
-	
-	@Column(name="risk_assessment_time")
-	private Date time;
-	
 	@Column(name="score")
 	private BigDecimal score;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="condition_concept_id", nullable=false)
+	@NotNull
+	private Concept condition;
 	
 	@Column(name="runtime")
 	private BigDecimal runtime;
@@ -67,8 +67,16 @@ public class RiskAssessment extends BaseResourceEntity{
 	@Column(name="fc_runtime")
 	private BigDecimal fc_runtime;
 	
-	@Column(name="method")
-	private String method; // change type
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="method")
+	@NotNull
+	private Concept method;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="outcome")
+	@NotNull
+	private Concept outcome;
 	
 	@Column(name="datasource")
 	private String datasource;
@@ -76,23 +84,34 @@ public class RiskAssessment extends BaseResourceEntity{
 	@Column(name="group_id")
 	private String group_id;
 	
+	/*@Column(name="risk_assessment_date", nullable=false)
+	@Temporal(TemporalType.DATE)
+	@NotNull
+	private Date date;*/
+	
+	@Column(name="risk_assessment_date")
+	private Date date;
+	
+	
 	
 	public RiskAssessment() {
 		super();
 	}
 	
-	public RiskAssessment(Long id, Person person, Date date, Date time,
+	public RiskAssessment(Long id, Person person, Date date, Concept condition,
 			BigDecimal score, BigDecimal runtime, BigDecimal fc_runtime,
-			String method, String datasource, String group_id){
+			Concept method, Concept outcome, String datasource, String group_id){
 		super();
 		this.id = id;
 		this.person = person;
+		this.condition = condition;
 		this.date = date;
-		this.time = time;
+		//this.time = time;
 		this.score = score;
 		this.runtime = runtime;
 		this.fc_runtime = fc_runtime;
 		this.method = method;
+		this.outcome = outcome;
 		this.datasource = datasource;
 		this.group_id = group_id;
 		
@@ -107,20 +126,20 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.id = id;
 	}
 	
-	public Date getDate(){
+	/*public Date getDate(){
 		return date;
 	}
 	
 	public void setDate(Date date){
 		this.date = date;
+	}*/
+	
+	public Date getDateTime(){
+		return date;
 	}
 	
-	public Date getTime(){
-		return time;
-	}
-	
-	public void setTime(Date time){
-		this.time = time;
+	public void setDateTime(Date time){
+		this.date = date;
 	}
 	
 	public Person getPerson(){
@@ -130,6 +149,15 @@ public class RiskAssessment extends BaseResourceEntity{
 	public void setPerson(Person person){
 		this.person = person;
 	}
+	
+	public Concept getCondition(){
+		return condition;
+	}
+	
+	public void setCondition(){
+		this.condition = condition;
+	}
+	
 	
 	public BigDecimal getScore(){
 		return score;
@@ -155,12 +183,20 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.fc_runtime = fc_runtime;
 	}
 	
-	public String getMethod(){
+	public Concept getMethod(){
 		return method;
 	}
 	
-	public void setMethod(String method){
+	public void setMethod(Concept method){
 		this.method = method;
+	}
+	
+	public Concept getOutcome(){
+		return outcome;
+	}
+	
+	public void setOutcome(Concept outcome){
+		this.outcome = outcome;
 	}
 	
 	public String getDatasource(){
@@ -213,19 +249,116 @@ public class RiskAssessment extends BaseResourceEntity{
 	@Override
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.RiskAssessment riskAssessment = new ca.uhn.fhir.model.dstu2.resource.RiskAssessment();
+		//ID
 		riskAssessment.setId(this.getIdDt());
+		
+		//Subject/Patient
 		riskAssessment.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		
-		CodeableConceptDt methodInformation = new CodeableConceptDt(); //temp for now, will replace with actual CC
-		methodInformation.setText(method);
-		riskAssessment.setMethod(methodInformation);
+		//Condition -- ???I think this needs to be fixed. Showing up as Condition/<concept_id> and not Condition/<condition_occur_id>
+		/*String theSystem = condition.getVocabulary().getSystemUri();
+		String theCode = condition.getConceptCode();
+
+		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
+		if (theSystem != "") {
+			// Create coding here. We have one coding in this condition as OMOP
+			// allows one coding concept per condition.
+			// In the future, if we want to allow multiple coding concepts here,
+			// we need to do it here.
+			CodingDt coding = new CodingDt(theSystem, theCode);
+			coding.setDisplay(condition.getName());
+			conditionCodeConcept.addCoding(coding);
+		}
+
+		// FHIR does not require the coding. If our System URI is not mappable
+		// from
+		// OMOP database, then coding would be empty. Set Text here. Even text
+		// is not
+		// required in FHIR. But, then no reason to have this condition, I
+		// think...
+		String theText = condition.getName() + ", " + condition.getVocabulary().getName() + ", "
+				+ condition.getConceptCode();
+
+		conditionCodeConcept.setText(theText);
+	 */
+	
+		/* Need to fix this */
+		riskAssessment.setCondition(new ResourceReferenceDt(new IdDt(ConditionOccurrence.RESOURCE_TYPE, this.condition.getId())));
 		
+		
+		//Method (algorithm)
+		String theSystem = method.getVocabulary().getSystemUri();
+		String theCode = method.getConceptCode();
+
+		CodeableConceptDt methodCodeConcept = new CodeableConceptDt();
+		if (theSystem != "") {
+			// Create coding here. We have one coding in this condition as OMOP
+			// allows one coding concept per condition.
+			// In the future, if we want to allow multiple coding concepts here,
+			// we need to do it here.
+			CodingDt coding = new CodingDt(theSystem, theCode);
+			coding.setDisplay(method.getName());
+			methodCodeConcept.addCoding(coding);
+		}
+
+		// FHIR does not require the coding. If our System URI is not mappable
+		// from
+		// OMOP database, then coding would be empty. Set Text here. Even text
+		// is not
+		// required in FHIR. But, then no reason to have this condition, I
+		// think...
+		String theText = method.getName() + ", " + method.getVocabulary().getName() + ", "
+				+ method.getConceptCode();
+
+		methodCodeConcept.setText(theText);
+		riskAssessment.setMethod(methodCodeConcept);
+		
+		//Score
 		DecimalDt score_dec = new DecimalDt();
 		score_dec.setValue(score);
 		riskAssessment.addPrediction();
 		riskAssessment.getPrediction().get(0).setProbability(score_dec);
 		riskAssessment.getPrediction().get(0).setRationale("runtime = "+runtime.toString() + " ," + "feature construction runtime = "+fc_runtime);
 
+		
+		//Outcome
+		theSystem = outcome.getVocabulary().getSystemUri();
+		theCode = outcome.getConceptCode();
+
+		CodeableConceptDt outcomeCodeConcept = new CodeableConceptDt();
+		if (theSystem != "") {
+			// Create coding here. We have one coding in this condition as OMOP
+			// allows one coding concept per condition.
+			// In the future, if we want to allow multiple coding concepts here,
+			// we need to do it here.
+			CodingDt coding = new CodingDt(theSystem, theCode);
+			coding.setDisplay(outcome.getName());
+			outcomeCodeConcept.addCoding(coding);
+		}
+
+		// FHIR does not require the coding. If our System URI is not mappable
+		// from
+		// OMOP database, then coding would be empty. Set Text here. Even text
+		// is not
+		// required in FHIR. But, then no reason to have this condition, I
+		// think...
+		theText = outcome.getName() + ", " + outcome.getVocabulary().getName() + ", "
+				+ outcome.getConceptCode();
+
+		outcomeCodeConcept.setText(theText);
+		riskAssessment.getPrediction().get(0).setOutcome(outcomeCodeConcept);
+		
+		//Date
+		//DateTimeDt periodStart = new DateTimeDt(this.date);
+		//riskAssessment.setDate(periodStart);
+
+		PeriodDt assessmentPeriod = new PeriodDt();
+		assessmentPeriod.setStartWithSecondsPrecision(date);
+		assessmentPeriod.setEndWithSecondsPrecision(date);
+		
+		riskAssessment.getPrediction().get(0).setWhen(assessmentPeriod);
+
+		
 		return riskAssessment;
 	}
 
