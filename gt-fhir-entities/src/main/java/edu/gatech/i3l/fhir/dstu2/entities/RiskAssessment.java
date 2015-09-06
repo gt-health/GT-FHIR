@@ -24,13 +24,17 @@ import javax.validation.constraints.NotNull;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.primitive.DecimalDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 
 @Entity
-@Table(name="observation")
+@Table(name="risk_assessment")
 public class RiskAssessment extends BaseResourceEntity{
 
 	private static final String RES_TYPE = "RiskAssessment";
@@ -64,7 +68,7 @@ public class RiskAssessment extends BaseResourceEntity{
 	private BigDecimal fc_runtime;
 	
 	@Column(name="method")
-	private String method;
+	private String method; // change type
 	
 	@Column(name="datasource")
 	private String datasource;
@@ -208,8 +212,21 @@ public class RiskAssessment extends BaseResourceEntity{
 
 	@Override
 	public IResource getRelatedResource() {
-		// TODO Auto-generated method stub
-		return null;
+		ca.uhn.fhir.model.dstu2.resource.RiskAssessment riskAssessment = new ca.uhn.fhir.model.dstu2.resource.RiskAssessment();
+		riskAssessment.setId(this.getIdDt());
+		riskAssessment.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+		
+		CodeableConceptDt methodInformation = new CodeableConceptDt(); //temp for now, will replace with actual CC
+		methodInformation.setText(method);
+		riskAssessment.setMethod(methodInformation);
+		
+		DecimalDt score_dec = new DecimalDt();
+		score_dec.setValue(score);
+		riskAssessment.addPrediction();
+		riskAssessment.getPrediction().get(0).setProbability(score_dec);
+		riskAssessment.getPrediction().get(0).setRationale("runtime = "+runtime.toString() + " ," + "feature construction runtime = "+fc_runtime);
+
+		return riskAssessment;
 	}
 
 	@Override
