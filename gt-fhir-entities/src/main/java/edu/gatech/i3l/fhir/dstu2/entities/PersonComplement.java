@@ -186,7 +186,7 @@ public class PersonComplement extends Person{
 			
 			this.active = patient.getActive();
 			//MARITAL STATUS
-//			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.MARITAL_STATUS, patient.getMaritalStatus().getText()));
+//			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(patient.getMaritalStatus().getText(), OmopConceptMapping.MARITAL_STATUS));
 		} else {
 			ourLog.error("There was not possible to construct the entity ? using the resource ?. It should be used the resource ?.",
 					this.getClass().getSimpleName(), resource.getResourceName(), getResourceType());

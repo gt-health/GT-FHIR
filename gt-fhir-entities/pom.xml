@@ -3,7 +3,7 @@
   <parent>
 		<groupId>edu.gatech.i3l</groupId> 
 		<artifactId>gt-fhir</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
   <artifactId>gt-fhir-entities</artifactId>
@@ -42,6 +42,11 @@
 			<artifactId>hibernate-envers</artifactId>
 			<version>${hibernate_version}</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.gatech.i3l</groupId> 
+			<artifactId>gt-fhir-jpabase</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
   </dependencies>
-
+  
 </project>

@@ -1,11 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.providers;
 
 
-import java.util.Date;
-
 import javax.servlet.http.HttpServletRequest;
-
-import net.sourceforge.cobertura.CoverageIgnore;
 
 import org.springframework.beans.factory.annotation.Required;
 
@@ -15,17 +11,14 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.Delete;
-import ca.uhn.fhir.rest.annotation.History;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.ResourceParam;
-import ca.uhn.fhir.rest.annotation.Since;
 import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.annotation.Validate;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.ValidationModeEnum;
 import ca.uhn.fhir.rest.server.EncodingEnum;
-import ca.uhn.fhir.rest.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
@@ -39,7 +32,6 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 
 	public JpaResourceProviderDstu2() {}
 
-	@CoverageIgnore
 	public JpaResourceProviderDstu2(IFhirResourceDao<T> theDao) {
 		myDao = theDao;
 	}
@@ -52,25 +44,25 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 		return myDao;
 	}
 
-	@History
-	public IBundleProvider getHistoryForResourceInstance(HttpServletRequest theRequest, @IdParam IdDt theId, @Since Date theDate) {
-		startRequest(theRequest);
-		try {
-			return myDao.history(theId, theDate);
-		} finally {
-			endRequest(theRequest);
-		}
-	}
-
-	@History
-	public IBundleProvider getHistoryForResourceType(HttpServletRequest theRequest, @Since Date theDate) {
-		startRequest(theRequest);
-		try {
-			return myDao.history(theDate);
-		} finally {
-			endRequest(theRequest);
-		}
-	}
+//	@History
+//	public IBundleProvider getHistoryForResourceInstance(HttpServletRequest theRequest, @IdParam IdDt theId, @Since Date theDate) {
+//		startRequest(theRequest);
+//		try {
+//			return myDao.history(theId, theDate);
+//		} finally {
+//			endRequest(theRequest);
+//		}
+//	}
+//
+//	@History
+//	public IBundleProvider getHistoryForResourceType(HttpServletRequest theRequest, @Since Date theDate) {
+//		startRequest(theRequest);
+//		try {
+//			return myDao.history(theDate);
+//		} finally {
+//			endRequest(theRequest);
+//		}
+//	}
 
 	@Override
 	public Class<? extends IResource> getResourceType() {

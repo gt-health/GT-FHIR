@@ -15,6 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
@@ -75,8 +76,7 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	 * @fhir encounter
 	 */
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="visit_occurrence_id", nullable=false)
-	@NotNull
+	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrenceComplement visitOccurrence;
 	
 	/**
@@ -119,6 +119,7 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	 * @fhir numberOfRepeatsAllowed
 	 */
 	@Column(name="refills")
+	@Min(0L)
 	private Integer refills;
 	
 	/*
@@ -243,8 +244,10 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
 		/*  Begin Setting Dispense */
+		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
+		resource.setMedication(medicationRef);
 		Dispense dispense = new Dispense();
-		dispense.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
+		dispense.setMedication(medicationRef);
 		if(this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
 		if(this.quantity != null)
@@ -262,13 +265,13 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getIdDt()));
-		resource.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
+		resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if(this.relevantCondition != null)
 			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
 			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
 		if(this.prescribingProvider != null)
-			resource.setPrescriber(new ResourceReferenceDt(this.prescribingProvider.getIdDt()));
+			resource.setPrescriber(new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
 		
 		DosageInstruction dosage = new DosageInstruction();
 		QuantityDt dose = new QuantityDt();
@@ -284,30 +287,26 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationPrescription mp = (MedicationPrescription) resource;
 		/* Set drup exposure type */
-		if(this.drugExposureType == null)
-			this.drugExposureType = new Concept();
+		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
 		/* Set start date of prescription */
 		this.startDate = mp.getDateWritten();
 		/* Set VisitOccurrence */
 		Long encounterRef = mp.getEncounter().getReference().getIdPartAsLong();
 		if(encounterRef != null){
-			if(this.visitOccurrence == null)
-				this.visitOccurrence = new VisitOccurrenceComplement();
+			this.visitOccurrence = new VisitOccurrenceComplement();
 			this.visitOccurrence.setId(encounterRef);
 		}
 		/* Set Medication */
 		Long medicationRef = mp.getMedication().getReference().getIdPartAsLong();
 		if(medicationRef != null){
-			if(this.medication == null)
-				this.medication = new Concept();
+			this.medication = new Concept();
 			this.medication.setId(medicationRef); 
 		}
 		/* Set patient */
 		Long patientRef = mp.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
-			if(this.person == null)
-				this.person = new Person();
+			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		return this;

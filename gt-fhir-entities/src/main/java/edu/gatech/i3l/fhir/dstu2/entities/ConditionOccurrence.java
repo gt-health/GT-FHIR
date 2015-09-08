@@ -5,6 +5,8 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,6 +54,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="condition_occurrence_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -211,16 +214,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			Condition condition = (Condition) resource;
 			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
 			if(patientRef != null){
-				if(this.person == null)
-					this.person =  new Person();
+				this.person =  new Person();
 				this.person.setId(patientRef);
 			}
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 			Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());
 			if(conditionConceptRef != null){
-				if(this.conditionConcept == null)
-					this.conditionConcept = new Concept();
+				this.conditionConcept = new Concept();
 				this.conditionConcept.setId(conditionConceptRef);
 			}
 			IDatatype onSetDate = condition.getOnset();
@@ -234,15 +235,13 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			}
 
 			Long encounterReference = condition.getEncounter().getReference().getIdPartAsLong();
-			if(this.conditionTypeConcept == null)
-				this.conditionTypeConcept = new Concept();
+			this.conditionTypeConcept = new Concept();
 			if (encounterReference == null) {
 				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
 				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
 			} else {
 				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
-				if(this.encounter == null)
-					this.encounter = new VisitOccurrence();
+				this.encounter = new VisitOccurrence();
 				this.encounter.setId(encounterReference);
 			}
 
@@ -253,8 +252,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				if (asserterReference.getIdPartAsLong() != null && asserterReference.getResourceType() != null 
 						&& asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
 					long providerId = asserterReference.getIdPartAsLong();
-					if(this.provider ==  null)
-						this.provider = new Provider();
+					this.provider = new Provider();
 					this.provider.setId(providerId);
 				}
 
@@ -274,7 +272,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(person.getIdDt());
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(getResourceType(), this.person.getId()));
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
@@ -283,14 +281,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// we just create this reference resource manually. When encounter
 			// is implemented, we
 			// will get it from visit_occurrence class.
-			ResourceReferenceDt encounterReference = new ResourceReferenceDt(encounter.getIdDt());
+			ResourceReferenceDt encounterReference = new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.encounter.getId()));
 			condition.setEncounter(encounterReference);
 		}
 
 		// Set asserter if exists
 		// This can be either Patient or Practitioner.
 		if (provider != null && provider.getId() > 0) {
-			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(provider.getIdDt());
+			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, provider.getId()));
 			condition.setAsserter(practitionerReference);
 		}
 

@@ -8,6 +8,8 @@ import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;
 
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +32,7 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -50,6 +53,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="visit_occurrence_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@ManyToOne(cascade=CascadeType.MERGE)
@@ -67,7 +71,6 @@ public class VisitOccurrence extends BaseResourceEntity {
 	
 	@ManyToOne
 	@JoinColumn(name="place_of_service_concept_id", nullable=false)
-	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 	@NotNull
 	private Concept placeOfServiceConcept;
 	
@@ -183,8 +186,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.id = encounter.getId().getIdPartAsLong();
 		Long patientRef = encounter.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
-			if(this.person == null)
-				this.person = new Person();
+			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		/* Set Period */
@@ -198,8 +200,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			if(careSite != null){
 				this.careSite = careSite;
 				/* Set place of service concept */
-				if(this.placeOfServiceConcept == null)
-					this.placeOfServiceConcept = new Concept();
+				this.placeOfServiceConcept = new Concept();
 				this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
 			}
 			
@@ -236,7 +237,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		}
 		
 		// set Patient Reference
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(person.getIdDt()); 
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, person.getId())); 
 		encounter.setPatient(patientReference);
 		
 		// set Period
@@ -249,12 +250,12 @@ public class VisitOccurrence extends BaseResourceEntity {
 		CareSite careSite = getCareSite();
 		if (careSite != null) {
 			// set Location
-			encounter.getLocationFirstRep().getLocation().setReference(careSite.getIdDt());
+			encounter.getLocationFirstRep().getLocation().setReference(new IdDt(CareSite.RES_TYPE, careSite.getId()));
 			
 			// set serviceProvider
 			Organization organization = careSite.getOrganization();
 			if (organization != null) {
-				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(organization.getIdDt());
+				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(Organization.RESOURCE_TYPE, organization.getId()));
 				encounter.setServiceProvider(serviceProviderReference);
 			}
 		}

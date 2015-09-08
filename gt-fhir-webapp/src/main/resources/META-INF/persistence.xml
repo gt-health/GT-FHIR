@@ -41,10 +41,9 @@
 			<property name="hibernate.cache.use_minimal_puts" value="false" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.cache.use_query_cache" value="false" />
-			<property name="hibernate.cache.use_second_level_cache"
-				value="false" />
-			<property name="hibernate.cache.use_structured_entries"
-				value="false" />
-		</properties>
+			<property name="hibernate.cache.use_second_level_cache" value="false" />
+			<property name="hibernate.cache.use_structured_entries" value="false" />
+			<!-- <property name="org.hibernate.envers.audit_strategy" value="org.hibernate.envers.strategy.ValidityAuditStrategy"/> -->
+		</properties>                                                    
 	</persistence-unit>
 </persistence>

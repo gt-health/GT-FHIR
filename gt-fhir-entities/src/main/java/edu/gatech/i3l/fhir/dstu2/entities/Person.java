@@ -3,6 +3,8 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import java.util.Calendar;
 import java.util.Set;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -45,6 +47,7 @@ public class Person extends BaseResourceEntity{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="person_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
 	@Column(name="year_of_birth", nullable=false)
@@ -310,9 +313,8 @@ public class Person extends BaseResourceEntity{
 			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
-			if(this.genderConcept == null)
-				this.genderConcept = new Concept();
-			this.genderConcept.setId(OmopConceptMapping.getInstance().get(OmopConceptMapping.GENDER, patient.getGender()));
+			this.genderConcept = new Concept();
+			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender(), OmopConceptMapping.GENDER));
 			
 			LocationComplement location;
 			if(this.location != null){

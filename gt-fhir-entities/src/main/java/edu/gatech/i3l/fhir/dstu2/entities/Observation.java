@@ -12,9 +12,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -54,14 +57,15 @@ public class Observation extends BaseResourceEntity{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="observation_id")
+	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private Person person;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="observation_concept_id", nullable=false)
 	@NotNull
 	private Concept observationConcept;
@@ -87,31 +91,31 @@ public class Observation extends BaseResourceEntity{
 	@Column(name="range_high")
 	private BigDecimal rangeHigh;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="value_as_concept_id")
 	private Concept valueAsConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="relevant_condition_concept_id")
 	private Concept relevantCondition;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="observation_type_concept_id", nullable=false)
 	@NotNull
 	private Concept type;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="associated_provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 	
 	@Column(name="observation_source_value")
 	private String sourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="unit_concept_id")
 	private Concept unit;
 	
@@ -293,8 +297,7 @@ public class Observation extends BaseResourceEntity{
 		IdDt reference = observation.getSubject().getReference();
 		if(reference.getIdPartAsLong() != null){
 			if("Patient".equals(reference.getResourceType())){
-				if(this.person ==null)
-					this.person = new Person();
+				this.person = new Person();
 				this.person.setId(reference.getIdPartAsLong());
 			} else if("Group".equals(reference.getResourceType())){
 				//
@@ -308,21 +311,18 @@ public class Observation extends BaseResourceEntity{
 		/*Set visit occurrence */
 		Long visitOccurrenceId = observation.getEncounter().getReference().getIdPartAsLong();
 		if(visitOccurrenceId != null){
-			if(this.visitOccurrence == null)
-				this.visitOccurrence = new VisitOccurrence();
+			this.visitOccurrence = new VisitOccurrence();
 			this.visitOccurrence.setId(visitOccurrenceId);
 		}
 		
 		Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(), OmopConceptMapping.LOINC_CODE);
 		if(observationConceptId != null){
-			if(this.observationConcept == null)
-				this.observationConcept = new Concept();
+			this.observationConcept = new Concept();
 			this.observationConcept.setId(observationConceptId); 
 		}
 		
 		/* Set the type of the observation */
-		if(this.type == null)
-			this.type = new Concept();
+		this.type = new Concept();
 		if(observation.getMethod().getCodingFirstRep() != null){
 			this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); //assuming all results on this table are quantitative: http://hl7.org/fhir/2015May/valueset-observation-methods.html
 		} else {
@@ -335,8 +335,7 @@ public class Observation extends BaseResourceEntity{
 			Long unitId = ocm.get(((QuantityDt) value).getUnits(), OmopConceptMapping.UCUM_CODE, OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
 			this.valueAsNumber = ((QuantityDt) value).getValue();
 			if(unitId != null){
-				if(this.unit == null)
-					this.unit = new Concept();
+				this.unit = new Concept();
 				this.unit.setId(unitId); 
 			}
 			this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
@@ -344,8 +343,7 @@ public class Observation extends BaseResourceEntity{
 		} else if(value instanceof CodeableConceptDt){
 			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(), OmopConceptMapping.CLINICAL_FINDING);
 			if(valueAsConceptId != null){
-				if(this.valueAsConcept == null)
-					this.valueAsConcept = new Concept();
+				this.valueAsConcept = new Concept();
 				this.valueAsConcept.setId(valueAsConceptId);
 			}
 		} else {
@@ -438,9 +436,9 @@ public class Observation extends BaseResourceEntity{
 			observation.setApplies(appliesDate);
 		}
 		if(this.person != null)
-			observation.setSubject(new ResourceReferenceDt(this.person.getIdDt()));  
+			observation.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));  
 		if(this.visitOccurrence != null)
-			observation.setEncounter(new ResourceReferenceDt(this.visitOccurrence.getRelatedResource()));
+			observation.getEncounter().setReference(new IdDt(this.visitOccurrence.getId()));
 		return observation;
 	}
 
