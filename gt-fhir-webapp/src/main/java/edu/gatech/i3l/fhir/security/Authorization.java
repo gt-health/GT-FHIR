@@ -208,22 +208,35 @@ public class Authorization {
 		
 		// TODO: Check the request detail and compare with scope. If out of scope, then
 		//       return false.
-		// We need to have user or patient level permission checking. For now, user/ scope has
-		// all patients permission. And, <resource>/ scope has <resource> permission for all patients. 
+		// We need to have user or patient level permission checking. For now, user/ and patient/ scope has
+		// all patients permission.  We need to revisit this.
+		// 
 		String resourceName = theRequestDetails.getResourceName();
 		RestfulOperationTypeEnum resourceOperationType = theRequestDetails.getResourceOperationType();
 		for (String scope : scopeSet) {
 			String[] scopeDetail = scope.split("/");
-			if (resourceOperationType ==  RestfulOperationTypeEnum.READ) {
-				if ((scopeDetail[0].equalsIgnoreCase(resourceName) || scopeDetail[0].equalsIgnoreCase("user"))  && 
-						(scopeDetail[1].equalsIgnoreCase("*.read") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
+			if (resourceOperationType ==  RestfulOperationTypeEnum.READ || 
+					resourceOperationType == RestfulOperationTypeEnum.VREAD ||
+					resourceOperationType == RestfulOperationTypeEnum.SEARCH_TYPE) {
+				if ((scopeDetail[1].equalsIgnoreCase("*.read") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
 					return true;
+				} else {
+					String[] scopeResource = scopeDetail[1].split(".");
+					if (scopeResource[0].equalsIgnoreCase(resourceName) && 
+							(scopeResource[1].equalsIgnoreCase("read") || scopeResource[1].equalsIgnoreCase("*"))) {
+						return true;
+					}
 				}
 			} else {
 				// This is CREATE, UPDATE, DELETE... write permission is required.
-				if ((scopeDetail[0].equalsIgnoreCase(resourceName) || scopeDetail[0].equalsIgnoreCase("user"))  && 
-						(scopeDetail[1].equalsIgnoreCase("*.write") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
+				if ((scopeDetail[1].equalsIgnoreCase("*.write") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
 					return true;
+				} else {
+					String[] scopeResource = scopeDetail[1].split(".");
+					if (scopeResource[0].equalsIgnoreCase(resourceName) && 
+							(scopeResource[1].equalsIgnoreCase("write") || scopeResource[1].equalsIgnoreCase("*"))) {
+						return true;
+					}
 				}
 			}
 		}
@@ -241,9 +254,9 @@ public class Authorization {
 		System.out.println("asBasicAuth auth header:"+authString);
 //		String[] credential = OAuthUtils.decodeClientAuthenticationHeader(authString);
 		
-		if (authString.regionMatches(0, "Bearer", 0, 6)) return false; // This is Bearer Auth.
+		if (authString.regionMatches(0, "Basic", 0, 5) == false) return false; // Not a basic Auth
 		
-		String credentialString = StringUtils.newStringUtf8(Base64.decodeBase64(authString));
+		String credentialString = StringUtils.newStringUtf8(Base64.decodeBase64(authString.substring(6)));
 		if (credentialString == null) return false;
 		
 		String[] credential = credentialString.trim().split(":");

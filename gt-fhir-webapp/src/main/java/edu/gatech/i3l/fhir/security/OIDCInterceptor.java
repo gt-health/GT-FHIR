@@ -96,15 +96,15 @@ public class OIDCInterceptor extends InterceptorAdapter {
 			return true;
 		}
 		
-		// Quick Hack for request from localhost overlay site.
-		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
-				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
-			return true;
-		}
-
-		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
-			return true;
-		}
+//		// Quick Hack for request from localhost overlay site.
+//		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
+//				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
+//			return true;
+//		}
+//
+//		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
+//			return true;
+//		}
 		
 //		for test.
 //		String resourceName = theRequestDetails.getResourceName();
