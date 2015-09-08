@@ -2,7 +2,11 @@ package edu.gatech.i3l.fhir.smart.servlet;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import org.json.JSONObject;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -19,7 +23,7 @@ public class SmartLaunchContext implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="launch_id")
-	private String launchId;
+	private Long launchId;
 
 	@Column(name="client_id")
 	private String clientId;
@@ -33,17 +37,17 @@ public class SmartLaunchContext implements Serializable {
 	private String username;
 
 	//bi-directional many-to-one association to SmartLaunchContextParam
-	@OneToMany(cascade=CascadeType.ALL,mappedBy="smartLaunchContext")
+	@OneToMany(fetch = FetchType.EAGER,cascade=CascadeType.ALL,mappedBy="smartLaunchContext")
 	private List<SmartLaunchContextParam> smartLaunchContextParams;
 
 	public SmartLaunchContext() {
 	}
 
-	public String getLaunchId() {
+	public Long getLaunchId() {
 		return this.launchId;
 	}
 
-	public void setLaunchId(String launchId) {
+	public void setLaunchId(Long launchId) {
 		this.launchId = launchId;
 	}
 
@@ -101,4 +105,23 @@ public class SmartLaunchContext implements Serializable {
 		return smartLaunchContextParam;
 	}
 
+	public JSONObject getJSONObject() {
+		JSONObject ret = new JSONObject();
+		ret.put("launch_id", this.getLaunchId());
+		ret.put("username", this.getUsername());
+		ret.put("created_by", this.getCreatedBy());
+		ret.put("created_at", this.getCreatedAt());
+		
+		JSONObject param = new JSONObject();
+		List<SmartLaunchContextParam> smartLaunchContextParams = this.getSmartLaunchContextParams();
+		for (SmartLaunchContextParam launchParam : smartLaunchContextParams) {
+			param.put(launchParam.getParamName(), launchParam.getParamValue());
+		}
+		param.put("need_patient_banner", true);
+		param.put("smart_style_url", "https://fhir.smarthealthit.org/stylesheets/smart_v1.json");
+		
+		ret.put("parameters", param);
+	    
+		return ret;
+	}
 }

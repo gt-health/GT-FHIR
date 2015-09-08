@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
@@ -30,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import ca.uhn.fhir.model.dstu.valueset.RestfulOperationTypeEnum;
 import ca.uhn.fhir.rest.method.RequestDetails;
 
 /**
@@ -186,6 +188,15 @@ public class Authorization {
 		}
 	}
 	
+	public boolean assertScope(String myScope) {
+		for (String scope : scopeSet) {
+			if (scope.equalsIgnoreCase(myScope))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	public boolean allowRequest(RequestDetails theRequestDetails) {
 		if (checkBearer() == false) {
 			return false;
@@ -197,7 +208,27 @@ public class Authorization {
 		
 		// TODO: Check the request detail and compare with scope. If out of scope, then
 		//       return false.
+		// We need to have user or patient level permission checking. For now, user/ scope has
+		// all patients permission. And, <resource>/ scope has <resource> permission for all patients. 
+		String resourceName = theRequestDetails.getResourceName();
+		RestfulOperationTypeEnum resourceOperationType = theRequestDetails.getResourceOperationType();
+		for (String scope : scopeSet) {
+			String[] scopeDetail = scope.split("/");
+			if (resourceOperationType ==  RestfulOperationTypeEnum.READ) {
+				if ((scopeDetail[0].equalsIgnoreCase(resourceName) || scopeDetail[0].equalsIgnoreCase("user"))  && 
+						(scopeDetail[1].equalsIgnoreCase("*.read") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
+					return true;
+				}
+			} else {
+				// This is CREATE, UPDATE, DELETE... write permission is required.
+				if ((scopeDetail[0].equalsIgnoreCase(resourceName) || scopeDetail[0].equalsIgnoreCase("user"))  && 
+						(scopeDetail[1].equalsIgnoreCase("*.write") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
+					return true;
+				}
+			}
+		}
 		
+		System.out.println(resourceName+" "+resourceOperationType.name()+" request failed to get Authorization.");
 		return false;
 	}
 	
@@ -207,13 +238,22 @@ public class Authorization {
 		String authString = request.getHeader("Authorization");
 		if (authString == null) return false;
 		
-		String[] credential = OAuthUtils.decodeClientAuthenticationHeader(authString);
-		if (credential == null) return false;
+		System.out.println("asBasicAuth auth header:"+authString);
+//		String[] credential = OAuthUtils.decodeClientAuthenticationHeader(authString);
+		
+		if (authString.regionMatches(0, "Bearer", 0, 6)) return false; // This is Bearer Auth.
+		
+		String credentialString = StringUtils.newStringUtf8(Base64.decodeBase64(authString));
+		if (credentialString == null) return false;
+		
+		String[] credential = credentialString.trim().split(":");
 		
 		if (credential.length != 2) return false;
 		
 		userId = credential[0];
 		password = credential[1];
+		
+		System.out.println("asBasicAuth:"+userId+":"+password);
 		
 		if (userId.equalsIgnoreCase(clientId) && password.equalsIgnoreCase(clientSecret))
 			return true;

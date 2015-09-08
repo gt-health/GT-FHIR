@@ -36,6 +36,6 @@ public class SmartOnFhirLaunchContextProvider {
 	}
 	
 	public void setContext(SmartLaunchContext context) {
-		myDao.save(context);
+		myDao.saveIfNeeded(context);
 	}
 }

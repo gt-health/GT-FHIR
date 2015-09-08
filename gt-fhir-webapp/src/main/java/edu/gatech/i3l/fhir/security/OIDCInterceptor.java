@@ -4,6 +4,8 @@
 package edu.gatech.i3l.fhir.security;
 
 import java.nio.charset.Charset;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Enumeration;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -61,6 +64,35 @@ public class OIDCInterceptor extends InterceptorAdapter {
 
 		if (theRequestDetails.getOtherOperationType() == OtherOperationTypeEnum.METADATA) {
 			System.out.println("This is METADATA request.");
+			
+//			Enumeration<String> headerNames = theRequest.getHeaderNames();
+//			while (headerNames.hasMoreElements()) {
+//				String headerName = headerNames.nextElement();
+//				System.out.println(headerName);
+//				Enumeration<String> headers = theRequest.getHeaders(headerName);
+//				while (headers.hasMoreElements()) {
+//					String headerValue = headers.nextElement();
+//					System.out.println("  "+headerValue);
+//				}
+//			}
+
+//			StringBuilder buffer = new StringBuilder();
+//			BufferedReader reader;
+//			try {
+//				reader = theRequest.getReader();
+//				String line;
+//				while ((line=reader.readLine())!=null) {
+//					buffer.append(line);
+//				}
+//				
+//				System.out.println("METADATA request getbody: "+buffer.toString());
+//
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+
 			return true;
 		}
 		
@@ -73,6 +105,11 @@ public class OIDCInterceptor extends InterceptorAdapter {
 //		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
 //			return true;
 //		}
+		
+//		for test.
+//		String resourceName = theRequestDetails.getResourceName();
+//		String resourceOperationType = theRequestDetails.getResourceOperationType().name();
+//		System.out.println ("resource:"+resourceName+", resourceOperationType:"+resourceOperationType);
 		
 		// checking Auth
 		System.out.println("IntrospectURL:"+getIntrospectUrl()+" clientID:"+getClientId()+" clientSecret:"+getClientSecret());

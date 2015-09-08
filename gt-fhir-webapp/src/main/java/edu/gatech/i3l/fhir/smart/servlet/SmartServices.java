@@ -2,10 +2,16 @@ package edu.gatech.i3l.fhir.smart.servlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -22,6 +28,8 @@ import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
 import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -72,8 +80,22 @@ public class SmartServices extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		System.out.println("HelloGet");
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		String launchId = request.getPathInfo().substring(1);
+
+		System.out.println("Get LaunchID = "+launchId);
+
+		Authorization smartAuth = new Authorization(url, client_id, client_secret);
+		if (smartAuth.asBasicAuth(request) == true || smartAuth.asBearerAuth(request) == true) {
+			SmartLaunchContext smartLaunchContext = launchContextProvider.getContext(Long.valueOf(launchId));
+			if (smartLaunchContext != null) {
+				JSONObject jsonResp = smartLaunchContext.getJSONObject();
+				
+				String respString = jsonResp.toString();
+				response.setContentType("application/json; charset=UTF-8;");
+				response.getWriter().append(respString);
+				System.out.println(respString);
+			}
+		}
 	}
 
 	/**
@@ -83,35 +105,46 @@ public class SmartServices extends HttpServlet {
 		// We have received a request to create Launch context
 		StringBuilder buffer = new StringBuilder();
 		BufferedReader reader = request.getReader();
-		
-		String line;
-		while ((line=reader.readLine())!=null) {
-			buffer.append(line);
-		}
-		
-		System.out.println("LaunchContext: "+buffer.toString());
-
-		// Convert the body content to JSON and create launch context in database.
-		//
-		JSONObject servReq = new JSONObject(buffer.toString());
-		
+				
 //		String url = getServletConfig().getInitParameter("introspectUrl");
 //		String client_id = getServletConfig().getInitParameter("client_id");
 //		String client_secret = getServletConfig().getInitParameter("client_secret");
 		Authorization smartAuth = new Authorization(url, client_id, client_secret);
 		if (smartAuth.asBasicAuth(request) == true || smartAuth.asBearerAuth(request) == true) {
+			if (smartAuth.assertScope("smart/orchestrate_launch") == false) {
+				// This is internal communication for SMART orchestration. Other request is not
+				// allowed.
+				return;
+			}
+			
+			String line;
+			while ((line=reader.readLine())!=null) {
+				buffer.append(line);
+			}
+			
+			System.out.println("LaunchContext: "+buffer.toString());
+
+			// Convert the body content to JSON and create launch context in database.
+			//
+			JSONObject servReq = new JSONObject(buffer.toString());
+
 			String launchContextClientId = servReq.getString("client_id");
 			String launchContextCreatedBy = smartAuth.getClientId();
 			String launchContextUsername = smartAuth.getUserId();
+			java.util.Date date= new java.util.Date();
+			Timestamp ts = new Timestamp(date.getTime());
+
 			SmartLaunchContext smartLaunchContext = new SmartLaunchContext();
 			smartLaunchContext.setClientId(launchContextClientId);
 			smartLaunchContext.setCreatedBy(launchContextCreatedBy);
+			smartLaunchContext.setCreatedAt(ts);
 			smartLaunchContext.setUsername(launchContextUsername);
 
 			List<SmartLaunchContextParam> smartLaunchContextParams = new ArrayList<SmartLaunchContextParam>();
 			smartLaunchContext.setSmartLaunchContextParams(smartLaunchContextParams);
 			JSONObject paramsJSON = servReq.getJSONObject("parameters");
 			Iterator<?> paramsIter = paramsJSON.keys();
+			String jsonParams="";
 			while (paramsIter.hasNext()) {
 				String key = (String) paramsIter.next();
 				String val = paramsJSON.getString(key);
@@ -121,10 +154,54 @@ public class SmartServices extends HttpServlet {
 				smartLaunchContextParam.setParamName(key);
 				smartLaunchContextParam.setParamValue(val);
 				smartLaunchContext.addSmartLaunchContextParam(smartLaunchContextParam);
+//				if (key.equalsIgnoreCase("patient")) {
+//					// We supposed to have only patient.
+//					jsonParams="\"patient\":\""+val+"\","
+//							+"\"smart_style_url\":"+"\"https://fhir.smarthealthit.org/stylesheets/smart_v1.json\""+","
+//							+"\"need_patient_banner\":true";
+//				}
 			}
 			launchContextProvider.setContext(smartLaunchContext);
 			
-			return;
+			/* Response with JSON object with the following information.
+			 *	{
+			 *	  "created_by": “[CLIENTID]",
+			 *	  "username": “[USERNAME]",
+			 *	  "launch_id": “[LAUNCHID]",
+			 *	  "created_at": “[ISO8601TIMESTAMP]",
+			 *	  "parameters": {
+			 *	    "patient": “[PATIENTID]",
+			 *	    "smart_style_url": "https://fhir.smarthealthit.org/stylesheets/smart_v1.json",
+			 *	    "need_patient_banner": true
+			 *	  }
+			 *	}
+		 	 */
+			
+			response.setContentType("application/json; charset=UTF-8;");
+//			TimeZone tz = TimeZone.getTimeZone("UTC");
+//		    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+//		    df.setTimeZone(tz);
+//		    date = new Date(ts.getTime());
+//		    String createdAt = df.format(date);
+//
+			PrintWriter out = response.getWriter();
+//			String jsonData = "{\"created_by\":\""+launchContextClientId+"\","
+//					+"\"username\":\""+launchContextUsername+"\","
+//					+"\"launch_id\":\""+smartLaunchContext.getLaunchId()+"\","
+//					+"\"created_at\":\""+createdAt+"\"";
+//			
+//			// Parameters
+//			if (jsonParams.isEmpty() == false) {
+//				jsonData = jsonData.concat(",\"parameters\": {"+jsonParams+"}");
+//			}
+//			
+//			jsonData = jsonData.concat("}");
+			
+			String jsonData = smartLaunchContext.getJSONObject().toString();
+		    out.println(jsonData) ; 
+		    out.close();
+		    
+		    System.out.println("SMARTonFHIR service response: "+jsonData);
 		}
 
 //		Enumeration<String> headerNames = request.getHeaderNames();
@@ -139,5 +216,4 @@ public class SmartServices extends HttpServlet {
 //		}
 		
 	}
-
 }

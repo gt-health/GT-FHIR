@@ -16,7 +16,7 @@ public class SmartLaunchContextParam implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private String id;
+	private Long id;
 
 	@Column(name="param_name")
 	private String paramName;
@@ -25,18 +25,18 @@ public class SmartLaunchContextParam implements Serializable {
 	private String paramValue;
 
 	//bi-directional many-to-one association to SmartLaunchContext
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL,fetch = FetchType.EAGER)
 	@JoinColumn(name="launch_context_id")
 	private SmartLaunchContext smartLaunchContext;
 
 	public SmartLaunchContextParam() {
 	}
 
-	public String getId() {
+	public Long getId() {
 		return this.id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
