@@ -34,6 +34,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 
 @Entity
@@ -365,29 +366,70 @@ public class RiskAssessment extends BaseResourceEntity{
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		
-		/*ca.uhn.fhir.model.dstu2.resource.RiskAssessment riskAssessment = (ca.uhn.fhir.model.dstu2.resource.RiskAssessment) resource;
+		System.out.println("In construct");
 		
-		this.date = riskAssessment.getDateElement().getValue(); //getDate()?
-		this.time = riskAssessment.getDateElement().getValue();//?
+		ca.uhn.fhir.model.dstu2.resource.RiskAssessment riskAssessment = (ca.uhn.fhir.model.dstu2.resource.RiskAssessment) resource;
+		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 		
-		// Set subject: currently supporting only type Person 
-		// (Risk Assessment only supports Patient and Group for now)
-		// TODO create entity-complement to specify other types of subjects 
-		IdDt reference = riskAssessment.getSubject().getReference();
-		if(reference.getIdPartAsLong() != null){
-			if("Patient".equals(reference.getResourceType())){
-				if(this.person ==null)
-					this.person = new Person();
-				this.person.setId(reference.getIdPartAsLong());
-			} else if("Group".equals(reference.getResourceType())){
-				//
-			} 
+		//Must have a subject
+		if(riskAssessment.getSubject() != null){
+			//if true - we just need to put into database
+			if(riskAssessment.getPrediction() != null ){
+				
+				//this.date = riskAssessment.getDateElement().getValue(); //getDate()?		
+				// Set subject: currently supporting only type Person 
+				// (Risk Assessment only supports Patient and Group for now)
+				// TODO create entity-complement to specify other types of subjects 
+				IdDt reference = riskAssessment.getSubject().getReference();
+				if(reference.getIdPartAsLong() != null){
+					if("Patient".equals(reference.getResourceType())){
+						if(this.person ==null)
+							this.person = new Person();
+						this.person.setId(reference.getIdPartAsLong());
+					} else if("Group".equals(reference.getResourceType())){
+						//
+					} 
+				}
+				//this.outcome = riskAssessment.getPrediction().get(0).getOutcome().getText();
+				CodeableConceptDt outcomeCodeConcept = riskAssessment.getPrediction().get(0).getOutcome();
+						
+				Long outcomeAsConceptId = ocm.get(riskAssessment.getPrediction().get(0).getOutcome().getCodingFirstRep().getCode());
+				System.out.println(outcomeAsConceptId);
+				
+				this.outcome = new Concept();
+				this.outcome.setId(outcomeAsConceptId);
+			
+				riskAssessment.addPrediction();
+				
+				DecimalDt dec = new DecimalDt();
+				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
+				//System.out.println(dec.getValue());
+				this.score = dec.getValue();
+				
+				/*
+				this.condition = null;
+				this.date = null;
+				this.runtime = null;
+				this.fc_runtime = null;
+				this.method = null;
+				this.datasource = null;
+				this.group_id = null;
+				*/
+
+			}
+			//if false- we need to run analytics model to get results
+			else{
+				System.out.println("Print model");
+			}
+	
 		}
-		*/
-		
-		
-		// TODO Auto-generated method stub
-		return null;
+		else{
+			//Need to send out an error
+			System.out.println("Must have subject");
+		}
+
+		//System.out.println(this.person.getIdDt().getValue());
+		return this;
 	}
 	
 }
