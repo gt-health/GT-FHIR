@@ -60,88 +60,89 @@ public class OIDCInterceptor extends InterceptorAdapter {
 		Connection connection = null;
 		Statement statement = null;
 
-		System.out.println("[OAuth] Request from "+theRequest.getRemoteAddr());
-
-		if (theRequestDetails.getOtherOperationType() == OtherOperationTypeEnum.METADATA) {
-			System.out.println("This is METADATA request.");
-			return true;
-		}
-		
-		// Quick Hack for request from localhost overlay site.
-		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
-				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
-			return true;
-		}
-
-		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
-			return true;
-		}
-		
-		String err_msg = "";
-		try {
-			OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(
-					theRequest, ParameterStyle.HEADER);
-
-			// Get the access token
-			String accessToken = oauthRequest.getAccessToken();
-			System.out.println(accessToken);
-			
-			// Introspect the token
-			RestTemplate restTemplate = new RestTemplate();
-			
-			// Validate the accessToken.
-//			String SQL_STATEMENT = "SELECT c.client_id AS client_id, t.token_value AS token_value, t.expiration AS token_expiration, c.client_name AS client_name FROM client_details c, access_token t WHERE t.token_value='"
-//					+ accessToken + "' and t.client_id = c.id;";
+		return true;
+//		System.out.println("[OAuth] Request from "+theRequest.getRemoteAddr());
 //
-//			System.out.println(SQL_STATEMENT);
-//			connection = dataSource.getConnection();
+//		if (theRequestDetails.getOtherOperationType() == OtherOperationTypeEnum.METADATA) {
+//			System.out.println("This is METADATA request.");
+//			return true;
+//		}
+//		
+//		// Quick Hack for request from localhost overlay site.
+//		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
+//				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
+//			return true;
+//		}
 //
-//			statement = connection.createStatement();
-//			ResultSet rs = statement.executeQuery(SQL_STATEMENT);
+//		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
+//			return true;
+//		}
+//		
+//		String err_msg = "";
+//		try {
+//			OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(
+//					theRequest, ParameterStyle.HEADER);
 //
-//			if (rs.next()) {
-//				System.out.println("checking expiration time");
-//				Timestamp ts = rs.getTimestamp("token_expiration");
-//				if (ts != null) {
-//					Date minAllowableExpirationTime = new Date(
-//							System.currentTimeMillis()
-//									- (myTimeSkewAllowance * 1000L));
-//					if (ts.before(minAllowableExpirationTime)) {
-//						// expired.
-//						err_msg = "Current Time:"+minAllowableExpirationTime.toString()+" Access Token is expired: " + ts.toString();
-//						System.out.println(err_msg);
-//					} else {
-//						System.out.println("Auth successful");
-//					}
-//				}
-//			} else {
-//				System.out.println("Access Token does not exist");
-//				err_msg = "Access Token Does Not Exist";
-//			}
-
-		} catch (OAuthSystemException | OAuthProblemException e) {
-			e.printStackTrace();
-			if (err_msg.isEmpty()) err_msg = e.toString();
-			else err_msg.concat(e.toString());
-		} finally {
-			try {
-				connection.close();
-				System.out.println("finally connection closed");
-			} catch (SQLException e) {
-				System.out.println("finally connection close failed");
-
-				e.printStackTrace();
-			} 
-		}
-
-		if (err_msg.isEmpty()) {
-			System.out.println("Valid Request - OK!");
-			return true;
-		} else {
-			System.out.println("Error:"+err_msg);
-//			throw new AuthenticationException(err_msg);
-			return true; // return true until OAuth is implemented.
-		}
+//			// Get the access token
+//			String accessToken = oauthRequest.getAccessToken();
+//			System.out.println(accessToken);
+//			
+//			// Introspect the token
+//			RestTemplate restTemplate = new RestTemplate();
+//			
+//			// Validate the accessToken.
+////			String SQL_STATEMENT = "SELECT c.client_id AS client_id, t.token_value AS token_value, t.expiration AS token_expiration, c.client_name AS client_name FROM client_details c, access_token t WHERE t.token_value='"
+////					+ accessToken + "' and t.client_id = c.id;";
+////
+////			System.out.println(SQL_STATEMENT);
+////			connection = dataSource.getConnection();
+////
+////			statement = connection.createStatement();
+////			ResultSet rs = statement.executeQuery(SQL_STATEMENT);
+////
+////			if (rs.next()) {
+////				System.out.println("checking expiration time");
+////				Timestamp ts = rs.getTimestamp("token_expiration");
+////				if (ts != null) {
+////					Date minAllowableExpirationTime = new Date(
+////							System.currentTimeMillis()
+////									- (myTimeSkewAllowance * 1000L));
+////					if (ts.before(minAllowableExpirationTime)) {
+////						// expired.
+////						err_msg = "Current Time:"+minAllowableExpirationTime.toString()+" Access Token is expired: " + ts.toString();
+////						System.out.println(err_msg);
+////					} else {
+////						System.out.println("Auth successful");
+////					}
+////				}
+////			} else {
+////				System.out.println("Access Token does not exist");
+////				err_msg = "Access Token Does Not Exist";
+////			}
+//
+//		} catch (OAuthSystemException | OAuthProblemException e) {
+//			e.printStackTrace();
+//			if (err_msg.isEmpty()) err_msg = e.toString();
+//			else err_msg.concat(e.toString());
+//		} finally {
+//			try {
+//				connection.close();
+//				System.out.println("finally connection closed");
+//			} catch (SQLException e) {
+//				System.out.println("finally connection close failed");
+//
+//				e.printStackTrace();
+//			} 
+//		}
+//
+//		if (err_msg.isEmpty()) {
+//			System.out.println("Valid Request - OK!");
+//			return true;
+//		} else {
+//			System.out.println("Error:"+err_msg);
+////			throw new AuthenticationException(err_msg);
+//			return true; // return true until OAuth is implemented.
+//		}
 	}
 	
 	public String getIntrospectURL() {

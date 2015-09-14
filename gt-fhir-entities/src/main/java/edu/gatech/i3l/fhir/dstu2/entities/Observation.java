@@ -297,8 +297,7 @@ public class Observation extends BaseResourceEntity{
 		IdDt reference = observation.getSubject().getReference();
 		if(reference.getIdPartAsLong() != null){
 			if("Patient".equals(reference.getResourceType())){
-				if(this.person ==null)
-					this.person = new Person();
+				this.person = new Person();
 				this.person.setId(reference.getIdPartAsLong());
 			} else if("Group".equals(reference.getResourceType())){
 				//
@@ -312,21 +311,18 @@ public class Observation extends BaseResourceEntity{
 		/*Set visit occurrence */
 		Long visitOccurrenceId = observation.getEncounter().getReference().getIdPartAsLong();
 		if(visitOccurrenceId != null){
-			if(this.visitOccurrence == null)
-				this.visitOccurrence = new VisitOccurrence();
+			this.visitOccurrence = new VisitOccurrence();
 			this.visitOccurrence.setId(visitOccurrenceId);
 		}
 		
 		Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(), OmopConceptMapping.LOINC_CODE);
 		if(observationConceptId != null){
-			if(this.observationConcept == null)
-				this.observationConcept = new Concept();
+			this.observationConcept = new Concept();
 			this.observationConcept.setId(observationConceptId); 
 		}
 		
 		/* Set the type of the observation */
-		if(this.type == null)
-			this.type = new Concept();
+		this.type = new Concept();
 		if(observation.getMethod().getCodingFirstRep() != null){
 			this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); //assuming all results on this table are quantitative: http://hl7.org/fhir/2015May/valueset-observation-methods.html
 		} else {
@@ -339,8 +335,7 @@ public class Observation extends BaseResourceEntity{
 			Long unitId = ocm.get(((QuantityDt) value).getUnits(), OmopConceptMapping.UCUM_CODE, OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
 			this.valueAsNumber = ((QuantityDt) value).getValue();
 			if(unitId != null){
-				if(this.unit == null)
-					this.unit = new Concept();
+				this.unit = new Concept();
 				this.unit.setId(unitId); 
 			}
 			this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
@@ -348,8 +343,7 @@ public class Observation extends BaseResourceEntity{
 		} else if(value instanceof CodeableConceptDt){
 			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(), OmopConceptMapping.CLINICAL_FINDING);
 			if(valueAsConceptId != null){
-				if(this.valueAsConcept == null)
-					this.valueAsConcept = new Concept();
+				this.valueAsConcept = new Concept();
 				this.valueAsConcept.setId(valueAsConceptId);
 			}
 		} else {
