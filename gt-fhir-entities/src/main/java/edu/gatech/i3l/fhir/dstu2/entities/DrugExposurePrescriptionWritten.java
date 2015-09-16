@@ -310,7 +310,9 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		if (this.visitOccurrence != null) {
+			resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		}
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if(this.relevantCondition != null)
 			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
@@ -321,7 +323,10 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		DosageInstruction dosage = new DosageInstruction();
 		QuantityDt dose = new QuantityDt();
 		dose.setValue(this.quantity);
-		dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+		
+		if (this.getComplement() != null) {
+			dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+		}
 		dosage.setDose(dose);
 		resource.addDosageInstruction(dosage);
 		

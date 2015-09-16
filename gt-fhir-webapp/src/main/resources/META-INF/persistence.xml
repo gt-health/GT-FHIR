@@ -24,6 +24,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>

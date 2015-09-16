@@ -272,7 +272,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(getResourceType(), this.person.getId()));
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(this.person.getResourceType(), this.person.getId()));
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
@@ -301,8 +301,18 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// System.out.println("VocabularyID:"+myVoc.getId());
 		// System.out.println("VocabularyName:"+myVoc.getName());
 
-		String theSystem = conditionConcept.getVocabulary().getSystemUri();
-		String theCode = conditionConcept.getConceptCode();
+		// First check if ICD codes are available.
+		String theSystem;
+		String theCode;
+		String theDisplay = "";
+		if (this.sourceValue.startsWith("ICD9CM:") == true) {
+			theSystem = "http://hl7.org/fhir/sid/icd-9";
+			theCode = this.sourceValue.substring(7);
+		} else {
+			theSystem = conditionConcept.getVocabulary().getSystemUri();
+			theCode = conditionConcept.getConceptCode();
+			theDisplay = conditionConcept.getName();
+		}
 
 		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
@@ -311,7 +321,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// In the future, if we want to allow multiple coding concepts here,
 			// we need to do it here.
 			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(conditionConcept.getName());
+			coding.setDisplay(theDisplay);
 			conditionCodeConcept.addCoding(coding);
 		}
 

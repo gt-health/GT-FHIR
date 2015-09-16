@@ -24,7 +24,9 @@ import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 public interface ISmartFhirSystem<T> extends IFhirSystemDao<T> {
 	public T findOne(Long id);
 
-	public void saveIfNeeded (T entity);
+	public T findOneAndDelete(Long id);
+	
+	public void saveAndDelete (T entity);
 
 	public void save(T entity);
 

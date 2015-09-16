@@ -32,10 +32,10 @@ public class SmartOnFhirLaunchContextProvider {
 	}
 
 	public SmartLaunchContext getContext(Long id) {
-		return myDao.findOne(id);
+		return myDao.findOneAndDelete(id);
 	}
 	
 	public void setContext(SmartLaunchContext context) {
-		myDao.saveIfNeeded(context);
+		myDao.saveAndDelete(context);
 	}
 }

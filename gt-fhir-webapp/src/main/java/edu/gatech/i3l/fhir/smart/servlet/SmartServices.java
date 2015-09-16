@@ -90,6 +90,11 @@ public class SmartServices extends HttpServlet {
 			if (smartLaunchContext != null) {
 				JSONObject jsonResp = smartLaunchContext.getJSONObject();
 				
+				if (jsonResp == null) {
+					System.out.println("Launch ID "+launchId+" does not exist.");
+					return;
+				}
+				
 				String respString = jsonResp.toString();
 				response.setContentType("application/json; charset=UTF-8;");
 				response.getWriter().append(respString);
