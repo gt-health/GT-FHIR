@@ -60,7 +60,7 @@ public class Person extends BaseResourceEntity{
 	@Column(name="day_of_birth")
 	private Integer dayOfBirth;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="location_id")
 	private LocationComplement location;
 	
@@ -314,7 +314,7 @@ public class Person extends BaseResourceEntity{
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
 			this.genderConcept = new Concept();
-			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender(), OmopConceptMapping.GENDER));
+			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender().substring(0, 1), OmopConceptMapping.GENDER));
 			
 			LocationComplement location;
 			if(this.location != null){
