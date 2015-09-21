@@ -59,7 +59,6 @@ public class RiskAssessment extends BaseResourceEntity{
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id", nullable=false)
-	@NotNull
 	private Concept condition;
 	
 	@Column(name="runtime")
@@ -71,7 +70,6 @@ public class RiskAssessment extends BaseResourceEntity{
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="method")
-	@NotNull
 	private Concept method;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -405,6 +403,16 @@ public class RiskAssessment extends BaseResourceEntity{
 				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
 				//System.out.println(dec.getValue());
 				this.score = dec.getValue();
+				
+				//TODO- add in check for method
+				CodeableConceptDt methodCodeConcept = riskAssessment.getMethod();
+				Long methodAsConceptId = ocm.get(riskAssessment.getMethod().getCodingFirstRep().getCode());
+				System.out.println(methodAsConceptId);
+				
+				this.method = new Concept();
+				this.method.setId(methodAsConceptId);
+				
+				
 				
 				/*
 				this.condition = null;
