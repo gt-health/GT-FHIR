@@ -27,12 +27,15 @@ import edu.gatech.i3l.fhir.jpa.provider.JpaConformanceProviderDstu2;
  */
 public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2 {
 
-//	static String authorizeURI = "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#authorize";
-//	static String tokenURI = "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#token";
-//	static String registerURI = "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#register";
+	// static String authorizeURI =
+	// "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#authorize";
+	// static String tokenURI =
+	// "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#token";
+	// static String registerURI =
+	// "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#register";
 
 	static String oauthURI = "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris";
-	
+
 	static String authorizeURI = "authorize";
 	static String tokenURI = "token";
 	static String registerURI = "register";
@@ -40,31 +43,31 @@ public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2
 	String authorizeURIvalue = "http://localhost:9085/authorize";
 	String tokenURIvalue = "http://localhost:9085/token";
 	String registerURIvalue = "http://localhost:9085/register";
-		
+
 	public SMARTonFHIRConformanceStatement(RestfulServer theRestfulServer, IFhirSystemDao<Bundle> theSystemDao) {
 		super(theRestfulServer, theSystemDao);
 		setCache(false);
-		
-		try {
-			InetAddress addr = java.net.InetAddress.getLocalHost();
-	        System.out.println(addr);
-	        String hostname = addr.getCanonicalHostName();    
-	        System.out.println("Hostname of system = " + hostname);
-	        
-//	    	authorizeURIvalue = "http://"+hostname+":9085/authorize";
-//	    	tokenURIvalue = "http://"+hostname+":9085/token";
-//	    	registerURIvalue = "http://"+hostname+":9085/register";	        
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}    
+
+//		try {
+//			InetAddress addr = java.net.InetAddress.getLocalHost();
+//			System.out.println(addr);
+//			String hostname = addr.getCanonicalHostName();
+//			System.out.println("Hostname of system = " + hostname);
+//
+//			// authorizeURIvalue = "http://"+hostname+":9085/authorize";
+//			// tokenURIvalue = "http://"+hostname+":9085/token";
+//			// registerURIvalue = "http://"+hostname+":9085/register";
+//		} catch (UnknownHostException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	@Override
 	public Conformance getServerConformance(HttpServletRequest theRequest) {
 		Conformance conformanceStatement = super.getServerConformance(theRequest);
 		RestSecurity restSec = new RestSecurity();
-		
+
 		// Set security.service
 		restSec.setService(RestfulSecurityServiceEnum.O_AUTH_);
 
@@ -78,13 +81,13 @@ public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2
 		secExtension.addUndeclaredExtension(authorizeExtension);
 		secExtension.addUndeclaredExtension(tokenExtension);
 		secExtension.addUndeclaredExtension(registerExtension);
-		
+
 		restSec.addUndeclaredExtension(secExtension);
-		
-//		restSec.addUndeclaredExtension(authorizeExtension);
-//		restSec.addUndeclaredExtension(tokenExtension);
-//		restSec.addUndeclaredExtension(registerExtension);
-		
+
+		// restSec.addUndeclaredExtension(authorizeExtension);
+		// restSec.addUndeclaredExtension(tokenExtension);
+		// restSec.addUndeclaredExtension(registerExtension);
+
 		List<Rest> rests = conformanceStatement.getRest();
 		if (rests == null || rests.size() <= 0) {
 			Rest rest = new Rest();
@@ -94,7 +97,19 @@ public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2
 			Rest rest = rests.get(0);
 			rest.setSecurity(restSec);
 		}
-		
+
 		return conformanceStatement;
+	}
+
+	public void setAuthServerUrl(String url) {
+		if (url.endsWith("/")) {
+			authorizeURIvalue = url+"authorize";
+			tokenURIvalue = url+"token";
+			registerURIvalue = url+"register";
+		} else {
+			authorizeURIvalue = url+"/authorize";
+			tokenURIvalue = url+"/token";
+			registerURIvalue = url+"/register";
+		}
 	}
 }

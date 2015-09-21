@@ -18,6 +18,10 @@
 	<servlet>
 		<servlet-name>fhirServlet</servlet-name>
 		<servlet-class>edu.gatech.i3l.fhir.servlet.DefaultServer</servlet-class>
+		<init-param>
+			<param-name>authServerUrl</param-name>
+			<param-value>http://localhost:9085/</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>

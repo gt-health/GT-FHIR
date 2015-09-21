@@ -40,5 +40,6 @@
 	    <property name="introspectUrl" value="http://localhost:9085/introspect" />
 		<property name="clientId" value="client" />
 		<property name="clientSecret" value="secret" />
+		<property name="localByPass" value="True" />
 	</bean>
 </beans>

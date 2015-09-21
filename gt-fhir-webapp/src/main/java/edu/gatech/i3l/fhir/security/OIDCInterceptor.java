@@ -44,76 +44,80 @@ import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
  */
 public class OIDCInterceptor extends InterceptorAdapter {
 
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory
-			.getLogger(OIDCInterceptor.class);
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(OIDCInterceptor.class);
 
 	private String introspectUrl;
 	private String clientId;
 	private String clientSecret;
-	
-	
+	private String localByPass;
+
 	public OIDCInterceptor() {
 	}
 
 	@Override
-	public boolean incomingRequestPostProcessed(
-			RequestDetails theRequestDetails, HttpServletRequest theRequest,
+	public boolean incomingRequestPostProcessed(RequestDetails theRequestDetails, HttpServletRequest theRequest,
 			HttpServletResponse theResponse) throws AuthenticationException {
 
-		System.out.println("[OAuth] Request from "+theRequest.getRemoteAddr());
+		System.out.println("[OAuth] Request from " + theRequest.getRemoteAddr());
 
 		if (theRequestDetails.getOtherOperationType() == OtherOperationTypeEnum.METADATA) {
 			System.out.println("This is METADATA request.");
-			
-//			Enumeration<String> headerNames = theRequest.getHeaderNames();
-//			while (headerNames.hasMoreElements()) {
-//				String headerName = headerNames.nextElement();
-//				System.out.println(headerName);
-//				Enumeration<String> headers = theRequest.getHeaders(headerName);
-//				while (headers.hasMoreElements()) {
-//					String headerValue = headers.nextElement();
-//					System.out.println("  "+headerValue);
-//				}
-//			}
 
-//			StringBuilder buffer = new StringBuilder();
-//			BufferedReader reader;
-//			try {
-//				reader = theRequest.getReader();
-//				String line;
-//				while ((line=reader.readLine())!=null) {
-//					buffer.append(line);
-//				}
-//				
-//				System.out.println("METADATA request getbody: "+buffer.toString());
-//
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
+			// Enumeration<String> headerNames = theRequest.getHeaderNames();
+			// while (headerNames.hasMoreElements()) {
+			// String headerName = headerNames.nextElement();
+			// System.out.println(headerName);
+			// Enumeration<String> headers = theRequest.getHeaders(headerName);
+			// while (headers.hasMoreElements()) {
+			// String headerValue = headers.nextElement();
+			// System.out.println(" "+headerValue);
+			// }
+			// }
+
+			// StringBuilder buffer = new StringBuilder();
+			// BufferedReader reader;
+			// try {
+			// reader = theRequest.getReader();
+			// String line;
+			// while ((line=reader.readLine())!=null) {
+			// buffer.append(line);
+			// }
+			//
+			// System.out.println("METADATA request getbody:
+			// "+buffer.toString());
+			//
+			// } catch (IOException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
+			//
 
 			return true;
 		}
-		
+
 		// Quick Hack for request from localhost overlay site.
-//		if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1") ||
-//				theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
-//			return true;
-//		}
-//
-//		if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
-//			return true;
-//		}
-		
-//		for test.
-//		String resourceName = theRequestDetails.getResourceName();
-//		String resourceOperationType = theRequestDetails.getResourceOperationType().name();
-//		System.out.println ("resource:"+resourceName+", resourceOperationType:"+resourceOperationType);
-		
+		if (localByPass.equalsIgnoreCase("True")) {
+			if (theRequest.getRemoteAddr().equalsIgnoreCase("127.0.0.1")
+					|| theRequest.getRemoteAddr().equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
+				return true;
+			}
+
+			if (theRequest.getLocalAddr().equalsIgnoreCase(theRequest.getRemoteAddr())) {
+				return true;
+			}
+		}
+
+		// for test.
+		// String resourceName = theRequestDetails.getResourceName();
+		// String resourceOperationType =
+		// theRequestDetails.getResourceOperationType().name();
+		// System.out.println ("resource:"+resourceName+",
+		// resourceOperationType:"+resourceOperationType);
+
 		// checking Auth
-		System.out.println("IntrospectURL:"+getIntrospectUrl()+" clientID:"+getClientId()+" clientSecret:"+getClientSecret());
-		Authorization myAuth = new Authorization (getIntrospectUrl(), getClientId(), getClientSecret());
+		System.out.println("IntrospectURL:" + getIntrospectUrl() + " clientID:" + getClientId() + " clientSecret:"
+				+ getClientSecret());
+		Authorization myAuth = new Authorization(getIntrospectUrl(), getClientId(), getClientSecret());
 
 		String err_msg = myAuth.introspectToken(theRequest);
 		if (err_msg.isEmpty() == false) {
@@ -124,33 +128,41 @@ public class OIDCInterceptor extends InterceptorAdapter {
 		if (myAuth.checkBearer() == false) {
 			throw new AuthenticationException("Not Token Bearer");
 		}
-		
+
 		// Check scope.
-		return myAuth.allowRequest(theRequestDetails);		
+		return myAuth.allowRequest(theRequestDetails);
 	}
-	
+
 	public String getIntrospectUrl() {
 		return introspectUrl;
 	}
-	
+
 	public void setIntrospectUrl(String introspectURL) {
 		this.introspectUrl = introspectURL;
 	}
-	
+
 	public String getClientId() {
 		return clientId;
 	}
-	
+
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
 	}
-	
+
 	public String getClientSecret() {
 		return clientSecret;
 	}
-	
+
 	public void setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
+	}
+
+	public String getLocalByPass() {
+		return localByPass;
+	}
+
+	public void setLocalByPass(String localByPass) {
+		this.localByPass = localByPass;
 	}
 
 }
