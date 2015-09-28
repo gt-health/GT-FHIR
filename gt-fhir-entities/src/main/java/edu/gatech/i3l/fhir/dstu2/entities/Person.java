@@ -252,7 +252,8 @@ public class Person extends BaseResourceEntity{
 		patient.setId(this.getIdDt());
 		
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(this.yearOfBirth, this.monthOfBirth, this.dayOfBirth);
+		// In calendar, month starts from 0.
+		calendar.set(this.yearOfBirth, this.monthOfBirth-1, this.dayOfBirth);
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
 		if(this.location != null){
