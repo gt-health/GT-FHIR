@@ -256,7 +256,7 @@ public class Person extends BaseResourceEntity{
 		if (this.yearOfBirth != null) yob = this.yearOfBirth; else yob = 1;
 		if (this.monthOfBirth != null) mob = this.monthOfBirth; else mob = 1;
 		if (this.dayOfBirth != null) dob = this.dayOfBirth; else dob = 1;
-		calendar.set(yob, mob, dob);
+		calendar.set(yob, mob-1, dob);
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
 		if(this.location != null){

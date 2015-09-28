@@ -62,8 +62,9 @@ public class Vocabulary {
 		String uri = "";
 		
 		if (id == 1) uri = "http://snomed.info/sct";
-		else if (id == 2 || id == 3) uri = "http://hl7.org/fhir/sid/icd-9";
+		else if (id == 2 || id == 3) uri = "http://hl7.org/fhir/sid/icd-9-cm";
 		else if (id == 4) uri = "http://www.ama-assn.org/go/cpt";
+		else if (id == 5) uri = "http://purl.bioontology.org/ontology/HCPCS";
 		else if (id == 6) uri = "http://loinc.org";
 		else if (id == 8) uri = "http://www.nlm.nih.gov/research/umls/rxnorm";
 		else if (id == 11) uri = "http://unitsofmeasure.org";
@@ -76,12 +77,15 @@ public class Vocabulary {
 		if (uri.equalsIgnoreCase("http://snomed.info/sct")) {
 			this.id = 1l;
 			this.name = "SNOMED-CT";
-		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/icd-9")) {
+		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/icd-9-cm")) {
 			this.id = 2l; // FIXME: there are ICD9 CM and IC9 Procedure.
 			this.name = "ICD-9-CM";
 		} else if (uri.equalsIgnoreCase("http://www.ama-assn.org/go/cpt")) {
 			this.id = 4l;
 			this.name = "CPT4";
+		} else if (uri.equalsIgnoreCase("http://purl.bioontology.org/ontology/HCPCS")) {
+			this.id = 5l;
+			this.name = "HCPCS";
 		} else if (uri.equalsIgnoreCase("http://loinc.org")) {
 			this.id = 6l;
 			this.name = "LOINC";

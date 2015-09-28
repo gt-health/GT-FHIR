@@ -305,9 +305,9 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		String theSystem;
 		String theCode;
 		String theDisplay = "";
-		if (this.sourceValue.startsWith("ICD9CM:") == true) {
-			theSystem = "http://hl7.org/fhir/sid/icd-9";
-			theCode = this.sourceValue.substring(7);
+		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
+			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
+			theCode = this.sourceValue.substring(9);
 		} else {
 			theSystem = conditionConcept.getVocabulary().getSystemUri();
 			theCode = conditionConcept.getConceptCode();
