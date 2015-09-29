@@ -350,6 +350,9 @@ public class Observation extends BaseResourceEntity{
 			this.valueAsString = ((StringDt)value).getValue();
 		}
 		
+		// quick solution.
+		this.sourceValue = "NA";
+		
 		return this;
 	}
 
@@ -398,7 +401,7 @@ public class Observation extends BaseResourceEntity{
 		// We may have related resources within observation. 
 		// If this observation has the relationshipType, it should be specified
 		// in the observation source field with comma separated values
-		if(sourceValue != null){
+		if(this.sourceValue != null){
 			String[] relatedResource = this.sourceValue.split(",");
 			if (relatedResource.length > 1) {
 				ObservationRelationshipTypeEnum obsRelationshipType = null;
