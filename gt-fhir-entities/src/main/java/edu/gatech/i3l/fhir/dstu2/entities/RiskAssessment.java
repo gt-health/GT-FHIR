@@ -23,6 +23,7 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
@@ -34,6 +35,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 
@@ -282,47 +284,55 @@ public class RiskAssessment extends BaseResourceEntity{
 	 */
 	
 		/* Need to fix this */
-		riskAssessment.setCondition(new ResourceReferenceDt(new IdDt(ConditionOccurrence.RESOURCE_TYPE, this.condition.getId())));
-		
-		
-		//Method (algorithm)
-		String theSystem = method.getVocabulary().getSystemUri();
-		String theCode = method.getConceptCode();
-
-		CodeableConceptDt methodCodeConcept = new CodeableConceptDt();
-		if (theSystem != "") {
-			// Create coding here. We have one coding in this condition as OMOP
-			// allows one coding concept per condition.
-			// In the future, if we want to allow multiple coding concepts here,
-			// we need to do it here.
-			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(method.getName());
-			methodCodeConcept.addCoding(coding);
+		if (this.condition != null){
+			riskAssessment.setCondition(new ResourceReferenceDt(new IdDt(ConditionOccurrence.RESOURCE_TYPE, this.condition.getId())));
 		}
+		
+		if (this.method != null){
+		
+			//Method (algorithm)
+			String theSystem = method.getVocabulary().getSystemUri();
+			String theCode = method.getConceptCode();
 
-		// FHIR does not require the coding. If our System URI is not mappable
-		// from
-		// OMOP database, then coding would be empty. Set Text here. Even text
-		// is not
-		// required in FHIR. But, then no reason to have this condition, I
-		// think...
-		String theText = method.getName() + ", " + method.getVocabulary().getName() + ", "
+			CodeableConceptDt methodCodeConcept = new CodeableConceptDt();
+			if (theSystem != "") {
+				// Create coding here. We have one coding in this condition as OMOP
+				// allows one coding concept per condition.
+				// In the future, if we want to allow multiple coding concepts here,
+				// we need to do it here.
+				CodingDt coding = new CodingDt(theSystem, theCode);
+				coding.setDisplay(method.getName());
+				methodCodeConcept.addCoding(coding);
+			}
+
+			// FHIR does not require the coding. If our System URI is not mappable
+			// from
+			// OMOP database, then coding would be empty. Set Text here. Even text
+			// is not
+			// required in FHIR. But, then no reason to have this condition, I
+			// think...
+			String theText = method.getName() + ", " + method.getVocabulary().getName() + ", "
 				+ method.getConceptCode();
 
-		methodCodeConcept.setText(theText);
-		riskAssessment.setMethod(methodCodeConcept);
+			methodCodeConcept.setText(theText);
+			riskAssessment.setMethod(methodCodeConcept);
 		
-		//Score
+		}
+		
+		//Score - required
 		DecimalDt score_dec = new DecimalDt();
 		score_dec.setValue(score);
 		riskAssessment.addPrediction();
 		riskAssessment.getPrediction().get(0).setProbability(score_dec);
-		riskAssessment.getPrediction().get(0).setRationale("runtime = "+runtime.toString() + " ," + "feature construction runtime = "+fc_runtime);
-
+		//this will be replaced with actual rationale
+		if (this.runtime != null && this.fc_runtime != null){
+			riskAssessment.getPrediction().get(0).setRationale("runtime = "+runtime.toString() + " ," + "feature construction runtime = "+fc_runtime);
+		}
 		
 		//Outcome
-		theSystem = outcome.getVocabulary().getSystemUri();
-		theCode = outcome.getConceptCode();
+	
+		String theSystem = outcome.getVocabulary().getSystemUri();
+		String theCode = outcome.getConceptCode();
 
 		CodeableConceptDt outcomeCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
@@ -341,22 +351,22 @@ public class RiskAssessment extends BaseResourceEntity{
 		// is not
 		// required in FHIR. But, then no reason to have this condition, I
 		// think...
-		theText = outcome.getName() + ", " + outcome.getVocabulary().getName() + ", "
+		String theText = outcome.getName() + ", " + outcome.getVocabulary().getName() + ", "
 				+ outcome.getConceptCode();
 
 		outcomeCodeConcept.setText(theText);
 		riskAssessment.getPrediction().get(0).setOutcome(outcomeCodeConcept);
 		
-		//Date
-		//DateTimeDt periodStart = new DateTimeDt(this.date);
-		//riskAssessment.setDate(periodStart);
 
-		PeriodDt assessmentPeriod = new PeriodDt();
-		assessmentPeriod.setStartWithSecondsPrecision(date);
-		assessmentPeriod.setEndWithSecondsPrecision(date);
+
+		if (this.date != null){
+			PeriodDt assessmentPeriod = new PeriodDt();
 		
-		riskAssessment.getPrediction().get(0).setWhen(assessmentPeriod);
-
+			assessmentPeriod.setStartWithSecondsPrecision(date);
+			assessmentPeriod.setEndWithSecondsPrecision(date);
+		
+			riskAssessment.getPrediction().get(0).setWhen(assessmentPeriod);
+		}
 		
 		return riskAssessment;
 	}
@@ -388,41 +398,54 @@ public class RiskAssessment extends BaseResourceEntity{
 						//
 					} 
 				}
-				//this.outcome = riskAssessment.getPrediction().get(0).getOutcome().getText();
-				CodeableConceptDt outcomeCodeConcept = riskAssessment.getPrediction().get(0).getOutcome();
-						
+										
+				
 				Long outcomeAsConceptId = ocm.get(riskAssessment.getPrediction().get(0).getOutcome().getCodingFirstRep().getCode());
 				System.out.println(outcomeAsConceptId);
 				
 				this.outcome = new Concept();
 				this.outcome.setId(outcomeAsConceptId);
-			
+				
 				riskAssessment.addPrediction();
 				
 				DecimalDt dec = new DecimalDt();
 				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
-				//System.out.println(dec.getValue());
+				System.out.println(dec.getValue());
 				this.score = dec.getValue();
 				
-				//TODO- add in check for method
-				CodeableConceptDt methodCodeConcept = riskAssessment.getMethod();
-				Long methodAsConceptId = ocm.get(riskAssessment.getMethod().getCodingFirstRep().getCode());
-				System.out.println(methodAsConceptId);
+				//this.outcome = riskAssessment.getPrediction().get(0).getOutcome().getText();
 				
-				this.method = new Concept();
-				this.method.setId(methodAsConceptId);
+		
+				if (!riskAssessment.getMethod().isEmpty()){
+					
+					Long methodAsConceptId = ocm.get(riskAssessment.getMethod().getCodingFirstRep().getCode());
+					System.out.println(methodAsConceptId);
+	
+					this.method = new Concept();
+					this.method.setId(methodAsConceptId);
+				}
 				
 				
+					
+					//ResourceReferenceDt conditionCodeConcept = riskAssessment.getCondition();
+					//Long conditionAsConceptId = ocm.get(conditionCodeConcept.getId());
+					
+				Long conditionReference = riskAssessment.getCondition().getReference().getIdPartAsLong();
+		
+				System.out.println("condition reference:");
+				System.out.println(conditionReference);
+					
+				if (conditionReference != null){
+					this.condition = new Concept();
+					this.condition.setId(conditionReference);
+					
+				}
+
+				if (riskAssessment.getPrediction().get(0).getWhen()!= null){
+					PeriodDt periodDt = (PeriodDt) riskAssessment.getPrediction().get(0).getWhen();
+					this.date = periodDt.getStart();		
+				}
 				
-				/*
-				this.condition = null;
-				this.date = null;
-				this.runtime = null;
-				this.fc_runtime = null;
-				this.method = null;
-				this.datasource = null;
-				this.group_id = null;
-				*/
 
 			}
 			//if false- we need to run analytics model to get results
