@@ -10,8 +10,8 @@ function Encounter(){
 "              \"reference\":\"Patient/<id>\"\n"+
 "         },\n"+
 "         \"period\":{\n"+
-"             \"start\":\"yyyy-MM-dd hh:mm:ss\",\n"+
-"             \"end\":\"yyyy-MM-dd hh:mm:ss\"\n"+
+"             \"start\":\"yyyy-MM-ddThh:mm:ss\",\n"+
+"             \"end\":\"yyyy-MM-ddThh:mm:ss\"\n"+
 "        },\n"+
 "         \"location\":[\n"+
 "             {\n"+
