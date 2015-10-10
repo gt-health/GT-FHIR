@@ -350,6 +350,9 @@ public class Observation extends BaseResourceEntity{
 			this.valueAsString = ((StringDt)value).getValue();
 		}
 		
+		// quick solution.
+		this.sourceValue = "NA";
+		
 		return this;
 	}
 
@@ -397,37 +400,40 @@ public class Observation extends BaseResourceEntity{
 		
 		// We may have related resources within observation. 
 		// If this observation has the relationshipType, it should be specified
-		// in the observation source field with comma separated values.
-		String[] relatedResource = this.sourceValue.split(",");
-		if (relatedResource.length > 1) {
-			ObservationRelationshipTypeEnum obsRelationshipType = null;
-			if (relatedResource[0].equalsIgnoreCase("COMP")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.HAS_COMPONENT;
-			} else if (relatedResource[0].equalsIgnoreCase("MBR")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.HAS_MEMBER;				
-			} else if (relatedResource[0].equalsIgnoreCase("DRIV")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.DERIVED_FROM;				
-			} else if (relatedResource[0].equalsIgnoreCase("SEQL")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;				
-			} else if (relatedResource[0].equalsIgnoreCase("RPLC")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;				
-			} else if (relatedResource[0].equalsIgnoreCase("QUALF")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;				
-			} else if (relatedResource[0].equalsIgnoreCase("INTF")) {
-				obsRelationshipType = ObservationRelationshipTypeEnum.INTERFERED_BY;				
-			} 
-			
-			if (obsRelationshipType != null) {
-				List<Related>relateds = new ArrayList<Related>();
-				for (int i=1; i<relatedResource.length; i++) {
-					Related related = new Related();
-					related.setType(obsRelationshipType);
-					ResourceReferenceDt referencedResDt = new ResourceReferenceDt("Observation/"+relatedResource[i]);
-					related.setTarget(referencedResDt);
-					relateds.add(related);
+		// in the observation source field with comma separated values
+		if(this.sourceValue != null){
+			String[] relatedResource = this.sourceValue.split(",");
+			if (relatedResource.length > 1) {
+				ObservationRelationshipTypeEnum obsRelationshipType = null;
+				if (relatedResource[0].equalsIgnoreCase("COMP")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.HAS_COMPONENT;
+				} else if (relatedResource[0].equalsIgnoreCase("MBR")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.HAS_MEMBER;				
+				} else if (relatedResource[0].equalsIgnoreCase("DRIV")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.DERIVED_FROM;				
+				} else if (relatedResource[0].equalsIgnoreCase("SEQL")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;				
+				} else if (relatedResource[0].equalsIgnoreCase("RPLC")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;				
+				} else if (relatedResource[0].equalsIgnoreCase("QUALF")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;				
+				} else if (relatedResource[0].equalsIgnoreCase("INTF")) {
+					obsRelationshipType = ObservationRelationshipTypeEnum.INTERFERED_BY;				
+				} 
+				
+				if (obsRelationshipType != null) {
+					List<Related>relateds = new ArrayList<Related>();
+					for (int i=1; i<relatedResource.length; i++) {
+						Related related = new Related();
+						related.setType(obsRelationshipType);
+						ResourceReferenceDt referencedResDt = new ResourceReferenceDt("Observation/"+relatedResource[i]);
+						related.setTarget(referencedResDt);
+						relateds.add(related);
+					}
+					observation.setRelated(relateds);
 				}
-				observation.setRelated(relateds);
 			}
+			
 		}
 		
 		if(//this.date != null && 
