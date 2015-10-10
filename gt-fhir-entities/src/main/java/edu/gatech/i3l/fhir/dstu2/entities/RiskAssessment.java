@@ -79,11 +79,11 @@ public class RiskAssessment extends BaseResourceEntity{
 	@NotNull
 	private Concept outcome;
 	
-	@Column(name="datasource")
-	private String datasource;
+	@Column(name="prediction_info")
+	private String prediction_info;
 	
-	@Column(name="group_id")
-	private String group_id;
+	@Column(name="rationale")
+	private String rationale;
 	
 	/*@Column(name="risk_assessment_date", nullable=false)
 	@Temporal(TemporalType.DATE)
@@ -101,7 +101,7 @@ public class RiskAssessment extends BaseResourceEntity{
 	
 	public RiskAssessment(Long id, Person person, Date date, Concept condition,
 			BigDecimal score, BigDecimal runtime, BigDecimal fc_runtime,
-			Concept method, Concept outcome, String datasource, String group_id){
+			Concept method, Concept outcome, String prediction_info, String rationale){
 		super();
 		this.id = id;
 		this.person = person;
@@ -113,8 +113,8 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.fc_runtime = fc_runtime;
 		this.method = method;
 		this.outcome = outcome;
-		this.datasource = datasource;
-		this.group_id = group_id;
+		this.prediction_info = prediction_info;
+		this.rationale = rationale;
 		
 	}
 	
@@ -200,20 +200,20 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.outcome = outcome;
 	}
 	
-	public String getDatasource(){
-		return datasource;
+	public String getPredictionInfo(){
+		return prediction_info;
 	}
 	
-	public void setDatasource(String datasource){
-		this.datasource = datasource;
+	public void setPredictionInfo(String prediction_info){
+		this.prediction_info = prediction_info;
 	}
 	
-	public String getGroupId(){
-		return group_id;
+	public String getRationale(){
+		return rationale;
 	}
 	
-	public void setGroupId(String group_id){
-		this.group_id = group_id;
+	public void setRationale(String rationale){
+		this.rationale = rationale;
 	}
 
 	@Override
