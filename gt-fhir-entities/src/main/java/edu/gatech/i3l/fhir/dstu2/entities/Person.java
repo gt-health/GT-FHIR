@@ -252,7 +252,8 @@ public class Person extends BaseResourceEntity{
 		patient.setId(this.getIdDt());
 		
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(this.yearOfBirth, this.monthOfBirth, this.dayOfBirth);
+		// In calendar, month starts from 0.
+		calendar.set(this.yearOfBirth, this.monthOfBirth-1, this.dayOfBirth);
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
 		if(this.location != null){
@@ -309,7 +310,7 @@ public class Person extends BaseResourceEntity{
 			Calendar c = Calendar.getInstance();
 			c.setTime(patient.getBirthDate());
 			this.yearOfBirth = c.get(Calendar.YEAR);
-			this.monthOfBirth = c.get(Calendar.MONTH);
+			this.monthOfBirth = c.get(Calendar.MONTH)+1;
 			this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
