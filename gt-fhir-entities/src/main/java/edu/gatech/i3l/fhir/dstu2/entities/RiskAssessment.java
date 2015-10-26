@@ -6,6 +6,9 @@ import static ca.uhn.fhir.model.dstu2.resource.RiskAssessment.SP_METHOD;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -21,6 +24,16 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
@@ -380,24 +393,29 @@ public class RiskAssessment extends BaseResourceEntity{
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 		
 		//Must have a subject
-		if(riskAssessment.getSubject() != null){
+		if(!riskAssessment.getSubject().isEmpty()){
 			//if true - we just need to put into database
-			if(riskAssessment.getPrediction() != null ){
-				
+			System.out.println("subject present");
+			
+			IdDt reference = riskAssessment.getSubject().getReference();
+			if(reference.getIdPartAsLong() != null){
+				if("Patient".equals(reference.getResourceType())){
+					if(this.person ==null)
+						this.person = new Person();
+					this.person.setId(reference.getIdPartAsLong());
+				} else if("Group".equals(reference.getResourceType())){
+					//
+				} 
+				//System.out.println(riskAssessment.getSubject().getReference().getIdPart());
+			}
+			
+			if(!riskAssessment.getPrediction().isEmpty() ){
+				System.out.println("prediction present");
 				//this.date = riskAssessment.getDateElement().getValue(); //getDate()?		
 				// Set subject: currently supporting only type Person 
 				// (Risk Assessment only supports Patient and Group for now)
 				// TODO create entity-complement to specify other types of subjects 
-				IdDt reference = riskAssessment.getSubject().getReference();
-				if(reference.getIdPartAsLong() != null){
-					if("Patient".equals(reference.getResourceType())){
-						if(this.person ==null)
-							this.person = new Person();
-						this.person.setId(reference.getIdPartAsLong());
-					} else if("Group".equals(reference.getResourceType())){
-						//
-					} 
-				}
+		
 										
 				
 				Long outcomeAsConceptId = ocm.get(riskAssessment.getPrediction().get(0).getOutcome().getCodingFirstRep().getCode());
@@ -451,6 +469,101 @@ public class RiskAssessment extends BaseResourceEntity{
 			//if false- we need to run analytics model to get results
 			else{
 				System.out.println("Print model");
+				
+				/*SessionFactory sessionFactory;
+			    ServiceRegistry serviceRegistry;
+			    
+			    Configuration configuration = new Configuration().configure();
+
+	            serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+	            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+			    sessionFactory = new Configuration().configure().buildSessionFactory(serviceRegistry);
+				
+				Session session = sessionFactory.openSession();
+				
+				String condition_query = "select * from condition_occurrence c where c.person_id = " + riskAssessment.getSubject().getReference().getIdPart();
+				System.out.println(condition_query);
+				Query query = session.createSQLQuery(condition_query);
+				List results = query.list();
+				System.out.println(results);
+				*/
+				//Session session = factory.openSession();
+				ConditionOccurrence cond_occur = new ConditionOccurrence();
+				
+				Map obj=new LinkedHashMap(); //main
+				
+				int patientId = 0000; //replace with id
+				obj.put("id",patientId);
+				
+				//Setup the attributes
+				JSONArray attributeList = new JSONArray();
+				Map attributeObj=new LinkedHashMap(); 
+				Map attributeObj2 = new LinkedHashMap();
+				
+				attributeObj.put("name", "DOB");
+				attributeObj.put("value", "<enter DOB>"); //insert value here
+				attributeObj.put("schema", "date_attr");
+				attributeList.add(attributeObj);
+				//attributeObj.clear();
+				attributeObj2.put("name", "gender");
+				attributeObj2.put("value", "<insert gender>"); //insert value here
+				attributeObj2.put("schema", "cat_attr");
+				attributeList.add(attributeObj2);
+				
+				obj.put("attributes", attributeList);
+				
+				//Setup the events
+				Map eventsObj=new LinkedHashMap();
+				
+				
+				//Diagnostic Information
+				Map diagnosticObj = new LinkedHashMap();;
+				JSONArray diagnosticList = new JSONArray();
+				for (int i = 0; i < 5; i++){
+					Map tempDiagnosticObj=new LinkedHashMap(); 
+					tempDiagnosticObj.put("eventName", "icd-9-cm:"+i); // replace with icd codes
+					tempDiagnosticObj.put("timestamp", "<insert date>");
+					diagnosticList.add(tempDiagnosticObj);
+				}
+				diagnosticObj.put("items", diagnosticList);
+				diagnosticObj.put("schema", "bin_event");
+				eventsObj.put("diagnostic", diagnosticObj);
+				
+				//Procedure Information
+				Map procedureObj = new LinkedHashMap();;
+				JSONArray procedureList = new JSONArray();
+				for (int j = 0; j < 5; j++){
+					Map tempProcedureObj=new LinkedHashMap(); 
+					tempProcedureObj.put("eventName", "cpt:"+j); // replace with icd codes
+					tempProcedureObj.put("timestamp", "<insert date>");
+					procedureList.add(tempProcedureObj);
+				}
+				procedureObj.put("items", procedureList);
+				procedureObj.put("schema","bin_event");
+				eventsObj.put("procedure", procedureObj);
+				
+				
+				//Procedure Information
+				Map medicationObj = new LinkedHashMap();
+				JSONArray medicationList = new JSONArray();
+				for (int k = 0; k < 5; k++){
+					Map tempMedicationObj=new LinkedHashMap(); 
+					tempMedicationObj.put("eventName", k); // replace with icd codes
+					tempMedicationObj.put("timestamp", "<insert date>");
+					tempMedicationObj.put("stopTime", "<insert date>");
+					tempMedicationObj.put("value", "<insert value>");
+					medicationList.add(tempMedicationObj);
+				}
+				medicationObj.put("items", medicationList);
+				medicationObj.put("schema","num_event");
+				eventsObj.put("medication", medicationObj);
+				
+				
+				
+				
+				obj.put("events", eventsObj);
+				String jsonText=JSONValue.toJSONString(obj);
+				System.out.println(jsonText);
 			}
 	
 		}
