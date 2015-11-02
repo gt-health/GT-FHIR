@@ -4,8 +4,15 @@ import static ca.uhn.fhir.model.dstu2.resource.RiskAssessment.SP_PATIENT;
 import static ca.uhn.fhir.model.dstu2.resource.RiskAssessment.SP_SUBJECT;
 import static ca.uhn.fhir.model.dstu2.resource.RiskAssessment.SP_METHOD;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +41,10 @@ import org.hibernate.service.ServiceRegistryBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
@@ -384,6 +395,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		return riskAssessment;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		
@@ -470,29 +482,18 @@ public class RiskAssessment extends BaseResourceEntity{
 			else{
 				System.out.println("Print model");
 				
-				/*SessionFactory sessionFactory;
-			    ServiceRegistry serviceRegistry;
-			    
-			    Configuration configuration = new Configuration().configure();
+				/*RestTemplate restTemplate = new RestTemplate();
+				ResponseEntity<String> response = restTemplate.getForEntity(
+				        "http://localhost:8080/gt-fhir-webapp/base/Condition?patient="+this.person.getId(),
+				        String.class);
 
-	            serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
-	            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-			    sessionFactory = new Configuration().configure().buildSessionFactory(serviceRegistry);
+				System.out.println(response);
 				
-				Session session = sessionFactory.openSession();
-				
-				String condition_query = "select * from condition_occurrence c where c.person_id = " + riskAssessment.getSubject().getReference().getIdPart();
-				System.out.println(condition_query);
-				Query query = session.createSQLQuery(condition_query);
-				List results = query.list();
-				System.out.println(results);
 				*/
-				//Session session = factory.openSession();
-				ConditionOccurrence cond_occur = new ConditionOccurrence();
 				
 				Map obj=new LinkedHashMap(); //main
 				
-				int patientId = 0000; //replace with id
+				Long patientId = this.person.getId(); //replace with id
 				obj.put("id",patientId);
 				
 				//Setup the attributes
@@ -515,16 +516,65 @@ public class RiskAssessment extends BaseResourceEntity{
 				//Setup the events
 				Map eventsObj=new LinkedHashMap();
 				
-				
 				//Diagnostic Information
 				Map diagnosticObj = new LinkedHashMap();;
 				JSONArray diagnosticList = new JSONArray();
-				for (int i = 0; i < 5; i++){
-					Map tempDiagnosticObj=new LinkedHashMap(); 
-					tempDiagnosticObj.put("eventName", "icd-9-cm:"+i); // replace with icd codes
-					tempDiagnosticObj.put("timestamp", "<insert date>");
-					diagnosticList.add(tempDiagnosticObj);
+				
+				URL url;
+				StringBuilder sb = new StringBuilder();
+				try {
+					url = new URL("http://localhost:8080/gt-fhir-webapp/base/Condition?patient="+this.person.getId());
+					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+					conn.setRequestMethod("GET");
+					conn.setRequestProperty("Accept", "application/json");
+
+					if (conn.getResponseCode() != 200) {
+						throw new RuntimeException("Failed : HTTP error code : "
+								+ conn.getResponseCode());
+					}
+
+					BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+					
+
+					String output;
+					while ((output = br.readLine()) != null) {
+						sb.append(output);
+						//System.out.println(output);
+					}
+
+					conn.disconnect();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
+				
+				String conditionResponse = sb.toString();
+				System.out.println(conditionResponse);
+				
+				
+				JSONParser parser = new JSONParser();
+				try {
+					Object con_Obj = parser.parse(conditionResponse.toString());
+					JSONObject conditionArray = (JSONObject)con_Obj;
+					
+					//JSONObject entry = (JSONObject) conditionArray.get("entry");
+					JSONArray entry = (JSONArray) conditionArray.get("entry");
+					
+					for (Object elem : entry) {
+						JSONObject resources = (JSONObject) ((JSONObject) elem).get("resource");
+						Map tempDiagnosticObj=new LinkedHashMap();
+						tempDiagnosticObj.put("eventName", "icd-9-cm:"+ getICDCode(((JSONObject) resources).get("id").toString())); // replace with icd codes
+						tempDiagnosticObj.put("timestamp",  ((JSONObject) resources).get("onsetDateTime").toString().substring(0,19));
+						diagnosticList.add(tempDiagnosticObj);
+					    //System.out.println("id =  " + ((JSONObject) resources).get("id"));
+					    //System.out.println("date =  " + ((JSONObject) resources).get("onsetDateTime"));
+					}
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+		
 				diagnosticObj.put("items", diagnosticList);
 				diagnosticObj.put("schema", "bin_event");
 				eventsObj.put("diagnostic", diagnosticObj);
@@ -575,5 +625,97 @@ public class RiskAssessment extends BaseResourceEntity{
 		//System.out.println(this.person.getIdDt().getValue());
 		return this;
 	}
+	
+	String getICDCode(String conditionId){
+		
+		switch(conditionId){
+			case "3297": return "78039";
+			case "3298": return "34590";
+			case "3299": return "34889";
+			case "3300": return "43490";
+			case "3301": return "34541";
+			case "3302": return "34590";
+			case "3303": return "78039";
+			case "3304": return "34591";
+			case "3305": return "462";
+			case "3306": return "78039";
+			case "3307": return "34590";
+			case "3308": return "70909";
+			case "3309": return "2250";
+			case "3310": return "V7284";
+			case "3311": return "34510";
+			case "3312": return "34541";
+			case "3313": return "34501";
+			case "3314": return "2375";
+			case "3315": return "2375";
+			case "3316": return "34889";
+			case "3317": return "2375";
+			case "3318": return "78039";
+			case "3319": return "34590";
+			case "3320": return "2250";
+			case "3321": return "2375";
+			case "3322": return "7881";
+			case "3323": return "61610";
+			case "3324": return "61611";
+			case "3325": return "5990";
+			case "3326": return "34590";
+			case "3327": return "78039";
+			case "3328": return "61610";
+			case "3329": return "V700";
+			case "3330": return "V7231";
+			case "3331": return "34541";
+			case "3332": return "30000";
+			case "3333": return "311";
+			case "3334": return "34510";
+			case "3335": return "34590";
+			case "3336": return "34889";
+			case "3337": return "2250";
+			case "3338": return "3544";
+			case "3339": return "7231";
+			case "3340": return "78079";
+			case "3341": return "3544";
+			case "3342": return "7820";
+			case "3343": return "34590";
+			case "3344": return "78841";
+			case "3345": return "5990";
+			case "3346": return "34540";
+			case "3347": return "34540";
+			case "3348": return "34889";
+			case "3349": return "2250";
+			case "3350": return "61610";
+			case "3351": return "V700";
+			case "3352": return "V7231";
+			case "3353": return "692.9";
+			case "3354": return "34540";
+			case "3355": return "29680";
+			case "3356": return "34690";
+			case "3357": return "3009";
+			case "3358": return "9778";
+			case "3359": return "4011";
+			case "3360": return "34590";
+			case "3361": return "V6284";
+			case "3362": return "311";
+			case "3363": return "78039";
+			case "3364": return "29680";
+			case "3365": return "34690";
+			case "3366": return "34590";
+			case "3367": return "34540";
+			case "3368": return "V7231";
+			case "3369": return "61610";
+			case "3370": return "V700";
+			case "3371": return "V700";
+			case "3372": return "7930";
+			case "3373": return "2375";
+			case "3374": return "2859";
+			case "3375": return "6270";
+			default: return null;
+	
+			
+		}
+		
+		//return null;
+	}
+	
+	
 	
 }
