@@ -5,8 +5,10 @@ import static ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.SP_MEDICAT
 import static ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.SP_PATIENT;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,9 +24,12 @@ import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription;
 import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.Dispense;
 import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction;
@@ -65,6 +70,9 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	@NotNull
 	private Date startDate;
 	
+	@Column(name="drug_exposure_end_date", nullable=true)
+	private Date endDate;
+
 	/**
 	 * @fhir prescriber
 	 */
@@ -167,6 +175,14 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		this.startDate = startDate;
 	}
 
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
 	public Provider getPrescribingProvider() {
 		return prescribingProvider;
 	}
@@ -244,10 +260,35 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
 		/*  Begin Setting Dispense */
-		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
-		resource.setMedication(medicationRef);
+//		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
+		
+		// Adding medication to Contained.
+		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+		medCoding.setDisplay(this.getMedication().getName());
+		
+		List<CodingDt> codingList = new ArrayList<CodingDt>();
+		codingList.add(medCoding);
+		CodeableConceptDt codeDt = new CodeableConceptDt();
+		codeDt.setCoding(codingList);
+
+        Medication medResource = new Medication();
+        // No ID set
+        medResource.setCode(codeDt);
+
+        // Medication reference. This should point to the contained resource.
+        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
+        medRefDt.setDisplay(this.getMedication().getName());
+        // Resource reference set, but no ID
+        medRefDt.setResource(medResource);
+        
+        resource.setMedication(medRefDt);
+        // End of contained medication.
+		
+//		resource.setMedication(medicationRef);
 		Dispense dispense = new Dispense();
-		dispense.setMedication(medicationRef);
+//		dispense.setMedication(medicationRef);
+		dispense.setMedication(medRefDt);
+		
 		if(this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
 		if(this.quantity != null)
@@ -257,6 +298,10 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		c.setTime(this.startDate);
 		PeriodDt period = new PeriodDt();
 		period.setStart(new DateTimeDt(c.getTime()));
+		if (this.endDate != null) {
+			c.setTime(this.endDate);
+			period.setEnd(new DateTimeDt(c.getTime()));
+		}
 		if(this.daysSupply != null){
 			c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
 			period.setEnd(new DateTimeDt(c.getTime()));
@@ -265,7 +310,9 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		
 		resource.setDispense(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		if (this.visitOccurrence != null) {
+			resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		}
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if(this.relevantCondition != null)
 			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
@@ -276,7 +323,10 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		DosageInstruction dosage = new DosageInstruction();
 		QuantityDt dose = new QuantityDt();
 		dose.setValue(this.quantity);
-		dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+		
+		if (this.getComplement() != null) {
+			dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+		}
 		dosage.setDose(dose);
 		resource.addDosageInstruction(dosage);
 		

@@ -301,8 +301,18 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// System.out.println("VocabularyID:"+myVoc.getId());
 		// System.out.println("VocabularyName:"+myVoc.getName());
 
-		String theSystem = conditionConcept.getVocabulary().getSystemUri();
-		String theCode = conditionConcept.getConceptCode();
+		// First check if ICD codes are available.
+		String theSystem;
+		String theCode;
+		String theDisplay = "";
+		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
+			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
+			theCode = this.sourceValue.substring(9);
+		} else {
+			theSystem = conditionConcept.getVocabulary().getSystemUri();
+			theCode = conditionConcept.getConceptCode();
+			theDisplay = conditionConcept.getName();
+		}
 
 		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
@@ -311,7 +321,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// In the future, if we want to allow multiple coding concepts here,
 			// we need to do it here.
 			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(conditionConcept.getName());
+			coding.setDisplay(theDisplay);
 			conditionCodeConcept.addCoding(coding);
 		}
 

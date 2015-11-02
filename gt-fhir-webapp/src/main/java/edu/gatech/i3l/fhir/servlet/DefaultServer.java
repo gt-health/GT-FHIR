@@ -19,7 +19,7 @@ import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
-import edu.gatech.i3l.hl7.fhir.security.SMARTonFHIRConformanceStatement;
+import edu.gatech.i3l.fhir.security.SMARTonFHIRConformanceStatement;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 public class DefaultServer extends RestfulServer {
@@ -34,25 +34,28 @@ public class DefaultServer extends RestfulServer {
 		super.initialize();
 
 		/*
-		 * This is gonna load the concepts values present in an Omop based database
+		 * This is gonna load the concepts values present in an Omop based
+		 * database
 		 */
 		new Thread(OmopConceptMapping.getInstance()).run();
-		
+
 		setFhirContext(new FhirContext(FhirVersionEnum.DSTU2));
 
-		// Get the spring context from the web container (it's declared in web.xml)
+		// Get the spring context from the web container (it's declared in
+		// web.xml)
 		myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
 
-		/* 
-		 * The hapi-fhir-server-resourceproviders-dev.xml file is a spring configuration
-		 * file which is automatically generated as a part of hapi-fhir-jpaserver-base and
-		 * contains bean definitions for a resource provider for each resource type
+		/*
+		 * The hapi-fhir-server-resourceproviders-dev.xml file is a spring
+		 * configuration file which is automatically generated as a part of
+		 * hapi-fhir-jpaserver-base and contains bean definitions for a resource
+		 * provider for each resource type
 		 */
 		String resourceProviderBeanName = "myResourceProvidersDstu2";
 		List<IResourceProvider> beans = myAppCtx.getBean(resourceProviderBeanName, List.class);
 		setResourceProviders(beans);
-		
-		/* 
+
+		/*
 		 * The system provider implements non-resource-type methods, such as
 		 * transaction, and global history.
 		 */
@@ -61,16 +64,18 @@ public class DefaultServer extends RestfulServer {
 		setPlainProviders(systemProvider);
 
 		/*
-		 * The conformance provider exports the supported resources, search parameters, etc for
-		 * this server. The JPA version adds resource counts to the exported statement, so it
-		 * is a nice addition.
+		 * The conformance provider exports the supported resources, search
+		 * parameters, etc for this server. The JPA version adds resource counts
+		 * to the exported statement, so it is a nice addition.
 		 */
-			IFhirSystemDao<Bundle> systemDao = myAppCtx.getBean("mySystemDaoDstu2", IFhirSystemDao.class);
-//			JpaConformanceProviderDstu2 confProvider = new JpaConformanceProviderDstu2(this, systemDao);
-			SMARTonFHIRConformanceStatement confProvider = new SMARTonFHIRConformanceStatement(this, systemDao);
-			confProvider.setImplementationDescription("FHIR JPA Server");
-			confProvider.setPublisher("Georgia Tech - I3L");
-			setServerConformanceProvider(confProvider);
+		IFhirSystemDao<Bundle> systemDao = myAppCtx.getBean("mySystemDaoDstu2", IFhirSystemDao.class);
+		// JpaConformanceProviderDstu2 confProvider = new
+		// JpaConformanceProviderDstu2(this, systemDao);
+		SMARTonFHIRConformanceStatement confProvider = new SMARTonFHIRConformanceStatement(this, systemDao);
+		confProvider.setImplementationDescription("FHIR JPA Server");
+		confProvider.setPublisher("Georgia Tech - I3L");
+		confProvider.setAuthServerUrl(getServletConfig().getInitParameter("authServerUrl"));
+		setServerConformanceProvider(confProvider);
 
 		/*
 		 * Enable ETag Support (this is already the default)
@@ -84,16 +89,16 @@ public class DefaultServer extends RestfulServer {
 		ctx.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 
 		/*
-		 * This tells the server to use "browser friendly" MIME types if it 
-		 * detects that the request is coming from a browser, in the hopes that the 
-		 * browser won't just treat the content as a binary payload and try 
-		 * to download it (which is what generally happens if you load a 
-		 * FHIR URL in a browser). 
+		 * This tells the server to use "browser friendly" MIME types if it
+		 * detects that the request is coming from a browser, in the hopes that
+		 * the browser won't just treat the content as a binary payload and try
+		 * to download it (which is what generally happens if you load a FHIR
+		 * URL in a browser).
 		 * 
-		 * This means that the server isn't technically complying with the 
-		 * FHIR specification for direct browser requests, but this mode
-		 * is very helpful for testing and troubleshooting since it means 
-		 * you can look at FHIR URLs directly in a browser.  
+		 * This means that the server isn't technically complying with the FHIR
+		 * specification for direct browser requests, but this mode is very
+		 * helpful for testing and troubleshooting since it means you can look
+		 * at FHIR URLs directly in a browser.
 		 */
 		setUseBrowserFriendlyContentTypes(true);
 
@@ -104,12 +109,18 @@ public class DefaultServer extends RestfulServer {
 		setDefaultResponseEncoding(EncodingEnum.JSON);
 
 		/*
-		 * This is a simple paging strategy that keeps the last 10 searches in memory
+		 * This is a simple paging strategy that keeps the last 10 searches in
+		 * memory
 		 */
-		setPagingProvider(new FifoMemoryPagingProvider(10));
+		FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
+		pp.setDefaultPageSize(200);
+		pp.setMaximumPageSize(400);
+		// setPagingProvider(new FifoMemoryPagingProvider(10));
+		setPagingProvider(pp);
 
 		/*
-		 * Load interceptors for the server from Spring (these are defined in hapi-fhir-server-config.xml
+		 * Load interceptors for the server from Spring (these are defined in
+		 * hapi-fhir-server-config.xml
 		 */
 		List<IServerInterceptor> interceptorBeans = myAppCtx.getBean("myServerInterceptors", List.class);
 		for (IServerInterceptor interceptor : interceptorBeans) {
