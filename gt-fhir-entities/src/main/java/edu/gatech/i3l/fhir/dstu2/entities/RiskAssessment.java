@@ -395,7 +395,6 @@ public class RiskAssessment extends BaseResourceEntity{
 		return riskAssessment;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		
@@ -421,14 +420,7 @@ public class RiskAssessment extends BaseResourceEntity{
 				//System.out.println(riskAssessment.getSubject().getReference().getIdPart());
 			}
 			
-			if(!riskAssessment.getPrediction().isEmpty() ){
-				System.out.println("prediction present");
-				//this.date = riskAssessment.getDateElement().getValue(); //getDate()?		
-				// Set subject: currently supporting only type Person 
-				// (Risk Assessment only supports Patient and Group for now)
-				// TODO create entity-complement to specify other types of subjects 
-		
-										
+			if(!riskAssessment.getPrediction().isEmpty() ){						
 				
 				Long outcomeAsConceptId = ocm.get(riskAssessment.getPrediction().get(0).getOutcome().getCodingFirstRep().getCode());
 				System.out.println(outcomeAsConceptId);
@@ -440,10 +432,7 @@ public class RiskAssessment extends BaseResourceEntity{
 				
 				DecimalDt dec = new DecimalDt();
 				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
-				System.out.println(dec.getValue());
 				this.score = dec.getValue();
-				
-				//this.outcome = riskAssessment.getPrediction().get(0).getOutcome().getText();
 				
 		
 				if (!riskAssessment.getMethod().isEmpty()){
@@ -454,11 +443,6 @@ public class RiskAssessment extends BaseResourceEntity{
 					this.method = new Concept();
 					this.method.setId(methodAsConceptId);
 				}
-				
-				
-					
-					//ResourceReferenceDt conditionCodeConcept = riskAssessment.getCondition();
-					//Long conditionAsConceptId = ocm.get(conditionCodeConcept.getId());
 					
 				Long conditionReference = riskAssessment.getCondition().getReference().getIdPartAsLong();
 		
@@ -480,241 +464,405 @@ public class RiskAssessment extends BaseResourceEntity{
 			}
 			//if false- we need to run analytics model to get results
 			else{
-				System.out.println("Print model");
-				
-				/*RestTemplate restTemplate = new RestTemplate();
-				ResponseEntity<String> response = restTemplate.getForEntity(
-				        "http://localhost:8080/gt-fhir-webapp/base/Condition?patient="+this.person.getId(),
-				        String.class);
-
-				System.out.println(response);
-				
-				*/
-				
-				Map obj=new LinkedHashMap(); //main
-				
-				Long patientId = this.person.getId(); //replace with id
-				obj.put("id",patientId);
-				
-				//Setup the attributes
-				JSONArray attributeList = new JSONArray();
-				Map attributeObj=new LinkedHashMap(); 
-				Map attributeObj2 = new LinkedHashMap();
-				
-				attributeObj.put("name", "DOB");
-				attributeObj.put("value", "<enter DOB>"); //insert value here
-				attributeObj.put("schema", "date_attr");
-				attributeList.add(attributeObj);
-				//attributeObj.clear();
-				attributeObj2.put("name", "gender");
-				attributeObj2.put("value", "<insert gender>"); //insert value here
-				attributeObj2.put("schema", "cat_attr");
-				attributeList.add(attributeObj2);
-				
-				obj.put("attributes", attributeList);
-				
-				//Setup the events
-				Map eventsObj=new LinkedHashMap();
-				
-				//Diagnostic Information
-				Map diagnosticObj = new LinkedHashMap();;
-				JSONArray diagnosticList = new JSONArray();
-				
-				URL url;
-				StringBuilder sb = new StringBuilder();
-				try {
-					url = new URL("http://localhost:8080/gt-fhir-webapp/base/Condition?patient="+this.person.getId());
-					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-					conn.setRequestMethod("GET");
-					conn.setRequestProperty("Accept", "application/json");
-
-					if (conn.getResponseCode() != 200) {
-						throw new RuntimeException("Failed : HTTP error code : "
-								+ conn.getResponseCode());
-					}
-
-					BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-					
-
-					String output;
-					while ((output = br.readLine()) != null) {
-						sb.append(output);
-						//System.out.println(output);
-					}
-
-					conn.disconnect();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				String conditionResponse = sb.toString();
-				System.out.println(conditionResponse);
-				
-				
-				JSONParser parser = new JSONParser();
-				try {
-					Object con_Obj = parser.parse(conditionResponse.toString());
-					JSONObject conditionArray = (JSONObject)con_Obj;
-					
-					//JSONObject entry = (JSONObject) conditionArray.get("entry");
-					JSONArray entry = (JSONArray) conditionArray.get("entry");
-					
-					for (Object elem : entry) {
-						JSONObject resources = (JSONObject) ((JSONObject) elem).get("resource");
-						Map tempDiagnosticObj=new LinkedHashMap();
-						tempDiagnosticObj.put("eventName", "icd-9-cm:"+ getICDCode(((JSONObject) resources).get("id").toString())); // replace with icd codes
-						tempDiagnosticObj.put("timestamp",  ((JSONObject) resources).get("onsetDateTime").toString().substring(0,19));
-						diagnosticList.add(tempDiagnosticObj);
-					    //System.out.println("id =  " + ((JSONObject) resources).get("id"));
-					    //System.out.println("date =  " + ((JSONObject) resources).get("onsetDateTime"));
-					}
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-		
-				diagnosticObj.put("items", diagnosticList);
-				diagnosticObj.put("schema", "bin_event");
-				eventsObj.put("diagnostic", diagnosticObj);
-				
-				//Procedure Information
-				Map procedureObj = new LinkedHashMap();;
-				JSONArray procedureList = new JSONArray();
-				for (int j = 0; j < 5; j++){
-					Map tempProcedureObj=new LinkedHashMap(); 
-					tempProcedureObj.put("eventName", "cpt:"+j); // replace with icd codes
-					tempProcedureObj.put("timestamp", "<insert date>");
-					procedureList.add(tempProcedureObj);
-				}
-				procedureObj.put("items", procedureList);
-				procedureObj.put("schema","bin_event");
-				eventsObj.put("procedure", procedureObj);
-				
-				
-				//Procedure Information
-				Map medicationObj = new LinkedHashMap();
-				JSONArray medicationList = new JSONArray();
-				for (int k = 0; k < 5; k++){
-					Map tempMedicationObj=new LinkedHashMap(); 
-					tempMedicationObj.put("eventName", k); // replace with icd codes
-					tempMedicationObj.put("timestamp", "<insert date>");
-					tempMedicationObj.put("stopTime", "<insert date>");
-					tempMedicationObj.put("value", "<insert value>");
-					medicationList.add(tempMedicationObj);
-				}
-				medicationObj.put("items", medicationList);
-				medicationObj.put("schema","num_event");
-				eventsObj.put("medication", medicationObj);
-				
-				
-				
-				
-				obj.put("events", eventsObj);
-				String jsonText=JSONValue.toJSONString(obj);
-				System.out.println(jsonText);
+				System.out.println("Run model");
+				String jsontext = generatePatientProfile(this.person.getId().toString());
+				System.out.println(jsontext);
 			}
-	
 		}
 		else{
 			//Need to send out an error
 			System.out.println("Must have subject");
 		}
+		
 
 		//System.out.println(this.person.getIdDt().getValue());
 		return this;
 	}
 	
-	String getICDCode(String conditionId){
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	String generatePatientProfile(String patientId){
 		
-		switch(conditionId){
-			case "3297": return "78039";
-			case "3298": return "34590";
-			case "3299": return "34889";
-			case "3300": return "43490";
-			case "3301": return "34541";
-			case "3302": return "34590";
-			case "3303": return "78039";
-			case "3304": return "34591";
-			case "3305": return "462";
-			case "3306": return "78039";
-			case "3307": return "34590";
-			case "3308": return "70909";
-			case "3309": return "2250";
-			case "3310": return "V7284";
-			case "3311": return "34510";
-			case "3312": return "34541";
-			case "3313": return "34501";
-			case "3314": return "2375";
-			case "3315": return "2375";
-			case "3316": return "34889";
-			case "3317": return "2375";
-			case "3318": return "78039";
-			case "3319": return "34590";
-			case "3320": return "2250";
-			case "3321": return "2375";
-			case "3322": return "7881";
-			case "3323": return "61610";
-			case "3324": return "61611";
-			case "3325": return "5990";
-			case "3326": return "34590";
-			case "3327": return "78039";
-			case "3328": return "61610";
-			case "3329": return "V700";
-			case "3330": return "V7231";
-			case "3331": return "34541";
-			case "3332": return "30000";
-			case "3333": return "311";
-			case "3334": return "34510";
-			case "3335": return "34590";
-			case "3336": return "34889";
-			case "3337": return "2250";
-			case "3338": return "3544";
-			case "3339": return "7231";
-			case "3340": return "78079";
-			case "3341": return "3544";
-			case "3342": return "7820";
-			case "3343": return "34590";
-			case "3344": return "78841";
-			case "3345": return "5990";
-			case "3346": return "34540";
-			case "3347": return "34540";
-			case "3348": return "34889";
-			case "3349": return "2250";
-			case "3350": return "61610";
-			case "3351": return "V700";
-			case "3352": return "V7231";
-			case "3353": return "692.9";
-			case "3354": return "34540";
-			case "3355": return "29680";
-			case "3356": return "34690";
-			case "3357": return "3009";
-			case "3358": return "9778";
-			case "3359": return "4011";
-			case "3360": return "34590";
-			case "3361": return "V6284";
-			case "3362": return "311";
-			case "3363": return "78039";
-			case "3364": return "29680";
-			case "3365": return "34690";
-			case "3366": return "34590";
-			case "3367": return "34540";
-			case "3368": return "V7231";
-			case "3369": return "61610";
-			case "3370": return "V700";
-			case "3371": return "V700";
-			case "3372": return "7930";
-			case "3373": return "2375";
-			case "3374": return "2859";
-			case "3375": return "6270";
-			default: return null;
-	
+		Map obj=new LinkedHashMap(); //main
+		
+		//Long patientId = this.person.getId(); 
+		obj.put("id",patientId);
+		
+		//Setup the attributes
+		JSONArray attributeList = new JSONArray();
+		Map attributeObj=new LinkedHashMap(); 
+		Map attributeObj2 = new LinkedHashMap();
+		
+		//Get Patient DOB and Gender
+		URL url;
+		StringBuilder sb = new StringBuilder();
+		try {
+			url = new URL("http://localhost:8080/gt-fhir-webapp/base/Patient?_id="+patientId);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 			
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb.append(output);
+				//System.out.println(output);
+			}
+
+			conn.disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		//return null;
+		String patientResponse = sb.toString();
+		//System.out.println(patientResponse);
+		
+		JSONParser patient_parser = new JSONParser();
+		try {
+			Object patient_Obj = patient_parser.parse(patientResponse.toString());
+			JSONObject patientArray = (JSONObject)patient_Obj;
+
+			JSONObject resouces = (JSONObject) ((JSONObject) ((JSONArray) patientArray.get("entry")).get(0)).get("resource");
+			System.out.println(resouces);
+			
+			attributeObj.put("name", "DOB");
+			String dob = (String) resouces.get("birthDate");
+			attributeObj.put("value", dob+"T00:00:00"); //insert value here
+			attributeObj.put("schema", "date_attr");
+			attributeList.add(attributeObj);
+			
+			
+			attributeObj2.put("name", "gender");	
+			if (((String) resouces.get("gender")).equals("male")){
+				attributeObj2.put("value", "M"); //insert value here
+			}
+			if (((String) resouces.get("gender")).equals("female")){
+				attributeObj2.put("value", "F"); //insert value here
+			}
+
+			attributeObj2.put("schema", "cat_attr");
+			attributeList.add(attributeObj2);
+
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+		
+		obj.put("attributes", attributeList);
+		
+		//Setup the events
+		Map eventsObj=new LinkedHashMap();
+		
+		//Diagnostic Information
+		Map diagnosticObj = new LinkedHashMap();;
+		JSONArray diagnosticList = new JSONArray();
+		
+		
+		StringBuilder sb_condition = new StringBuilder();
+		try {
+			url = new URL("http://localhost:8080/gt-fhir-webapp/base/Condition?patient="+patientId);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb_condition.append(output);
+				//System.out.println(output);
+			}
+
+			conn.disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String conditionResponse = sb_condition.toString();
+		//System.out.println(conditionResponse);
+		
+		
+		JSONParser parser = new JSONParser();
+		try {
+			Object con_Obj = parser.parse(conditionResponse.toString());
+			JSONObject conditionArray = (JSONObject)con_Obj;
+			
+
+			JSONArray entry = (JSONArray) conditionArray.get("entry");
+			
+			for (Object elem : entry) {
+				JSONObject resources = (JSONObject) ((JSONObject) elem).get("resource");
+				Map tempDiagnosticObj=new LinkedHashMap();
+				JSONArray coding = (JSONArray) ((JSONObject) resources.get("code")).get("coding");
+				JSONObject codingItem = (JSONObject) coding.get(0);
+				String system = (String) codingItem.get("system");
+				String code = (String) codingItem.get("code");
+				
+				if (!system.equals("http://hl7.org/fhir/sid/icd-9-cm")){
+					System.out.println("need to convert");
+				}
+				
+				tempDiagnosticObj.put("eventName", "icd-9-cm:"+ code.replace(".","")); 
+				tempDiagnosticObj.put("timestamp",  ((JSONObject) resources).get("onsetDateTime").toString().substring(0,19));
+				diagnosticList.add(tempDiagnosticObj);
+
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		diagnosticObj.put("items", diagnosticList);
+		diagnosticObj.put("schema", "bin_event");
+		eventsObj.put("diagnostic", diagnosticObj);
+		
+		//Procedure Information
+		Map procedureObj = new LinkedHashMap();
+		JSONArray procedureList = new JSONArray();
+		
+		StringBuilder sb_procedure = new StringBuilder();
+		try {
+			url = new URL("http://localhost:8080/gt-fhir-webapp/base/Procedure?patient="+patientId);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb_procedure.append(output);
+				//System.out.println(output);
+			}
+
+			conn.disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String procedureResponse = sb_procedure.toString();
+		//System.out.println(procedureResponse);
+		
+		
+		JSONParser procedure_parser = new JSONParser();
+		try {
+			Object proc_Obj = procedure_parser.parse(procedureResponse.toString());
+			JSONObject procedureArray = (JSONObject)proc_Obj;
+			
+
+			JSONArray entry = (JSONArray) procedureArray.get("entry");
+			
+			for (Object elem : entry) {
+				JSONObject resources = (JSONObject) ((JSONObject) elem).get("resource");
+				Map tempProcedureObj=new LinkedHashMap(); 
+				JSONArray coding = (JSONArray) ((JSONObject) resources.get("type")).get("coding");
+				JSONObject codingItem = (JSONObject) coding.get(0);
+				String system = (String) codingItem.get("system");
+				String code = (String) codingItem.get("code");
+				
+				if (!system.equals("http://www.ama-assn.org/go/cpt")){
+					System.out.println("need to convert");
+				}
+				
+				tempProcedureObj.put("eventName", "cpt:"+ code.replace(".","")); 
+				tempProcedureObj.put("timestamp",  ((JSONObject) resources).get("performedDateTime").toString().substring(0,19));
+				procedureList.add(tempProcedureObj);
+
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+		procedureObj.put("items", procedureList);
+		procedureObj.put("schema","bin_event");
+		eventsObj.put("procedure", procedureObj);
+		
+		
+		//Medication Information
+		Map medicationObj = new LinkedHashMap();
+		JSONArray medicationList = new JSONArray();
+		
+		StringBuilder sb_medication = new StringBuilder();
+		try {
+			url = new URL("http://localhost:8080/gt-fhir-webapp/base/MedicationAdministration?patient="+patientId);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			
+			String output;
+			while ((output = br.readLine()) != null) {
+				sb_medication.append(output);
+				//System.out.println(output);
+			}
+
+			conn.disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String medicationResponse = sb_medication.toString();
+		System.out.println(medicationResponse);
+		
+		
+		JSONParser medication_parser = new JSONParser();
+		try {
+			Object med_Obj = medication_parser.parse(medicationResponse.toString());
+			JSONObject medicationArray = (JSONObject)med_Obj;
+			
+
+			JSONArray entry = (JSONArray) medicationArray.get("entry");
+			
+			for (Object elem : entry) {
+				JSONObject resources = (JSONObject) ((JSONObject) elem).get("resource");
+				Map tempMedicationObj=new LinkedHashMap(); 
+				
+				
+				JSONObject coding = (JSONObject) ((JSONArray) ((JSONObject) ((JSONObject) ((JSONArray) resources.get("contained")).get(0)).get("code")).get("coding")).get(0);
+				
+				String medication = (String) coding.get("code");
+				tempMedicationObj.put("eventName", getMedicationName(medication)); 
+				String timestamp = (String) ((JSONObject) resources.get("effectiveTimePeriod")).get("start");
+				tempMedicationObj.put("timestamp", timestamp.substring(0,19));
+				String stopTime = (String) ((JSONObject) resources.get("effectiveTimePeriod")).get("end");
+				tempMedicationObj.put("stopTime", stopTime.substring(0,19));
+				medicationList.add(tempMedicationObj);
+				Long value = (Long) ((JSONObject) ((JSONObject) resources.get("dosage")).get("quantity")).get("value");
+				tempMedicationObj.put("value", value);
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		medicationObj.put("items", medicationList);
+		medicationObj.put("schema","num_event");
+		eventsObj.put("medication", medicationObj);
+	
+		obj.put("events", eventsObj);
+		String jsonText=JSONValue.toJSONString(obj);
+		//System.out.println(jsonText);
+
+		
+		return jsonText;
 	}
+	
+	String getMedicationName(String medicationCode){
+		if (medicationCode.equals("114477"))
+            return "LEVETIRACETAM";
+        if (medicationCode.equals("373435"))
+            return "PHENYTOIN_SODIUM_EXTENDED";
+        if (medicationCode.equals("608948"))
+            return "PRENATAL_VIT_W/_FERROUS_FUMARATE-FOLIC_ACID";
+        if (medicationCode.equals("26225"))
+            return "ONDANSETRON_HCL"; 
+        if (medicationCode.equals("4493"))
+            return "FLUOXETINE_HCL";
+        if (medicationCode.equals("1087974"))
+            return "FLUOXETINE_HCL";
+        if (medicationCode.equals("596"))
+            return "ALPRAZOLAM";
+        if (medicationCode.equals("155137"))
+            return "SERTRALINE_HCL";
+        if (medicationCode.equals("221078"))
+            return "CITALOPRAM_HYDROBROMIDE";
+        if (medicationCode.equals("15996"))
+            return "MIRTAZAPINE";
+        if (medicationCode.equals("498910"))
+            return "AMPHETAMINE-DEXTROAMPHETAMINE";
+        if (medicationCode.equals("89013"))
+            return "ARIPIPRAZOLE";
+        if (medicationCode.equals("28439"))
+            return "LAMOTRIGINE";
+        if (medicationCode.equals("203204"))
+            return "BUPROPION_HCL";
+        if (medicationCode.equals("284925"))
+            return "ZIPRASIDONE_HCL";
+        if (medicationCode.equals("8183"))
+            return "PHENYTOIN";
+        if (medicationCode.equals("4493"))
+            return "FLUOXETINE_HCL";
+        if (medicationCode.equals("235988"))
+            return "VENLAFAXINE_HCL";
+        if (medicationCode.equals("38404"))
+            return "TOPIRAMATE";
+        if (medicationCode.equals("6218"))
+            return "LACTULOSE";
+        if (medicationCode.equals("61381"))
+            return "OLANZAPINE";
+        if (medicationCode.equals("221183"))
+            return "ZOLPIDEM_TARTRATE";
+        if (medicationCode.equals("6135"))
+            return "KETOCONAZOLE_(TOPICAL)";
+        if (medicationCode.equals("29451"))
+            return "MEGESTROL_ACETATE";
+        if (medicationCode.equals("221147"))
+            return "POLYETHYLENE_GLYCOL_3350";
+        if (medicationCode.equals("885218"))
+            return "BENZTROPINE_MESYLATE";
+        if (medicationCode.equals("1099595"))
+            return "DIVALPROEX_SODIUM";
+        if (medicationCode.equals("35636"))
+            return "RISPERIDONE";
+        if (medicationCode.equals("1202"))
+            return "ATENOLOL";
+        if (medicationCode.equals("353108"))
+            return "ESCITALOPRAM_OXALATE";
+        if (medicationCode.equals("1115"))
+            return "TRIHEXYPHENIDYL_HCL";
+        if (medicationCode.equals("5093"))
+            return "HALOPERIDOL";
+        if (medicationCode.equals("71722"))
+            return "DOCUSATE_SODIUM";
+        if (medicationCode.equals("28889"))
+            return "LORATADINE";
+        if (medicationCode.equals("7646"))
+            return "OMEPRAZOLE";
+        if (medicationCode.equals("82112"))
+            return "TRAZODONE_HCL";
+        if (medicationCode.equals("197773"))
+            return "HYDROCODONE-ACETAMINOPHEN";
+        if (medicationCode.equals("203214"))
+            return "DICLOFENAC_SODIUM";
+        if (medicationCode.equals("203144"))
+            return "PRAVASTATIN_SODIUM";
+        if (medicationCode.equals("636674"))
+            return "VARENICLINE_TARTRATE";
+		
+		return "None";
+	}
+	
+
+	
 	
 	
 	

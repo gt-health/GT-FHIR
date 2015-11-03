@@ -151,7 +151,6 @@
 		<property name="dao" ref="myPatientDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
-<<<<<<< HEAD
 	
 	<bean id="myRiskAssessmentDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.RiskAssessmentFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
@@ -161,7 +160,8 @@
 	</bean>
 	<bean id="myRiskAssessmentRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.RiskAssessmentResourceProvider">
 		<property name="dao" ref="myRiskAssessmentDaoDstu2"/>
-=======
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
 
 	<bean id="myProcedureDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ProcedureFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
@@ -171,8 +171,8 @@
 	</bean>
 	<bean id="myProcedureRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ProcedureResourceProvider">
 		<property name="dao" ref="myProcedureDaoDstu2"/>
->>>>>>> OAuth2
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
+
  
 </beans>
