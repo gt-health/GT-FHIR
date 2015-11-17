@@ -27,44 +27,41 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SecondaryTable;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IDatatype;
+
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
+
 import ca.uhn.fhir.model.primitive.DecimalDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
-import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
+
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 
 @Entity
 @Table(name="risk_assessment")
+@SecondaryTable(name="risk_assessment_prediction",
+pkJoinColumns=@PrimaryKeyJoinColumn(name="risk_assessment_id"))
 public class RiskAssessment extends BaseResourceEntity{
 
 	private static final String RES_TYPE = "RiskAssessment";
@@ -80,52 +77,66 @@ public class RiskAssessment extends BaseResourceEntity{
 	@NotNull
 	private Person person;
 	
-	@Column(name="score")
+	/*@Column(name="score")
 	private BigDecimal score;
+	*/
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id", nullable=false)
 	private Concept condition;
 	
-	@Column(name="runtime")
-	private BigDecimal runtime;
-	
-	@Column(name="fc_runtime")
-	private BigDecimal fc_runtime;
-	
-	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="method")
 	private Concept method;
 	
+	/*
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="outcome")
 	@NotNull
 	private Concept outcome;
+	*/
 	
 	@Column(name="prediction_info")
 	private String prediction_info;
 	
+	/*
 	@Column(name="rationale")
 	private String rationale;
+	*/
 	
-	/*@Column(name="risk_assessment_date", nullable=false)
-	@Temporal(TemporalType.DATE)
-	@NotNull
-	private Date date;*/
 	
 	@Column(name="risk_assessment_date")
 	private Date date;
 	
+	//Secondary table - risk_assessment_prediction
+	
+	@Column(table="risk_assessment_prediction",name="score")
+	private BigDecimal score;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(table="risk_assessment_prediction",name="outcome")
+	@NotNull
+	private Concept outcome;
+	
+	@Column(table="risk_assessment_prediction",name="rationale")
+	private String rationale;
+	
+	@Column(table="risk_assessment_prediction", name="risk_assessment_prediction_date")
+	private Date prediction_date;
+	
+	
+	/*@Column(table="risk_assessment_prediction",name="score")
+	private BigDecimal prediction_score;
+	*/
 	
 	
 	public RiskAssessment() {
 		super();
 	}
 	
-	public RiskAssessment(Long id, Person person, Date date, Concept condition,
-			BigDecimal score, BigDecimal runtime, BigDecimal fc_runtime,
-			Concept method, Concept outcome, String prediction_info, String rationale){
+	public RiskAssessment(Long id, Person person, Concept condition, Concept method,
+			String prediction_info, Date date, BigDecimal score,Concept outcome, 
+			String rationale, Date prediction_date){
 		super();
 		this.id = id;
 		this.person = person;
@@ -133,12 +144,13 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.date = date;
 		//this.time = time;
 		this.score = score;
-		this.runtime = runtime;
-		this.fc_runtime = fc_runtime;
 		this.method = method;
 		this.outcome = outcome;
 		this.prediction_info = prediction_info;
 		this.rationale = rationale;
+		//this.prediction_risk_id = prediction_risk_id;
+		//this.prediction_person = prediction_person;
+		this.prediction_date = prediction_date;
 		
 	}
 	
@@ -151,19 +163,12 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.id = id;
 	}
 	
-	/*public Date getDate(){
-		return date;
-	}
-	
-	public void setDate(Date date){
-		this.date = date;
-	}*/
 	
 	public Date getDateTime(){
 		return date;
 	}
 	
-	public void setDateTime(Date time){
+	public void setDateTime(Date date){
 		this.date = date;
 	}
 	
@@ -179,7 +184,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		return condition;
 	}
 	
-	public void setCondition(){
+	public void setCondition(Concept condition){
 		this.condition = condition;
 	}
 	
@@ -190,22 +195,6 @@ public class RiskAssessment extends BaseResourceEntity{
 	
 	public void setScore(BigDecimal score){
 		this.score = score;
-	}
-	
-	public BigDecimal getRuntime(){
-		return runtime;
-	}
-	
-	public void setRuntime(BigDecimal runtime){
-		this.runtime = runtime;
-	}
-	
-	public BigDecimal getFCRuntime(){
-		return fc_runtime;
-	}
-	
-	public void setFCRuntime(BigDecimal fc_runtime){
-		this.fc_runtime = fc_runtime;
 	}
 	
 	public Concept getMethod(){
@@ -239,6 +228,17 @@ public class RiskAssessment extends BaseResourceEntity{
 	public void setRationale(String rationale){
 		this.rationale = rationale;
 	}
+	
+	public Date getPredictionDateTime(){
+		return prediction_date;
+	}
+	
+	public void setPredictionDateTime(Date prediction_date){
+		this.prediction_date = prediction_date;
+	}
+	
+	
+	
 
 	@Override
 	public FhirVersionEnum getFhirVersion() {
@@ -280,32 +280,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		//Subject/Patient
 		riskAssessment.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		
-		//Condition -- ???I think this needs to be fixed. Showing up as Condition/<concept_id> and not Condition/<condition_occur_id>
-		/*String theSystem = condition.getVocabulary().getSystemUri();
-		String theCode = condition.getConceptCode();
-
-		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
-		if (theSystem != "") {
-			// Create coding here. We have one coding in this condition as OMOP
-			// allows one coding concept per condition.
-			// In the future, if we want to allow multiple coding concepts here,
-			// we need to do it here.
-			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(condition.getName());
-			conditionCodeConcept.addCoding(coding);
-		}
-
-		// FHIR does not require the coding. If our System URI is not mappable
-		// from
-		// OMOP database, then coding would be empty. Set Text here. Even text
-		// is not
-		// required in FHIR. But, then no reason to have this condition, I
-		// think...
-		String theText = condition.getName() + ", " + condition.getVocabulary().getName() + ", "
-				+ condition.getConceptCode();
-
-		conditionCodeConcept.setText(theText);
-	 */
+		
 	
 		/* Need to fix this */
 		if (this.condition != null){
@@ -348,10 +323,6 @@ public class RiskAssessment extends BaseResourceEntity{
 		score_dec.setValue(score);
 		riskAssessment.addPrediction();
 		riskAssessment.getPrediction().get(0).setProbability(score_dec);
-		//this will be replaced with actual rationale
-		if (this.runtime != null && this.fc_runtime != null){
-			riskAssessment.getPrediction().get(0).setRationale("runtime = "+runtime.toString() + " ," + "feature construction runtime = "+fc_runtime);
-		}
 		
 		//Outcome
 	
@@ -411,14 +382,17 @@ public class RiskAssessment extends BaseResourceEntity{
 			IdDt reference = riskAssessment.getSubject().getReference();
 			if(reference.getIdPartAsLong() != null){
 				if("Patient".equals(reference.getResourceType())){
-					if(this.person ==null)
+					if(this.person ==null){
 						this.person = new Person();
+					}
 					this.person.setId(reference.getIdPartAsLong());
 				} else if("Group".equals(reference.getResourceType())){
 					//
 				} 
 				//System.out.println(riskAssessment.getSubject().getReference().getIdPart());
 			}
+			
+			//this.prediction_risk_id= (long) 1; //default value that gets replaced by risk assessment ID
 			
 			if(!riskAssessment.getPrediction().isEmpty() ){						
 				
@@ -434,7 +408,6 @@ public class RiskAssessment extends BaseResourceEntity{
 				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
 				this.score = dec.getValue();
 				
-		
 				if (!riskAssessment.getMethod().isEmpty()){
 					
 					Long methodAsConceptId = ocm.get(riskAssessment.getMethod().getCodingFirstRep().getCode());
@@ -457,7 +430,8 @@ public class RiskAssessment extends BaseResourceEntity{
 
 				if (riskAssessment.getPrediction().get(0).getWhen()!= null){
 					PeriodDt periodDt = (PeriodDt) riskAssessment.getPrediction().get(0).getWhen();
-					this.date = periodDt.getStart();		
+					this.date = periodDt.getStart();
+					this.prediction_date = periodDt.getStart();
 				}
 				
 
