@@ -9,13 +9,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -25,15 +24,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.SecondaryTable;
-import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -48,8 +48,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-
-import ca.uhn.fhir.model.primitive.DecimalDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -60,8 +59,8 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Table(name="risk_assessment")
-@SecondaryTable(name="risk_assessment_prediction",
-pkJoinColumns=@PrimaryKeyJoinColumn(name="risk_assessment_id"))
+@Inheritance(strategy=InheritanceType.JOINED)
+//@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class RiskAssessment extends BaseResourceEntity{
 
 	private static final String RES_TYPE = "RiskAssessment";
@@ -77,10 +76,6 @@ public class RiskAssessment extends BaseResourceEntity{
 	@NotNull
 	private Person person;
 	
-	/*@Column(name="score")
-	private BigDecimal score;
-	*/
-	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id", nullable=false)
 	private Concept condition;
@@ -89,45 +84,19 @@ public class RiskAssessment extends BaseResourceEntity{
 	@JoinColumn(name="method")
 	private Concept method;
 	
-	/*
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="outcome")
-	@NotNull
-	private Concept outcome;
-	*/
 	
 	@Column(name="prediction_info")
 	private String prediction_info;
-	
-	/*
-	@Column(name="rationale")
-	private String rationale;
-	*/
+
 	
 	
 	@Column(name="risk_assessment_date")
 	private Date date;
+
+	@OneToMany(cascade={CascadeType.MERGE})
+	private Set<RiskAssessmentPrediction> predictions = new HashSet<RiskAssessmentPrediction>(
+			0); 
 	
-	//Secondary table - risk_assessment_prediction
-	
-	@Column(table="risk_assessment_prediction",name="score")
-	private BigDecimal score;
-	
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(table="risk_assessment_prediction",name="outcome")
-	@NotNull
-	private Concept outcome;
-	
-	@Column(table="risk_assessment_prediction",name="rationale")
-	private String rationale;
-	
-	@Column(table="risk_assessment_prediction", name="risk_assessment_prediction_date")
-	private Date prediction_date;
-	
-	
-	/*@Column(table="risk_assessment_prediction",name="score")
-	private BigDecimal prediction_score;
-	*/
 	
 	
 	public RiskAssessment() {
@@ -135,22 +104,15 @@ public class RiskAssessment extends BaseResourceEntity{
 	}
 	
 	public RiskAssessment(Long id, Person person, Concept condition, Concept method,
-			String prediction_info, Date date, BigDecimal score,Concept outcome, 
-			String rationale, Date prediction_date){
+			String prediction_info, Date date, Set<RiskAssessmentPrediction> predictions){
 		super();
 		this.id = id;
 		this.person = person;
 		this.condition = condition;
 		this.date = date;
-		//this.time = time;
-		this.score = score;
 		this.method = method;
-		this.outcome = outcome;
 		this.prediction_info = prediction_info;
-		this.rationale = rationale;
-		//this.prediction_risk_id = prediction_risk_id;
-		//this.prediction_person = prediction_person;
-		this.prediction_date = prediction_date;
+		this.predictions = predictions;
 		
 	}
 	
@@ -188,15 +150,6 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.condition = condition;
 	}
 	
-	
-	public BigDecimal getScore(){
-		return score;
-	}
-	
-	public void setScore(BigDecimal score){
-		this.score = score;
-	}
-	
 	public Concept getMethod(){
 		return method;
 	}
@@ -204,15 +157,7 @@ public class RiskAssessment extends BaseResourceEntity{
 	public void setMethod(Concept method){
 		this.method = method;
 	}
-	
-	public Concept getOutcome(){
-		return outcome;
-	}
-	
-	public void setOutcome(Concept outcome){
-		this.outcome = outcome;
-	}
-	
+
 	public String getPredictionInfo(){
 		return prediction_info;
 	}
@@ -220,24 +165,14 @@ public class RiskAssessment extends BaseResourceEntity{
 	public void setPredictionInfo(String prediction_info){
 		this.prediction_info = prediction_info;
 	}
-	
-	public String getRationale(){
-		return rationale;
+
+	public Set<RiskAssessmentPrediction> getPrediction(){
+		return this.predictions;
 	}
 	
-	public void setRationale(String rationale){
-		this.rationale = rationale;
+	public void setPrediction(Set<RiskAssessmentPrediction> predictions){
+		this.predictions = predictions;
 	}
-	
-	public Date getPredictionDateTime(){
-		return prediction_date;
-	}
-	
-	public void setPredictionDateTime(Date prediction_date){
-		this.prediction_date = prediction_date;
-	}
-	
-	
 	
 
 	@Override
@@ -319,7 +254,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		}
 		
 		//Score - required
-		DecimalDt score_dec = new DecimalDt();
+		/*DecimalDt score_dec = new DecimalDt();
 		score_dec.setValue(score);
 		riskAssessment.addPrediction();
 		riskAssessment.getPrediction().get(0).setProbability(score_dec);
@@ -328,7 +263,7 @@ public class RiskAssessment extends BaseResourceEntity{
 	
 		String theSystem = outcome.getVocabulary().getSystemUri();
 		String theCode = outcome.getConceptCode();
-
+		
 		CodeableConceptDt outcomeCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
 			// Create coding here. We have one coding in this condition as OMOP
@@ -339,7 +274,7 @@ public class RiskAssessment extends BaseResourceEntity{
 			coding.setDisplay(outcome.getName());
 			outcomeCodeConcept.addCoding(coding);
 		}
-
+		
 		// FHIR does not require the coding. If our System URI is not mappable
 		// from
 		// OMOP database, then coding would be empty. Set Text here. Even text
@@ -352,16 +287,15 @@ public class RiskAssessment extends BaseResourceEntity{
 		outcomeCodeConcept.setText(theText);
 		riskAssessment.getPrediction().get(0).setOutcome(outcomeCodeConcept);
 		
-
+		 */
 
 		if (this.date != null){
-			PeriodDt assessmentPeriod = new PeriodDt();
-		
-			assessmentPeriod.setStartWithSecondsPrecision(date);
-			assessmentPeriod.setEndWithSecondsPrecision(date);
-		
-			riskAssessment.getPrediction().get(0).setWhen(assessmentPeriod);
+			DateTimeDt assessmentPeriod = new DateTimeDt();
+			assessmentPeriod.setValue(date);
+			riskAssessment.setDate(assessmentPeriod);
+			
 		}
+		
 		
 		return riskAssessment;
 	}
@@ -399,7 +333,7 @@ public class RiskAssessment extends BaseResourceEntity{
 				Long outcomeAsConceptId = ocm.get(riskAssessment.getPrediction().get(0).getOutcome().getCodingFirstRep().getCode());
 				System.out.println(outcomeAsConceptId);
 				
-				this.outcome = new Concept();
+				/*this.outcome = new Concept();
 				this.outcome.setId(outcomeAsConceptId);
 				
 				riskAssessment.addPrediction();
@@ -407,7 +341,7 @@ public class RiskAssessment extends BaseResourceEntity{
 				DecimalDt dec = new DecimalDt();
 				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
 				this.score = dec.getValue();
-				
+				*/
 				if (!riskAssessment.getMethod().isEmpty()){
 					
 					Long methodAsConceptId = ocm.get(riskAssessment.getMethod().getCodingFirstRep().getCode());
@@ -427,13 +361,12 @@ public class RiskAssessment extends BaseResourceEntity{
 					this.condition.setId(conditionReference);
 					
 				}
-
-				if (riskAssessment.getPrediction().get(0).getWhen()!= null){
-					PeriodDt periodDt = (PeriodDt) riskAssessment.getPrediction().get(0).getWhen();
-					this.date = periodDt.getStart();
-					this.prediction_date = periodDt.getStart();
-				}
 				
+				if (riskAssessment.getDate()!= null){
+					this.date = riskAssessment.getDate();
+					//this.prediction_date = periodDt.getStart();
+				}
+		
 
 			}
 			//if false- we need to run analytics model to get results
@@ -441,6 +374,17 @@ public class RiskAssessment extends BaseResourceEntity{
 				System.out.println("Run model");
 				String jsontext = generatePatientProfile(this.person.getId().toString());
 				System.out.println(jsontext);
+				/*
+				BigDecimal scoreVal = new BigDecimal(0.10);
+				for (int i=0; i < 5; i++){
+					RiskAssessmentPrediction riskPrediction = new RiskAssessmentPrediction();
+					
+					riskPrediction.setScore(scoreVal);
+					riskPrediction.setRationale("Model"+i);
+					riskPrediction.setPredictionDateTime(date);
+					
+				}
+				*/
 			}
 		}
 		else{
