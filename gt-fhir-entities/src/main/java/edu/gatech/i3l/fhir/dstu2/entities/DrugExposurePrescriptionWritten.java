@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -253,9 +254,49 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		}
 		return theSearchParam;
 	}
-
+   
+	        
 	@Override
 	public IResource getRelatedResource() {
+		
+		final String Digits = "(\\p{Digit}+)";
+		final String HexDigits = "(\\p{XDigit}+)";
+		// an exponent is 'e' or 'E' followed by an optionally
+		// signed decimal integer.
+		final String Exp = "[eE][+-]?" + Digits;
+		final String fpRegex = ("[\\x00-\\x20]*" + // Optional leading "whitespace"
+				"[+-]?(" + // Optional sign character
+				"NaN|" + // "NaN" string
+				"Infinity|" + // "Infinity" string
+
+		// A decimal floating-point string representing a finite positive
+		// number without a leading sign has at most five basic pieces:
+		// Digits . Digits ExponentPart FloatTypeSuffix
+		//
+		// Since this method allows integer-only strings as input
+		// in addition to strings of floating-point literals, the
+		// two sub-patterns below are simplifications of the grammar
+		// productions from the Java Language Specification, 2nd
+		// edition, section 3.10.2.
+
+		// Digits ._opt Digits_opt ExponentPart_opt FloatTypeSuffix_opt
+		"(((" + Digits + "(\\.)?(" + Digits + "?)(" + Exp + ")?)|" +
+
+		// . Digits ExponentPart_opt FloatTypeSuffix_opt
+				"(\\.(" + Digits + ")(" + Exp + ")?)|" +
+
+		// Hexadecimal strings
+				"((" +
+				// 0[xX] HexDigits ._opt BinaryExponent FloatTypeSuffix_opt
+				"(0[xX]" + HexDigits + "(\\.)?)|" +
+
+		// 0[xX] HexDigits_opt . HexDigits BinaryExponent FloatTypeSuffix_opt
+				"(0[xX]" + HexDigits + "?(\\.)" + HexDigits + ")" +
+
+		")[pP][+-]?" + Digits + "))" + "[fFdD]?))" + "[\\x00-\\x20]*"); // Optional
+																		// trailing
+																		// "whitespace"	     
+		
 		MedicationPrescription resource = new MedicationPrescription();
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
@@ -320,15 +361,18 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		if(this.prescribingProvider != null)
 			resource.setPrescriber(new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
 		
-		DosageInstruction dosage = new DosageInstruction();
-		QuantityDt dose = new QuantityDt();
-		dose.setValue(this.quantity);
-		
-		if (this.getComplement() != null) {
-			dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+		DrugExposurePrescriptionComplement f_drug = this.getComplement();
+		if (f_drug != null) {
+			DosageInstruction dosage = new DosageInstruction();
+			QuantityDt dose = new QuantityDt();
+			if (Pattern.matches(fpRegex, f_drug.getDose())) {
+				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
+				dose.setValue(doseValue);
+				dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+				dosage.setDose(dose);
+				resource.addDosageInstruction(dosage);
+			} 
 		}
-		dosage.setDose(dose);
-		resource.addDosageInstruction(dosage);
 		
 		return resource;
 	}
@@ -359,8 +403,47 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 			this.person = new Person();
 			this.person.setId(patientRef);
 		}
+		// OMOP can handle only one dosage.
+		DrugExposurePrescriptionComplement f_drug = new DrugExposurePrescriptionComplement();
+
+		/* dosageInstruction */
+		List<DosageInstruction> dosageInstructions = mp.getDosageInstruction();
+		if (dosageInstructions.size() > 0) {
+			DosageInstruction dosageInstruction = dosageInstructions.get(0);
+			QuantityDt dosageQuantity = (QuantityDt) dosageInstruction.getDose();
+			BigDecimal qtyValue = dosageQuantity.getValue();
+			String qtyUnit = dosageQuantity.getUnits();
+			f_drug.setDose(qtyValue.toString());
+			f_drug.setUnit(qtyUnit);
+		}
+		
+		/* dispense */
+		Dispense dispense = mp.getDispense();
+		if (dispense != null) {
+			Integer refills = dispense.getNumberOfRepeatsAllowed();
+			if (refills != null) {
+				this.setRefills(refills);;
+			} else {
+				this.setRefills(0);
+			}
+			QuantityDt qty = dispense.getQuantity();
+			if (qty != null) {
+				this.setQuantity(qty.getValue());
+			} else {
+				this.setQuantity(BigDecimal.ZERO);
+			}
+			
+			if (this.startDate == null) {
+				PeriodDt validPeriod = dispense.getValidityPeriod();
+				if (validPeriod != null) {
+					this.startDate = validPeriod.getStart();
+				}
+			}
+		}
+		this.setComplement(f_drug);
+
 		return this;
 	}
 
-
+	
 }
