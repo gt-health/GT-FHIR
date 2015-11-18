@@ -35,7 +35,7 @@ public abstract class DrugExposurePrescription extends BaseResourceEntity {
 	private Long id;
 	
 	@OneToOne(mappedBy="prescription", 
-			cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+			cascade={CascadeType.ALL}, fetch=FetchType.LAZY)
 	private DrugExposurePrescriptionComplement complement;
 
 	@Override
