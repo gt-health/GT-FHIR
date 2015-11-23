@@ -12,6 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -30,6 +32,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
@@ -49,6 +52,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.DecimalDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -93,10 +97,11 @@ public class RiskAssessment extends BaseResourceEntity{
 	@Column(name="risk_assessment_date")
 	private Date date;
 
-	@OneToMany(cascade={CascadeType.MERGE})
+	
+	//@Transient
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "risk_assessment_id", cascade={CascadeType.ALL})
 	private Set<RiskAssessmentPrediction> predictions = new HashSet<RiskAssessmentPrediction>(
 			0); 
-	
 	
 	
 	public RiskAssessment() {
@@ -166,6 +171,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		this.prediction_info = prediction_info;
 	}
 
+	
 	public Set<RiskAssessmentPrediction> getPrediction(){
 		return this.predictions;
 	}
@@ -208,8 +214,12 @@ public class RiskAssessment extends BaseResourceEntity{
 
 	@Override
 	public IResource getRelatedResource() {
+		System.out.println("main getresouce");
+		
+		
 		ca.uhn.fhir.model.dstu2.resource.RiskAssessment riskAssessment = new ca.uhn.fhir.model.dstu2.resource.RiskAssessment();
 		//ID
+		
 		riskAssessment.setId(this.getIdDt());
 		
 		//Subject/Patient
@@ -239,12 +249,7 @@ public class RiskAssessment extends BaseResourceEntity{
 				methodCodeConcept.addCoding(coding);
 			}
 
-			// FHIR does not require the coding. If our System URI is not mappable
-			// from
-			// OMOP database, then coding would be empty. Set Text here. Even text
-			// is not
-			// required in FHIR. But, then no reason to have this condition, I
-			// think...
+
 			String theText = method.getName() + ", " + method.getVocabulary().getName() + ", "
 				+ method.getConceptCode();
 
@@ -253,41 +258,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		
 		}
 		
-		//Score - required
-		/*DecimalDt score_dec = new DecimalDt();
-		score_dec.setValue(score);
-		riskAssessment.addPrediction();
-		riskAssessment.getPrediction().get(0).setProbability(score_dec);
 		
-		//Outcome
-	
-		String theSystem = outcome.getVocabulary().getSystemUri();
-		String theCode = outcome.getConceptCode();
-		
-		CodeableConceptDt outcomeCodeConcept = new CodeableConceptDt();
-		if (theSystem != "") {
-			// Create coding here. We have one coding in this condition as OMOP
-			// allows one coding concept per condition.
-			// In the future, if we want to allow multiple coding concepts here,
-			// we need to do it here.
-			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(outcome.getName());
-			outcomeCodeConcept.addCoding(coding);
-		}
-		
-		// FHIR does not require the coding. If our System URI is not mappable
-		// from
-		// OMOP database, then coding would be empty. Set Text here. Even text
-		// is not
-		// required in FHIR. But, then no reason to have this condition, I
-		// think...
-		String theText = outcome.getName() + ", " + outcome.getVocabulary().getName() + ", "
-				+ outcome.getConceptCode();
-
-		outcomeCodeConcept.setText(theText);
-		riskAssessment.getPrediction().get(0).setOutcome(outcomeCodeConcept);
-		
-		 */
 
 		if (this.date != null){
 			DateTimeDt assessmentPeriod = new DateTimeDt();
@@ -297,8 +268,57 @@ public class RiskAssessment extends BaseResourceEntity{
 		}
 		
 		
+		System.out.println(this.predictions);
+		Iterator<RiskAssessmentPrediction> itr = this.predictions.iterator();
+		RiskAssessmentPrediction tempPrediction;
+		//for (RiskAssessmentPrediction tempPrediction : this.predictions) {
+		for(int i = 0; itr.hasNext(); i++) {
+			tempPrediction =itr.next();
+			
+			//Score - required
+			DecimalDt score_dec = new DecimalDt();
+			score_dec.setValue(tempPrediction.getScore());
+			riskAssessment.addPrediction();
+			riskAssessment.getPrediction().get(i).setProbability(score_dec);
+			
+			//Outcome
+			if (tempPrediction.getOutcome() != null){
+				String theSystem = tempPrediction.getOutcome().getVocabulary().getSystemUri();
+				String theCode = tempPrediction.getOutcome().getConceptCode();
+			
+				CodeableConceptDt outcomeCodeConcept = new CodeableConceptDt();
+				if (theSystem != "") {
+					CodingDt coding = new CodingDt(theSystem, theCode);
+					coding.setDisplay(tempPrediction.getOutcome().getName());
+					outcomeCodeConcept.addCoding(coding);
+				}
+			
+				String theText = tempPrediction.getOutcome().getName() + ", " + tempPrediction.getOutcome().getVocabulary().getName() + ", "
+					+ tempPrediction.getOutcome().getConceptCode();
+
+				outcomeCodeConcept.setText(theText);
+				riskAssessment.getPrediction().get(i).setOutcome(outcomeCodeConcept);
+			}
+			if (tempPrediction.getPredictionDateTime() != null){
+				PeriodDt assessmentPeriod = new PeriodDt();
+			
+				assessmentPeriod.setStartWithSecondsPrecision(tempPrediction.getPredictionDateTime());
+				assessmentPeriod.setEndWithSecondsPrecision(tempPrediction.getPredictionDateTime());
+			
+				riskAssessment.getPrediction().get(i).setWhen(assessmentPeriod);
+			}
+			
+			if(tempPrediction.getRationale() != null){
+				riskAssessment.getPrediction().get(i).setRationale(tempPrediction.getRationale());
+			}
+	        
+	       
+	     }
+		
+		
 		return riskAssessment;
 	}
+	
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
@@ -310,7 +330,6 @@ public class RiskAssessment extends BaseResourceEntity{
 		
 		//Must have a subject
 		if(!riskAssessment.getSubject().isEmpty()){
-			//if true - we just need to put into database
 			System.out.println("subject present");
 			
 			IdDt reference = riskAssessment.getSubject().getReference();
@@ -326,22 +345,12 @@ public class RiskAssessment extends BaseResourceEntity{
 				//System.out.println(riskAssessment.getSubject().getReference().getIdPart());
 			}
 			
-			//this.prediction_risk_id= (long) 1; //default value that gets replaced by risk assessment ID
 			
 			if(!riskAssessment.getPrediction().isEmpty() ){						
-				
+				//if true - we just need to put into database
 				Long outcomeAsConceptId = ocm.get(riskAssessment.getPrediction().get(0).getOutcome().getCodingFirstRep().getCode());
 				System.out.println(outcomeAsConceptId);
-				
-				/*this.outcome = new Concept();
-				this.outcome.setId(outcomeAsConceptId);
-				
-				riskAssessment.addPrediction();
-				
-				DecimalDt dec = new DecimalDt();
-				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
-				this.score = dec.getValue();
-				*/
+		
 				if (!riskAssessment.getMethod().isEmpty()){
 					
 					Long methodAsConceptId = ocm.get(riskAssessment.getMethod().getCodingFirstRep().getCode());
@@ -366,6 +375,30 @@ public class RiskAssessment extends BaseResourceEntity{
 					this.date = riskAssessment.getDate();
 					//this.prediction_date = periodDt.getStart();
 				}
+				
+				
+				
+				RiskAssessmentPrediction newPrediction = new RiskAssessmentPrediction();
+				
+				DecimalDt dec = new DecimalDt();
+				dec = (DecimalDt) riskAssessment.getPrediction().get(0).getProbability();
+				newPrediction.setScore(dec.getValue());
+				
+				Concept tempOutcome = new Concept();
+				tempOutcome.setId(outcomeAsConceptId);
+				newPrediction.setOutcome(tempOutcome);
+				
+				if (riskAssessment.getPrediction().get(0).getWhen()!= null){
+					PeriodDt periodDt = (PeriodDt) riskAssessment.getPrediction().get(0).getWhen();
+					newPrediction.setPredictionDateTime(periodDt.getStart());
+				}
+				
+
+				newPrediction.setRiskAssessmentId(this);
+				
+				this.predictions = new HashSet<RiskAssessmentPrediction>(0);
+				//this.predictions.add(newPrediction);
+				this.predictions.add(newPrediction);
 		
 
 			}
@@ -374,17 +407,22 @@ public class RiskAssessment extends BaseResourceEntity{
 				System.out.println("Run model");
 				String jsontext = generatePatientProfile(this.person.getId().toString());
 				System.out.println(jsontext);
-				/*
-				BigDecimal scoreVal = new BigDecimal(0.10);
+				this.predictions = new HashSet<RiskAssessmentPrediction>(0);
+				BigDecimal scoreVal = new BigDecimal(0.10).setScale(2, BigDecimal.ROUND_UP);
 				for (int i=0; i < 5; i++){
 					RiskAssessmentPrediction riskPrediction = new RiskAssessmentPrediction();
-					
+					System.out.println("inside loop");
 					riskPrediction.setScore(scoreVal);
 					riskPrediction.setRationale("Model"+i);
 					riskPrediction.setPredictionDateTime(date);
+					//riskPrediction.setOutcome(new Concept());
+					riskPrediction.setRiskAssessmentId(this);
+					
+					this.predictions.add(riskPrediction);
+					//System.out.println(this.predictions);
 					
 				}
-				*/
+				
 			}
 		}
 		else{
@@ -393,7 +431,7 @@ public class RiskAssessment extends BaseResourceEntity{
 		}
 		
 
-		//System.out.println(this.person.getIdDt().getValue());
+		
 		return this;
 	}
 	
