@@ -33,7 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import ca.uhn.fhir.rest.method.OtherOperationTypeEnum;
+import ca.uhn.fhir.rest.api.RestOperationTypeEnum;
 import ca.uhn.fhir.rest.method.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
@@ -66,7 +66,7 @@ public class OIDCInterceptor extends InterceptorAdapter {
 			return true;
 		}
 		
-		if (theRequestDetails.getOtherOperationType() == OtherOperationTypeEnum.METADATA) {
+		if (theRequestDetails.getRestOperationType() == RestOperationTypeEnum.METADATA) {
 			System.out.println("This is METADATA request.");
 
 			// Enumeration<String> headerNames = theRequest.getHeaderNames();

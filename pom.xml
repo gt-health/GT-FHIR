@@ -46,7 +46,7 @@
 		is shown, so that we can deploy the site even if the project is on a
 		snapshot version.
 		-->
-		<hapi_stable_version>1.1</hapi_stable_version>
+		<hapi_stable_version>1.2</hapi_stable_version>
 		<hapi_current_version>1.2-SNAPSHOT</hapi_current_version>
 		
 		<skip-hib4>false</skip-hib4>

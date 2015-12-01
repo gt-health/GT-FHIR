@@ -1,15 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-		<groupId>edu.gatech.i3l</groupId> 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>edu.gatech.i3l</groupId>
 		<artifactId>gt-fhir</artifactId>
 		<version>1.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-  <artifactId>gt-fhir-entities</artifactId>
-  <packaging>jar</packaging>
-  
-  <repositories> 
+	<artifactId>gt-fhir-entities</artifactId>
+	<packaging>jar</packaging>
+
+	<repositories>
 		<repository>
 			<id>oss-snapshots</id>
 			<snapshots>
@@ -17,36 +18,22 @@
 			</snapshots>
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
-		<repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>libs-release</name>
-			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-release</url>
-		</repository>
-		<repository>
-			<snapshots />
-			<id>snapshots</id>
-			<name>libs-snapshot</name>
-			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-snapshot</url>
-		</repository>
 	</repositories>
-  
-  <properties>
+
+	<properties>
 		<hibernate_version>4.2.17.Final</hibernate_version>
 	</properties>
-  <dependencies>	
-		<dependency>  
+	<dependencies>
+		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-envers</artifactId>
 			<version>${hibernate_version}</version>
 		</dependency>
 		<dependency>
-			<groupId>edu.gatech.i3l</groupId> 
+			<groupId>edu.gatech.i3l</groupId>
 			<artifactId>gt-fhir-jpabase</artifactId>
 			<version>1.1-SNAPSHOT</version>
 		</dependency>
-  </dependencies>
-  
+	</dependencies>
+
 </project>

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,6 +25,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
@@ -32,11 +34,12 @@ import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.mapping.StaticVariables;
 
 @Entity
 @Audited
 @DiscriminatorValue("DrugAdministration")
-public final class DrugExposureAdministration extends DrugExposurePrescription {
+public final class DrugExposureAdministration extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationAdministration";
 	
@@ -181,13 +184,19 @@ public final class DrugExposureAdministration extends DrugExposurePrescription {
         resource.setMedication(medRefDt);
         // End of contained medication.
 
-		if(this.quantity != null) {
+		DrugExposureComplement f_drug = this.getComplement();
+		if (f_drug != null) {
 			Dosage dosage = new Dosage();
-			QuantityDt qtyDt = new QuantityDt();
-			qtyDt.setValue(this.quantity);
-			dosage.setQuantity(qtyDt);
-			resource.setDosage(dosage);
+			SimpleQuantityDt dose = new SimpleQuantityDt();
+			if (Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
+				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
+				dose.setValue(doseValue);
+				dose.setUnit(this.getComplement().getUnit());
+				dosage.setQuantity(dose);
+				resource.setDosage(dosage);
+			} 
 		}
+
 		
 		Calendar c = Calendar.getInstance();
 		c.setTime(this.startDate);

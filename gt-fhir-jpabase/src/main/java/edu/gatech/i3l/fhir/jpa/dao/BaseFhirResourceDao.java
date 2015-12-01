@@ -56,6 +56,7 @@ import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
 import ca.uhn.fhir.model.base.composite.BaseResourceReferenceDt;
 import ca.uhn.fhir.model.base.resource.BaseOperationOutcome.BaseIssue;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.model.dstu2.resource.OperationOutcome;
 import ca.uhn.fhir.model.dstu2.resource.OperationOutcome.Issue;
@@ -908,7 +909,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				throw new UnprocessableEntityException(message);
 			}
 			
-			bundle.setBase((UriDt)null);
+//			bundle.setBase((UriDt)null);
 		}
 	}
 
@@ -926,12 +927,24 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 			@Override
 			public void unknownAttribute(IParseLocation theLocation, String theAttributeName) {
-				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails("Unknown attribute found: " + theAttributeName);
+				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
+				detailTxt.setText("Unknown attribute found: " + theAttributeName);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
 			}
 
 			@Override
 			public void unknownElement(IParseLocation theLocation, String theElementName) {
-				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails("Unknown element found: " + theElementName);
+				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
+				detailTxt.setText("Unknown element found: " + theElementName);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+			}
+
+			@Override
+			public void unexpectedRepeatingElement(IParseLocation theLocation, String theElementName) {
+				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
+				detailTxt.setText("Multiple repetitions of non-repeatable element found: " + theElementName);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+				
 			}
 
 			//@Override

@@ -13,10 +13,10 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescription</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionDispensed</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionWritten</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class>

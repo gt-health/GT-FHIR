@@ -388,8 +388,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			return "encounter";
 		case Condition.SP_PATIENT:
 			return "person";
-		case Condition.SP_SUBJECT:
-			return "person";
+//		case Condition.SP_SUBJECT:
+//			return "person";
 		default:
 			break;
 		}

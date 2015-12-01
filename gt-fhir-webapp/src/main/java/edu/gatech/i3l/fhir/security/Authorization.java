@@ -31,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import ca.uhn.fhir.model.dstu.valueset.RestfulOperationTypeEnum;
+import ca.uhn.fhir.rest.api.RestOperationTypeEnum;
 import ca.uhn.fhir.rest.method.RequestDetails;
 
 /**
@@ -211,12 +212,12 @@ public class Authorization {
 		// all patients permission.  We need to revisit this.
 		// 
 		String resourceName = theRequestDetails.getResourceName();
-		RestfulOperationTypeEnum resourceOperationType = theRequestDetails.getResourceOperationType();
+		RestOperationTypeEnum resourceOperationType = theRequestDetails.getRestOperationType();
 		for (String scope : scopeSet) {
 			String[] scopeDetail = scope.split("/");
-			if (resourceOperationType ==  RestfulOperationTypeEnum.READ || 
-					resourceOperationType == RestfulOperationTypeEnum.VREAD ||
-					resourceOperationType == RestfulOperationTypeEnum.SEARCH_TYPE) {
+			if (resourceOperationType ==  RestOperationTypeEnum.READ || 
+					resourceOperationType == RestOperationTypeEnum.VREAD ||
+					resourceOperationType == RestOperationTypeEnum.SEARCH_TYPE) {
 				if ((scopeDetail[1].equalsIgnoreCase("*.read") || scopeDetail[1].equalsIgnoreCase("*.*"))) {
 					return true;
 				} else {

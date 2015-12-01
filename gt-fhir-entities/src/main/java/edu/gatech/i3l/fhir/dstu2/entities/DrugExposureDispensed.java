@@ -16,8 +16,10 @@ import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -28,7 +30,7 @@ import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionDispensed")
-public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
+public final class DrugExposureDispensed extends DrugExposure{
 	
 	public static final String RES_TYPE = "MedicationDispense";
 	
@@ -139,44 +141,52 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 		MedicationDispense resource = new MedicationDispense();
 		resource.setId(this.getIdDt());
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
-		resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
+//		resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
+		// we return medication with contained codeableconcept instead of reference.
+		CodeableConceptDt medCondeableConcept = new CodeableConceptDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+		resource.setMedication(medCondeableConcept);
+		
 		resource.setWhenPrepared(new DateTimeDt(this.startDate));
-		if(this.quantity != null){
-			QuantityDt quantity = new QuantityDt();
-			quantity.setValue(this.quantity);
-			quantity.setUnits(this.getComplement().getUnit());
+		if (this.quantity != null){
+			SimpleQuantityDt quantity = new SimpleQuantityDt(this.quantity.doubleValue(), "http://unitsofmeasure.org", this.getComplement().getUnit());
 			resource.setQuantity(quantity);
-		}if(this.daysSupply != null)
-			resource.setDaysSupply(new QuantityDt(this.daysSupply));
+		}
+		if (this.daysSupply != null)
+			resource.setDaysSupply(new SimpleQuantityDt(this.daysSupply));
 		return resource;
 	}
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		MedicationDispense md = (MedicationDispense) resource;
+		MedicationDispense medicationDispense = (MedicationDispense) resource;
 		
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
-		Long destinationRef = md.getDestination().getReference().getIdPartAsLong();
+		Long destinationRef = medicationDispense.getDestination().getReference().getIdPartAsLong();
 		if(destinationRef != null){
 			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_MAIL_ORDER.getConceptId());
 		} else {
 			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_PHARMACY.getConceptId());
 		}
 		/* Set drug concept(medication) */
-		Long medicationRef = md.getMedication().getReference().getIdPartAsLong();
-		if(medicationRef != null){
-			this.medication = new Concept();
-			this.medication.setId(medicationRef);
+		if (medicationDispense.getMedication() instanceof CodeableConceptDt) {
+			// TODO: This is codeable concept. We need to implement this
+		} else if (medicationDispense.getMedication() instanceof ResourceReferenceDt) {
+			ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationDispense.getMedication();
+			Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
+			if(medicationRef != null){
+				this.medication = new Concept();
+				this.medication.setId(medicationRefId);
+			}
 		}
 		/* Set patient */
-		Long patientRef = md.getPatient().getReference().getIdPartAsLong();
+		Long patientRef = medicationDispense.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
 			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		
-		this.startDate = md.getWhenPrepared();
+		this.startDate = medicationDispense.getWhenPrepared();
 		return this;
 	}
 

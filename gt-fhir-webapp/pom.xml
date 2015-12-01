@@ -57,12 +57,22 @@
 			<version>${parent_version}</version>
 		</dependency>
 		
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-schematron-validator</artifactId>
 			<version>2.7.0</version>
 		</dependency>
-
+ -->
+		<dependency>
+    		<groupId>com.phloc</groupId>
+    		<artifactId>phloc-schematron</artifactId>
+    		<version>2.7.1</version>
+		</dependency>
+		<dependency>
+    		<groupId>com.phloc</groupId>
+    		<artifactId>phloc-commons</artifactId>
+ 			<version>4.3.6</version>
+		</dependency>
 		<!-- If you are using HAPI narrative generation, you will need to include 
 			Thymeleaf as well. Otherwise the following can be omitted. -->
 		<dependency>

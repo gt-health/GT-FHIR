@@ -215,7 +215,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		
 		// Set patient 
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(this.person.getResourceType(), this.person.getId()));
-		procedure.setPatient(patientReference);
+		procedure.setSubject(patientReference);
 		
 		//TODO: revisit this. For now just set to in-progress
 		procedure.setStatus(ProcedureStatusEnum.IN_PROGRESS);
@@ -245,15 +245,16 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 
 		procedureCodeConcept.setText(theText);
 
-		// TODO: 		procedure.setCode(procedureCodeConcept);
+		procedure.setCode(procedureCodeConcept);
 
-		procedure.setType(procedureCodeConcept);
+		//procedure.setType(procedureCodeConcept);
 		
 		DateTimeDt DateDt = new DateTimeDt(date);
 		procedure.setPerformed(DateDt);
 		
-		//TODO: where is code??? For now, I put it in the Note. This is CPT code. 
-		procedure.setNotes(this.getProcedureConcept().getConceptCode());
+		//TODO: where is code??? For now, I put it in the Note. This is CPT code.
+		// Now code is available. SO, we don't need this. 
+		//procedure.setNotes(this.getProcedureConcept().getConceptCode());
 		
 		return procedure;
 	}
