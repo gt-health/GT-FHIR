@@ -69,7 +69,7 @@ public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2
 		RestSecurity restSec = new RestSecurity();
 
 		// Set security.service
-		restSec.setService(RestfulSecurityServiceEnum.OAUTH);
+		restSec.setService(RestfulSecurityServiceEnum.SMART_ON_FHIR);
 
 		// We need to add SMART on FHIR required conformance statement.
 		ExtensionDt authorizeExtension = new ExtensionDt(false, authorizeURI, new UriDt(authorizeURIvalue));

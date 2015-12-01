@@ -40,7 +40,7 @@
 		<!-- <ref bean="myLocationRpDstu2"/> -->
 		<ref bean="myMedicationRpDstu2"/>
 		<ref bean="myMedicationDispenseRpDstu2"/>
-		<ref bean="myMedicationPrescriptionRpDstu2"/>
+		<ref bean="myMedicationOrderRpDstu2"/>
 		<ref bean="myMedicationAdministrationRpDstu2"/>
 		<ref bean="myObservationRpDstu2"/>
 		<!-- <ref bean="myOrganizationRpDstu2"/>-->
@@ -107,14 +107,14 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	
-	<bean id="myMedicationPrescriptionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationPrescriptionFhirResourceDao">
+	<bean id="myMedicationOrderDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationOrderFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationPrescription"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationOrder"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myMedicationPrescriptionRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationPrescriptionResourceProvider">
-		<property name="dao" ref="myMedicationPrescriptionDaoDstu2"/>
+	<bean id="myMedicationOrderRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationOrderResourceProvider">
+		<property name="dao" ref="myMedicationOrderDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 
