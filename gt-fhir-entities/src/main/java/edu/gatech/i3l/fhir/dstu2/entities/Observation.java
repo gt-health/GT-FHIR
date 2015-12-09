@@ -10,13 +10,16 @@ import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,7 +29,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
+
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
@@ -44,6 +56,7 @@ import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
+import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
@@ -55,7 +68,7 @@ public class Observation extends BaseResourceEntity {
 
 	private static final String RES_TYPE = "Observation";
 	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
-
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "observation_id")
@@ -436,6 +449,52 @@ public class Observation extends BaseResourceEntity {
 					for (int i = 1; i < relatedComponentResource.length; i++) {
 						String id = relatedComponentResource[i];
 						// TODO: we need to add components here.
+						
+						WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+						EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+
+						CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+						CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
+						Root<Observation> from = criteria.from(Observation.class);
+						criteria.select(from).where(builder.equal(from.get("id"), id));
+						TypedQuery<Observation> query = entityManager.createQuery(criteria);
+						List<Observation> results = query.getResultList();
+						
+						for (Observation ob : results) {
+							Component comp = new Component();
+							CodeableConceptDt componentCode = new CodeableConceptDt(ob.observationConcept.getVocabulary().getSystemUri(),
+									ob.observationConcept.getConceptCode());
+							componentCode.getCodingFirstRep().setDisplay(ob.observationConcept.getName());
+							comp.setCode(componentCode);
+							
+							IDatatype compValue = null;
+							if (ob.valueAsString != null) {
+								compValue = new StringDt(ob.valueAsString);
+							} else if (ob.valueAsNumber != null) {
+								QuantityDt quantity = new QuantityDt(ob.valueAsNumber.doubleValue());
+								// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
+								quantity.setUnit(ob.unit.getConceptCode());
+								quantity.setCode(ob.unit.getConceptCode());
+								quantity.setSystem(ob.unit.getVocabulary().getSystemUri());
+								compValue = quantity;
+								if (ob.rangeLow != null)
+									comp.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(ob.rangeLow.doubleValue()));
+								if (ob.rangeHigh != null)
+									comp.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(ob.rangeHigh.doubleValue()));
+							} else if (ob.valueAsConcept != null) {
+								// vocabulary is a required attribute for concept, then it's expected to not be null
+								CodeableConceptDt valueAsConcept = new CodeableConceptDt(ob.valueAsConcept.getVocabulary().getSystemUri(), 
+										ob.valueAsConcept.getConceptCode());
+								compValue = valueAsConcept;
+							}
+							comp.setValue(compValue);
+
+							components.add(comp);
+						}
+					}
+					
+					if (components.size() > 0) {
+						observation.setComponent(components);
 					}
 				} else {
 					ObservationRelationshipTypeEnum obsRelationshipType = null;

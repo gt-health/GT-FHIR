@@ -331,7 +331,7 @@ public final class DrugExposureOrder extends DrugExposure {
 		if (f_drug != null) {
 			DosageInstruction dosage = new DosageInstruction();
 //			QuantityDt dose = new QuantityDt();
-			if (Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
+			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
 				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
 				SimpleQuantityDt dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", this.getComplement().getUnit());
 				dosage.setDose(dose);

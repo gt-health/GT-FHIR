@@ -188,7 +188,7 @@ public final class DrugExposureAdministration extends DrugExposure {
 		if (f_drug != null) {
 			Dosage dosage = new Dosage();
 			SimpleQuantityDt dose = new SimpleQuantityDt();
-			if (Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
+			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
 				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
 				dose.setValue(doseValue);
 				dose.setUnit(this.getComplement().getUnit());
