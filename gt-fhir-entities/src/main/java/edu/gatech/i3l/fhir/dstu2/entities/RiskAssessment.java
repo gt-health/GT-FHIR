@@ -5,11 +5,13 @@ import static ca.uhn.fhir.model.dstu2.resource.RiskAssessment.SP_SUBJECT;
 import static ca.uhn.fhir.model.dstu2.resource.RiskAssessment.SP_METHOD;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,11 +34,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -61,6 +60,12 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 
+import org.python.util.PythonInterpreter;
+import org.python.core.*; 
+import edu.gatech.i3l.models.SpaceshipAdapter;
+import edu.gatech.i3l.models.SpaceshipAdapterFactory;
+
+
 @Entity
 @Table(name="risk_assessment")
 @Inheritance(strategy=InheritanceType.JOINED)
@@ -68,6 +73,8 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 public class RiskAssessment extends BaseResourceEntity{
 
 	private static final String RES_TYPE = "RiskAssessment";
+	public static final String predictionModelScript = "/Users/ameliahenderson/Documents/GradCourses/MastersProject/export/fhir_pm.py";
+	public static final String predictionModelPath = "/Users/ameliahenderson/Documents/GradCourses/MastersProject/export/model";
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -342,9 +349,19 @@ public class RiskAssessment extends BaseResourceEntity{
 				} else if("Group".equals(reference.getResourceType())){
 					//
 				} 
-				//System.out.println(riskAssessment.getSubject().getReference().getIdPart());
 			}
 			
+			//Get current date and time
+			Date current_date = new Date();
+			
+			/* Temporary setting of method and condition. To be replaced by actual values  */
+			Concept tempMethod = new Concept();
+			tempMethod.setId((long) 44786678);
+			Concept tempCondition = new Concept();
+			tempCondition.setId((long) 380378);
+			this.date = current_date;
+			this.method = tempMethod;
+			this.condition = tempCondition;
 			
 			if(!riskAssessment.getPrediction().isEmpty() ){						
 				//if true - we just need to put into database
@@ -373,7 +390,6 @@ public class RiskAssessment extends BaseResourceEntity{
 				
 				if (riskAssessment.getDate()!= null){
 					this.date = riskAssessment.getDate();
-					//this.prediction_date = periodDt.getStart();
 				}
 				
 				
@@ -407,22 +423,53 @@ public class RiskAssessment extends BaseResourceEntity{
 				System.out.println("Run model");
 				String jsontext = generatePatientProfile(this.person.getId().toString());
 				System.out.println(jsontext);
-				this.predictions = new HashSet<RiskAssessmentPrediction>(0);
-				BigDecimal scoreVal = new BigDecimal(0.10).setScale(2, BigDecimal.ROUND_UP);
-				for (int i=0; i < 5; i++){
-					RiskAssessmentPrediction riskPrediction = new RiskAssessmentPrediction();
-					System.out.println("inside loop");
-					riskPrediction.setScore(scoreVal);
-					riskPrediction.setRationale("Model"+i);
-					riskPrediction.setPredictionDateTime(date);
-					//riskPrediction.setOutcome(new Concept());
-					riskPrediction.setRiskAssessmentId(this);
-					
-					this.predictions.add(riskPrediction);
-					//System.out.println(this.predictions);
-					
-				}
+	
+						
 				
+				this.predictions = new HashSet<RiskAssessmentPrediction>(0);
+				
+				File directory = new File(predictionModelPath);
+		        //get all the models from a directory
+		        File[] fList = directory.listFiles();
+		        for (File file : fList){
+		            if (file.isDirectory()){
+		            	/*
+						PythonInterpreter python = new PythonInterpreter();
+						
+						python.exec("import sys");
+						python.exec("sys.path.append('/Users/ameliahenderson/Documents/GradCourses/MastersProject/export/')");
+						python.execfile("/Users/ameliahenderson/Documents/GradCourses/MastersProject/export/fhir_pm");
+						*/
+		            	RiskAssessmentPrediction riskPrediction = new RiskAssessmentPrediction();
+		            	
+		                try {
+		                	//Currently running a script that returns dummy data. To be replaced with actual model
+		                	ProcessBuilder pb = new ProcessBuilder("python",predictionModelScript,""+"model/" + file.getName() + "/",""+"'"+ jsontext +"'");
+							Process p = pb.start();
+							BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							String s;
+							String ret = in.readLine();
+							System.out.println("value is : "+ret);
+							BigDecimal scoreVal = new BigDecimal(ret).setScale(2, BigDecimal.ROUND_UP);
+							riskPrediction.setScore(scoreVal);
+							riskPrediction.setRationale(file.getName());
+							riskPrediction.setPredictionDateTime(this.date);
+							Concept tempContact = new Concept();
+							tempContact.setId((long) 19045378);
+							riskPrediction.setOutcome(tempContact);
+							riskPrediction.setRiskAssessmentId(this);
+							
+							this.predictions.add(riskPrediction);
+
+
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+		                
+						System.out.println("Script ran for: "+ file.getName());  
+		            }
+		        }
 			}
 		}
 		else{
@@ -607,7 +654,6 @@ public class RiskAssessment extends BaseResourceEntity{
 			String output;
 			while ((output = br.readLine()) != null) {
 				sb_procedure.append(output);
-				//System.out.println(output);
 			}
 
 			conn.disconnect();
@@ -617,8 +663,6 @@ public class RiskAssessment extends BaseResourceEntity{
 		}
 		
 		String procedureResponse = sb_procedure.toString();
-		//System.out.println(procedureResponse);
-		
 		
 		JSONParser procedure_parser = new JSONParser();
 		try {
