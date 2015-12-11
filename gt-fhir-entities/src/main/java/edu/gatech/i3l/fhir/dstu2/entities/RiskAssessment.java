@@ -354,11 +354,15 @@ public class RiskAssessment extends BaseResourceEntity{
 			//Get current date and time
 			Date current_date = new Date();
 			
-			/* Temporary setting of method and condition. To be replaced by actual values  */
+			/* Temporary setting of method and condition. To be replaced by actual values.
+			 * Either the method and condition should be passed in with the request or the model
+			 * should return this information  */
 			Concept tempMethod = new Concept();
 			tempMethod.setId((long) 44786678);
 			Concept tempCondition = new Concept();
 			tempCondition.setId((long) 380378);
+			//Concept tempOutcome = new Concept();
+			//this.outcome = tempOutcome;
 			this.date = current_date;
 			this.method = tempMethod;
 			this.condition = tempCondition;
