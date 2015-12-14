@@ -25,8 +25,9 @@ import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 @Table(name="drug_exposure")
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("CASE WHEN drug_type_concept_id = (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription written') THEN 'PrescriptionWritten' "+
-							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription dispensed in pharmacy' OR concept.concept_name LIKE 'Prescription dispensed through mail order') THEN 'PrescriptionDispensed' END")
-public abstract class DrugExposurePrescription extends BaseResourceEntity {
+							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription dispensed in pharmacy' OR concept.concept_name LIKE 'Prescription dispensed through mail order') THEN 'PrescriptionDispensed' "+
+							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id=36) THEN 'DrugAdministration' END")
+public abstract class DrugExposure extends BaseResourceEntity {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -36,7 +37,7 @@ public abstract class DrugExposurePrescription extends BaseResourceEntity {
 	
 	@OneToOne(mappedBy="prescription", 
 			cascade={CascadeType.ALL}, fetch=FetchType.LAZY)
-	private DrugExposurePrescriptionComplement complement;
+	private DrugExposureComplement complement;
 
 	@Override
 	public Long getId() {
@@ -47,11 +48,11 @@ public abstract class DrugExposurePrescription extends BaseResourceEntity {
 		this.id = id;
 	}
 
-	public DrugExposurePrescriptionComplement getComplement() {
+	public DrugExposureComplement getComplement() {
 		return complement;
 	}
 
-	public void setComplement(DrugExposurePrescriptionComplement complement) {
+	public void setComplement(DrugExposureComplement complement) {
 		this.complement = complement;
 	}
 }

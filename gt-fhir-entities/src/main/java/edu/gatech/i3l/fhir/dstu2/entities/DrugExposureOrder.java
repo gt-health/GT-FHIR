@@ -1,10 +1,11 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import static ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.SP_ENCOUNTER;
-import static ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.SP_MEDICATION;
-import static ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.SP_PATIENT;
+import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_ENCOUNTER;
+import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_MEDICATION;
+import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_PATIENT;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -21,26 +22,33 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.instance.model.CodeableConcept;
+import org.hl7.fhir.instance.model.Reference;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
+import ca.uhn.fhir.model.dstu2.composite.RangeDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription;
-import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.Dispense;
-import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription.DosageInstruction;
+import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
+import ca.uhn.fhir.model.dstu2.resource.Medication;
+import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
+import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DispenseRequest;
+import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
+import edu.gatech.i3l.omop.mapping.StaticVariables;
 
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionWritten")
-public final class DrugExposurePrescriptionWritten extends DrugExposurePrescription {
+public final class DrugExposureOrder extends DrugExposure {
 	
 	public static final String RES_TYPE = "MedicationPrescription";
 	
@@ -67,6 +75,9 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 	@NotNull
 	private Date startDate;
 	
+	@Column(name="drug_exposure_end_date", nullable=true)
+	private Date endDate;
+
 	/**
 	 * @fhir prescriber
 	 */
@@ -169,6 +180,14 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		this.startDate = startDate;
 	}
 
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
 	public Provider getPrescribingProvider() {
 		return prescribingProvider;
 	}
@@ -242,72 +261,65 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
    
 	        
 	@Override
-	public IResource getRelatedResource() {
-		
-		final String Digits = "(\\p{Digit}+)";
-		final String HexDigits = "(\\p{XDigit}+)";
-		// an exponent is 'e' or 'E' followed by an optionally
-		// signed decimal integer.
-		final String Exp = "[eE][+-]?" + Digits;
-		final String fpRegex = ("[\\x00-\\x20]*" + // Optional leading "whitespace"
-				"[+-]?(" + // Optional sign character
-				"NaN|" + // "NaN" string
-				"Infinity|" + // "Infinity" string
-
-		// A decimal floating-point string representing a finite positive
-		// number without a leading sign has at most five basic pieces:
-		// Digits . Digits ExponentPart FloatTypeSuffix
-		//
-		// Since this method allows integer-only strings as input
-		// in addition to strings of floating-point literals, the
-		// two sub-patterns below are simplifications of the grammar
-		// productions from the Java Language Specification, 2nd
-		// edition, section 3.10.2.
-
-		// Digits ._opt Digits_opt ExponentPart_opt FloatTypeSuffix_opt
-		"(((" + Digits + "(\\.)?(" + Digits + "?)(" + Exp + ")?)|" +
-
-		// . Digits ExponentPart_opt FloatTypeSuffix_opt
-				"(\\.(" + Digits + ")(" + Exp + ")?)|" +
-
-		// Hexadecimal strings
-				"((" +
-				// 0[xX] HexDigits ._opt BinaryExponent FloatTypeSuffix_opt
-				"(0[xX]" + HexDigits + "(\\.)?)|" +
-
-		// 0[xX] HexDigits_opt . HexDigits BinaryExponent FloatTypeSuffix_opt
-				"(0[xX]" + HexDigits + "?(\\.)" + HexDigits + ")" +
-
-		")[pP][+-]?" + Digits + "))" + "[fFdD]?))" + "[\\x00-\\x20]*"); // Optional
-																		// trailing
-																		// "whitespace"	     
-		
-		MedicationPrescription resource = new MedicationPrescription();
+	public IResource getRelatedResource() {  
+		MedicationOrder resource = new MedicationOrder();
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
 		/*  Begin Setting Dispense */
-		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
-		resource.setMedication(medicationRef);
-		Dispense dispense = new Dispense();
-		dispense.setMedication(medicationRef);
+//		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
+		
+		// Adding medication to Contained.
+		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+		medCoding.setDisplay(this.getMedication().getName());
+		
+		List<CodingDt> codingList = new ArrayList<CodingDt>();
+		codingList.add(medCoding);
+		CodeableConceptDt codeDt = new CodeableConceptDt();
+		codeDt.setCoding(codingList);
+
+        Medication medResource = new Medication();
+        // No ID set
+        medResource.setCode(codeDt);
+
+        // Medication reference. This should point to the contained resource.
+        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
+        medRefDt.setDisplay(this.getMedication().getName());
+        // Resource reference set, but no ID
+        medRefDt.setResource(medResource);
+        
+        resource.setMedication(medRefDt);
+        // End of contained medication.
+		
+//		resource.setMedication(medicationRef);
+		DispenseRequest dispense = new DispenseRequest();
+//		dispense.setMedication(medicationRef);
+		dispense.setMedication(medRefDt);
+		
 		if(this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
-		if(this.quantity != null)
-			dispense.setQuantity(new QuantityDt(this.quantity.doubleValue()));
+		if(this.quantity != null) {
+			dispense.setQuantity(new SimpleQuantityDt(this.quantity.doubleValue()));
+		}
 		//setting validity
 		Calendar c = Calendar.getInstance();
 		c.setTime(this.startDate);
 		PeriodDt period = new PeriodDt();
 		period.setStart(new DateTimeDt(c.getTime()));
+		if (this.endDate != null) {
+			c.setTime(this.endDate);
+			period.setEnd(new DateTimeDt(c.getTime()));
+		}
 		if(this.daysSupply != null){
 			c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
 			period.setEnd(new DateTimeDt(c.getTime()));
 		}
 		dispense.setValidityPeriod(period);
 		
-		resource.setDispense(dispense);
+		resource.setDispenseRequest(dispense);
 		/* End Setting Dispense */
-		resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		if (this.visitOccurrence != null) {
+			resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+		}
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if(this.relevantCondition != null)
 			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
@@ -315,14 +327,13 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 		if(this.prescribingProvider != null)
 			resource.setPrescriber(new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
 		
-		DrugExposurePrescriptionComplement f_drug = this.getComplement();
+		DrugExposureComplement f_drug = this.getComplement();
 		if (f_drug != null) {
 			DosageInstruction dosage = new DosageInstruction();
-			QuantityDt dose = new QuantityDt();
-			if (Pattern.matches(fpRegex, f_drug.getDose())) {
+//			QuantityDt dose = new QuantityDt();
+			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
 				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
-				dose.setValue(doseValue);
-				dose.setUnits(this.getComplement().getUnit());//TODO in a subsequent version, unit should be  Concept on database
+				SimpleQuantityDt dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", this.getComplement().getUnit());
 				dosage.setDose(dose);
 				resource.addDosageInstruction(dosage);
 			} 
@@ -333,54 +344,64 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		MedicationPrescription mp = (MedicationPrescription) resource;
+		MedicationOrder medicationOrder = (MedicationOrder) resource;
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
 		/* Set start date of prescription */
-		this.startDate = mp.getDateWritten();
+		this.startDate = medicationOrder.getDateWritten();
 		/* Set VisitOccurrence */
-		Long encounterRef = mp.getEncounter().getReference().getIdPartAsLong();
+		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
 		if(encounterRef != null){
 			this.visitOccurrence = new VisitOccurrenceComplement();
 			this.visitOccurrence.setId(encounterRef);
 		}
 		/* Set Medication */
-		Long medicationRef = mp.getMedication().getReference().getIdPartAsLong();
-		if(medicationRef != null){
+		if (medicationOrder.getMedication() instanceof CodeableConcept) {
+			// TODO: this is for contained medication. We need to implement this when
+			// medication order resource contains the medication in the contained. 
+			System.out.println("TODO: We must implement contained medication in MedicationOrder");
+		} if (medicationOrder.getMedication() instanceof Reference) {
+			Reference medicationRef = (Reference) medicationOrder.getMedication();
 			this.medication = new Concept();
-			this.medication.setId(medicationRef); 
+			String medId = medicationRef.getId();
+			if (Pattern.matches(StaticVariables.fpRegex, medId)) {
+				this.medication.setId(Long.valueOf(medId));
+			}
 		}
+		
 		/* Set patient */
-		Long patientRef = mp.getPatient().getReference().getIdPartAsLong();
+		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
 			this.person = new Person();
 			this.person.setId(patientRef);
 		}
 		// OMOP can handle only one dosage.
-		DrugExposurePrescriptionComplement f_drug = new DrugExposurePrescriptionComplement();
+		DrugExposureComplement f_drug = new DrugExposureComplement();
 
 		/* dosageInstruction */
-		List<DosageInstruction> dosageInstructions = mp.getDosageInstruction();
-		if (dosageInstructions.size() > 0) {
-			DosageInstruction dosageInstruction = dosageInstructions.get(0);
-			QuantityDt dosageQuantity = (QuantityDt) dosageInstruction.getDose();
-			BigDecimal qtyValue = dosageQuantity.getValue();
-			String qtyUnit = dosageQuantity.getUnits();
-			f_drug.setDose(qtyValue.toString());
-			f_drug.setUnit(qtyUnit);
+		DosageInstruction dosageInstruction = medicationOrder.getDosageInstructionFirstRep();
+		if (dosageInstruction.getDose() instanceof RangeDt) {
+			// This is doseRange
+		} else if (dosageInstruction.getDose() instanceof SimpleQuantityDt) {
+			SimpleQuantityDt doseQty = (SimpleQuantityDt) dosageInstruction.getDose();
+			f_drug.setDose(doseQty.getValue().toString());
+			f_drug.setUnit(doseQty.getUnit());
 		}
-		
+			
+		this.setComplement(f_drug);
+
 		/* dispense */
-		Dispense dispense = mp.getDispense();
-		if (dispense != null) {
-			Integer refills = dispense.getNumberOfRepeatsAllowed();
+		DispenseRequest dispenseRequest = medicationOrder.getDispenseRequest();
+		if (dispenseRequest != null) {
+			Integer refills = dispenseRequest.getNumberOfRepeatsAllowed();
 			if (refills != null) {
-				this.setRefills(refills);;
+				this.setRefills(refills);
 			} else {
 				this.setRefills(0);
 			}
-			QuantityDt qty = dispense.getQuantity();
+			
+			SimpleQuantityDt qty = dispenseRequest.getQuantity();
 			if (qty != null) {
 				this.setQuantity(qty.getValue());
 			} else {
@@ -388,14 +409,13 @@ public final class DrugExposurePrescriptionWritten extends DrugExposurePrescript
 			}
 			
 			if (this.startDate == null) {
-				PeriodDt validPeriod = dispense.getValidityPeriod();
+				PeriodDt validPeriod = dispenseRequest.getValidityPeriod();
 				if (validPeriod != null) {
 					this.startDate = validPeriod.getStart();
 				}
 			}
 		}
-		this.setComplement(f_drug);
-
+			
 		return this;
 	}
 

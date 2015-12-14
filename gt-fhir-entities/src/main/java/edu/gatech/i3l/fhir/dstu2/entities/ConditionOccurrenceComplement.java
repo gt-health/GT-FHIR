@@ -18,7 +18,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
-import ca.uhn.fhir.model.dstu2.valueset.ConditionClinicalStatusEnum;
+import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -88,20 +88,20 @@ public class ConditionOccurrenceComplement extends ConditionOccurrence {
 		Condition condition = super.getRelatedResource();
 
 		// Set clinicalStatus
-		ConditionClinicalStatusEnum clinicalStatus = ConditionClinicalStatusEnum.UNKNOWN;
+		ConditionVerificationStatusEnum verificationStatus = ConditionVerificationStatusEnum.UNKNOWN;
 		if (statusCode != null) {
 			if (statusCode.equalsIgnoreCase("confirmed"))
-				clinicalStatus = ConditionClinicalStatusEnum.CONFIRMED;
+				verificationStatus = ConditionVerificationStatusEnum.CONFIRMED;
+			else if (statusCode.equalsIgnoreCase("differential"))
+				verificationStatus = ConditionVerificationStatusEnum.DIFFERENTIAL;
 			else if (statusCode.equalsIgnoreCase("entered_in_error"))
-				clinicalStatus = ConditionClinicalStatusEnum.ENTERED_IN_ERROR;
+				verificationStatus = ConditionVerificationStatusEnum.ENTERED_IN_ERROR;
 			else if (statusCode.equalsIgnoreCase("provisional"))
-				clinicalStatus = ConditionClinicalStatusEnum.PROVISIONAL;
+				verificationStatus = ConditionVerificationStatusEnum.PROVISIONAL;
 			else if (statusCode.equalsIgnoreCase("refuted"))
-				clinicalStatus = ConditionClinicalStatusEnum.REFUTED;
-			else if (statusCode.equalsIgnoreCase("working"))
-				clinicalStatus = ConditionClinicalStatusEnum.WORKING;
+				verificationStatus = ConditionVerificationStatusEnum.REFUTED;
 		}
-		condition.setClinicalStatus(clinicalStatus);
+		condition.setVerificationStatus(verificationStatus);
 
 		// Set severity if available
 		if (severityConcept != null) {

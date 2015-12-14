@@ -1,7 +1,6 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_CODE;
-import static ca.uhn.fhir.model.dstu2.resource.Medication.SP_NAME;
 
 import java.util.Date;
 
@@ -170,8 +169,6 @@ public final class MedicationConcept extends BaseResourceEntity{
 	@Override
 	public String translateSearchParam(String theSearchParam) {
 		switch (theSearchParam) {
-		case SP_NAME:
-			return "name";
 		case SP_CODE:
 			return "conceptCode";
 		default:
@@ -184,7 +181,6 @@ public final class MedicationConcept extends BaseResourceEntity{
 	public IResource getRelatedResource() {
 		Medication resource = new Medication();
 		resource.setId(this.getIdDt());
-		resource.setName(this.getName());
 		CodeableConceptDt code = new CodeableConceptDt(this.getVocabulary().getSystemUri(), this.getConceptCode());
 		code.getCodingFirstRep().setDisplay(super.toString());
 		resource.setCode(code); 

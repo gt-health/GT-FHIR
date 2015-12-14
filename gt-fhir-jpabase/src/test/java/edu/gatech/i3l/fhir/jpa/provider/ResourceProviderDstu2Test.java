@@ -79,7 +79,7 @@ import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Questionnaire;
-import ca.uhn.fhir.model.dstu2.resource.QuestionnaireAnswers;
+import ca.uhn.fhir.model.dstu2.resource.QuestionnaireResponse;
 import ca.uhn.fhir.model.dstu2.resource.ValueSet;
 import ca.uhn.fhir.model.dstu2.valueset.AnswerFormatEnum;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
@@ -434,25 +434,25 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 		String methodName = "testCreateQuestionnaireAnswersWithValidation";
 
 		ValueSet options = new ValueSet();
-		options.getDefine().setSystem("urn:system").addConcept().setCode("code0");
+		options.getCodeSystem().setSystem("urn:system").addConcept().setCode("code0");
 		IIdType optId = ourClient.create().resource(options).execute().getId();
 		
 		Questionnaire q = new Questionnaire();
 		q.getGroup().addQuestion().setLinkId("link0").setRequired(false).setType(AnswerFormatEnum.CHOICE).setOptions(new ResourceReferenceDt(optId));
 		IIdType qId = ourClient.create().resource(q).execute().getId();
 
-		QuestionnaireAnswers qa;
+		QuestionnaireResponse qa;
 
 		// Good code
 
-		qa = new QuestionnaireAnswers();
+		qa = new QuestionnaireResponse();
 		qa.getQuestionnaire().setReference(qId.toUnqualifiedVersionless().getValue());
 		qa.getGroup().addQuestion().setLinkId("link0").addAnswer().setValue(new CodingDt().setSystem("urn:system").setCode("code0"));
 		ourClient.create().resource(qa).execute();
 
 		// Bad code
 
-		qa = new QuestionnaireAnswers();
+		qa = new QuestionnaireResponse();
 		qa.getQuestionnaire().setReference(qId.toUnqualifiedVersionless().getValue());
 		qa.getGroup().addQuestion().setLinkId("link0").addAnswer().setValue(new CodingDt().setSystem("urn:system").setCode("code1"));
 		try {
@@ -713,19 +713,19 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 	 * See #147
 	 */
 	@Test
-	public void testEverythingDoesntRepeatPatient() throws Exception {
+	public void testEverythingPatientDoesntRepeatPatient() throws Exception {
 		ca.uhn.fhir.model.dstu2.resource.Bundle b;
 		b = ourCtx.newJsonParser().parseResource(ca.uhn.fhir.model.dstu2.resource.Bundle.class, new InputStreamReader(ResourceProviderDstu2Test.class.getResourceAsStream("/bug147-bundle.json")));
 
 		ca.uhn.fhir.model.dstu2.resource.Bundle resp = ourClient.transaction().withBundle(b).execute();
 		List<IdDt> ids = new ArrayList<IdDt>();
 		for (Entry next : resp.getEntry()) {
-			IdDt toAdd = new IdDt(next.getTransactionResponse().getLocation()).toUnqualifiedVersionless();
+			IdDt toAdd = new IdDt(next.getResponse().getLocation()).toUnqualifiedVersionless();
 			ids.add(toAdd);
 		}
 		ourLog.info("Created: " + ids.toString());
 
-		IdDt patientId = new IdDt(resp.getEntry().get(1).getTransactionResponse().getLocation());
+		IdDt patientId = new IdDt(resp.getEntry().get(0).getResponse().getLocation());
 		assertEquals("Patient", patientId.getResourceType());
 
 		{
@@ -776,17 +776,17 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 		ca.uhn.fhir.model.dstu2.resource.Bundle b = new ca.uhn.fhir.model.dstu2.resource.Bundle();
 		Patient p = new Patient();
 		p.setId("1");
-		b.addEntry().setResource(p).getTransaction().setMethod(HTTPVerbEnum.POST);
+		b.addEntry().setResource(p).getRequest().setMethod(HTTPVerbEnum.POST);
 
 		Condition c = new Condition();
 		c.getPatient().setReference("Patient/1");
-		b.addEntry().setResource(c).getTransaction().setMethod(HTTPVerbEnum.POST);
+		b.addEntry().setResource(c).getRequest().setMethod(HTTPVerbEnum.POST);
 
 		ca.uhn.fhir.model.dstu2.resource.Bundle resp = ourClient.transaction().withBundle(b).execute();
 
 		ourLog.info(ourCtx.newJsonParser().setPrettyPrint(true).encodeResourceToString(resp));
 
-		IdDt patientId = new IdDt(resp.getEntry().get(1).getTransactionResponse().getLocation());
+		IdDt patientId = new IdDt(resp.getEntry().get(0).getResponse().getLocation());
 		assertEquals("Patient", patientId.getResourceType());
 
 		Parameters output = ourClient.operation().onInstance(patientId).named("everything").withNoParameters(Parameters.class).execute();

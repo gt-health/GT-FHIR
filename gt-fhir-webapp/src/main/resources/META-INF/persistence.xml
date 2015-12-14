@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-             version="2.0">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
 
 	<persistence-unit name="GT_FHIR_UT" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		
+
 		<!-- The below classes are in alphabetic order with their simple names -->
 		<class>edu.gatech.i3l.fhir.dstu2.entities.CareSite</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescription</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionDispensed</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionWritten</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposurePrescriptionComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class>
@@ -24,12 +25,17 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
-							
+
+		<!-- The following classes are for SMART on FHIR Launch Context -->
+		<class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContext</class>
+		<class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContextParam</class>
+		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
 			<property name="hibernate.hbm2ddl.auto" value="update" />

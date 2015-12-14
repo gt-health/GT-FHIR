@@ -3,7 +3,9 @@
  */
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -101,7 +103,9 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 		EpisodeOfCare episodeOfCare = getEpisodeOfCare();
 		if (episodeOfCare != null) {
 			ResourceReferenceDt episodeReference = new ResourceReferenceDt(new IdDt(EpisodeOfCare.RES_TYPE, episodeOfCare.getId()));
-			encounter.setEpisodeOfCare(episodeReference);
+			List<ResourceReferenceDt> episodeReferences = new ArrayList<ResourceReferenceDt>();
+			episodeReferences.add(episodeReference);
+			encounter.setEpisodeOfCare(episodeReferences);
 		}
 
 		// set Reason
