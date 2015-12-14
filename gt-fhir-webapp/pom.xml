@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>edu.gatech.i3l</groupId>
 		<artifactId>gt-fhir</artifactId>
-		<version>1.1-SNAPSHOT</version>
+		<version>1.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>gt-fhir-webapp</artifactId>
@@ -18,23 +18,9 @@
 			</snapshots>
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
-		<repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>libs-release</name>
-			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-release</url>
-		</repository>
-		<repository>
-			<snapshots />
-			<id>snapshots</id>
-			<name>libs-snapshot</name>
-			<url>http://leo.i3l.gatech.edu:8081/artifactory/libs-snapshot</url>
-		</repository>
 	</repositories>
 	<properties>
-		<parent_version>1.1-SNAPSHOT</parent_version>
+		<parent_version>1.2-SNAPSHOT</parent_version>
 	</properties>
 	<dependencies>
 		<!-- This dependency is used for the "FHIR Tester" web app overlay -->
@@ -121,7 +107,7 @@
 		<dependency>
 		    <groupId>org.hibernate</groupId>
 		    <artifactId>hibernate-validator</artifactId>
-		    <version>5.1.0.Final</version>
+		    <version>${hibernate_validator_version}</version>
 		</dependency>
 	</dependencies>
 
