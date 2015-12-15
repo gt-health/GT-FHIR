@@ -1,7 +1,11 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,21 +20,28 @@ import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
+import ca.uhn.fhir.model.dstu2.resource.Medication;
+import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
+import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
 import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
-import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
+import edu.gatech.i3l.omop.mapping.StaticVariables;
 
 @Entity
 @Audited
-@DiscriminatorValue("PrescriptionDispensed")
-public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescription{
-	
-	public static final String RES_TYPE = "MedicationDispense";
+@DiscriminatorValue("DrugAdministration")
+public final class DrugExposureAdministration extends DrugExposure {
+
+	public static final String RES_TYPE = "MedicationAdministration";
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="drug_type_concept_id", nullable=false)
@@ -45,6 +56,9 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 	@Column(name="drug_exposure_start_date", nullable=false)
 	@NotNull
 	private Date startDate;
+	
+	@Column(name="drug_exposure_end_date", nullable=false)
+	private Date endDate;
 	
 	@Column(name="quantity")
 	private BigDecimal quantity;
@@ -104,7 +118,15 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
-
+	
+	public Date getEndDate() {
+		return endDate;
+	}
+	
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+	
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
@@ -136,48 +158,64 @@ public final class DrugExposurePrescriptionDispensed extends DrugExposurePrescri
 
 	@Override
 	public IResource getRelatedResource() {
-		MedicationDispense resource = new MedicationDispense();
+		MedicationAdministration resource = new MedicationAdministration();
 		resource.setId(this.getIdDt());
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
-		resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
-		resource.setWhenPrepared(new DateTimeDt(this.startDate));
-		if(this.quantity != null){
-			QuantityDt quantity = new QuantityDt();
-			quantity.setValue(this.quantity);
-			quantity.setUnits(this.getComplement().getUnit());
-			resource.setQuantity(quantity);
-		}if(this.daysSupply != null)
-			resource.setDaysSupply(new QuantityDt(this.daysSupply));
+
+		// Adding medication to Contained.
+		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+		medCoding.setDisplay(this.getMedication().getName());
+		
+		List<CodingDt> codingList = new ArrayList<CodingDt>();
+		codingList.add(medCoding);
+		CodeableConceptDt codeDt = new CodeableConceptDt();
+		codeDt.setCoding(codingList);
+
+        Medication medResource = new Medication();
+        // No ID set
+        medResource.setCode(codeDt);
+
+        // Medication reference. This should point to the contained resource.
+        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
+        medRefDt.setDisplay(this.getMedication().getName());
+        // Resource reference set, but no ID
+        medRefDt.setResource(medResource);
+        
+        resource.setMedication(medRefDt);
+        // End of contained medication.
+
+		DrugExposureComplement f_drug = this.getComplement();
+		if (f_drug != null) {
+			Dosage dosage = new Dosage();
+			SimpleQuantityDt dose = new SimpleQuantityDt();
+			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
+				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
+				dose.setValue(doseValue);
+				dose.setUnit(this.getComplement().getUnit());
+				dosage.setQuantity(dose);
+				resource.setDosage(dosage);
+			} 
+		}
+
+		
+		Calendar c = Calendar.getInstance();
+		c.setTime(this.startDate);
+		PeriodDt period = new PeriodDt();
+		period.setStart(new DateTimeDt(c.getTime()));
+		if (this.endDate != null) {
+			c.setTime(this.endDate);
+			period.setEnd(new DateTimeDt(c.getTime()));
+		}
+
+		resource.setEffectiveTime(period);
+
 		return resource;
 	}
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		MedicationDispense md = (MedicationDispense) resource;
-		
-		/* Set drup exposure type */
-		this.drugExposureType = new Concept();
-		Long destinationRef = md.getDestination().getReference().getIdPartAsLong();
-		if(destinationRef != null){
-			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_MAIL_ORDER.getConceptId());
-		} else {
-			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_PHARMACY.getConceptId());
-		}
-		/* Set drug concept(medication) */
-		Long medicationRef = md.getMedication().getReference().getIdPartAsLong();
-		if(medicationRef != null){
-			this.medication = new Concept();
-			this.medication.setId(medicationRef);
-		}
-		/* Set patient */
-		Long patientRef = md.getPatient().getReference().getIdPartAsLong();
-		if(patientRef != null){
-			this.person = new Person();
-			this.person.setId(patientRef);
-		}
-		
-		this.startDate = md.getWhenPrepared();
-		return this;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -5,7 +5,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
-import ca.uhn.fhir.model.dstu2.resource.MedicationPrescription;
+import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
@@ -18,13 +18,13 @@ import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 // import ca.uhn.fhir.model.dstu2.resource.Bundle;
 // import ca.uhn.fhir.model.api.Bundle;
 
-public class MedicationPrescriptionResourceProvider extends 
-	JpaResourceProviderDstu2<MedicationPrescription>
+public class MedicationOrderResourceProvider extends 
+	JpaResourceProviderDstu2<MedicationOrder>
 	{
 
 	@Override
 	public Class<? extends IResource> getResourceType() {
-		return MedicationPrescription.class;
+		return MedicationOrder.class;
 	}
 
 	@Search()

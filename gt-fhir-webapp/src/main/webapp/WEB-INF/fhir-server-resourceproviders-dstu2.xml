@@ -22,6 +22,15 @@
 	<bean id="mySystemProviderDstu2" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
+	<bean id="mySmartOnFhirLaunchContext" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextDao">
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+	<bean id="mySmartService" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextProvider">
+		<property name="dao" ref="mySmartOnFhirLaunchContext"/>
+	</bean>
+	
+	
 	<bean id="myBeanValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 	<!-- The following beans' definitions are ordered alphabetically -->
 
@@ -31,10 +40,12 @@
 		<!-- <ref bean="myLocationRpDstu2"/> -->
 		<ref bean="myMedicationRpDstu2"/>
 		<ref bean="myMedicationDispenseRpDstu2"/>
-		<ref bean="myMedicationPrescriptionRpDstu2"/>
+		<ref bean="myMedicationOrderRpDstu2"/>
+		<ref bean="myMedicationAdministrationRpDstu2"/>
 		<ref bean="myObservationRpDstu2"/>
 		<!-- <ref bean="myOrganizationRpDstu2"/>-->
 		<ref bean="myPatientRpDstu2"/>
+		<ref bean="myProcedureRpDstu2"/>
 		<!-- <ref bean="myPersonRpDstu2"/>
 		<ref bean="myPractitionerRpDstu2"/>
 		<ref bean="myRelatedPersonRpDstu2"/>-->
@@ -96,14 +107,25 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	
-	<bean id="myMedicationPrescriptionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationPrescriptionFhirResourceDao">
+	<bean id="myMedicationOrderDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationOrderFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationPrescription"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationOrder"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myMedicationPrescriptionRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationPrescriptionResourceProvider">
-		<property name="dao" ref="myMedicationPrescriptionDaoDstu2"/>
+	<bean id="myMedicationOrderRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationOrderResourceProvider">
+		<property name="dao" ref="myMedicationOrderDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myMedicationAdministrationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationAdministrationFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationAdministration"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myMedicationAdministrationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationAdministrationResourceProvider">
+		<property name="dao" ref="myMedicationAdministrationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	
@@ -126,6 +148,17 @@
 	</bean>
 	<bean id="myPatientRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.PatientResourceProvider">
 		<property name="dao" ref="myPatientDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myProcedureDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ProcedureFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Procedure"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myProcedureRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ProcedureResourceProvider">
+		<property name="dao" ref="myProcedureDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
  
