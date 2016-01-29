@@ -1,11 +1,15 @@
 package edu.gatech.i3l.fhir.jpa.providers;
 
+import java.util.Set;
+
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
@@ -93,10 +97,8 @@ public class MedicationAdministrationResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 //
-//			@IncludeParam(allow= {
-//					"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" , 						"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" , 						"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" , 						"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" , 						"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" , 						"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" , 						"MedicationDispense:destination" , 					"MedicationDispense:dispenser" , 					"MedicationDispense:medication" , 					"MedicationDispense:patient" , 					"MedicationDispense:prescription" , 					"MedicationDispense:receiver" , 					"MedicationDispense:responsibleparty" 					, "*"
-//			}) 
-//			Set<Include> theIncludes,
+			@IncludeParam(allow = { "MedicationDispense:medication", "MedicationDispense:patient", "*" }) 
+			Set<Include> theIncludes,
 			
 			@Sort 
 			SortSpec theSort,

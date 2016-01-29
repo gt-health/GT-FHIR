@@ -1,7 +1,10 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
+import java.util.Set;
+
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Device;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
@@ -10,6 +13,7 @@ import ca.uhn.fhir.model.dstu2.resource.Location;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
@@ -147,10 +151,8 @@ public class ObservationResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 //
-//			@IncludeParam(allow= {
-//					"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" , 						"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" , 						"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" , 						"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" , 						"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" , 						"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" , 						"Observation:device" , 					"Observation:encounter" , 					"Observation:patient" , 					"Observation:performer" , 					"Observation:related-target" , 					"Observation:specimen" , 					"Observation:subject" 					, "*"
-//			}) 
-//			Set<Include> theIncludes,
+			@IncludeParam(allow = { "Observation:patient", "Observation:subject", "Observation:encounter" , "*" }) 
+			Set<Include> theIncludes,
 			
 			@Sort 
 			SortSpec theSort,
