@@ -21,10 +21,10 @@
 	and other properties supported by BasicDataSource.
 	-->
 	<bean id="myPersistenceDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-		<property name="url" value="jdbc:mysql://localhost:3306/fhir_omop" />
-		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
-		<property name="username" value="devuser"/>
-		<property name="password" value=""/>
+		<property name="url" value="jdbc:postgresql://localhost:5432/fhir_omop_v5" />
+		<property name="driverClassName" value="org.postgresql.Driver"></property>
+		<property name="username" value="fhiruser"/>
+		<property name="password" value="i3lworks"/>
 	</bean>
 	
 	<!--

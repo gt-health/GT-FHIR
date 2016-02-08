@@ -4,7 +4,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
-import edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder;
+import edu.gatech.i3l.fhir.dstu2.entities.MedicationOrderView;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -14,7 +14,7 @@ public class MedicationOrderFhirResourceDao extends BaseFhirResourceDao<Medicati
 
 	public MedicationOrderFhirResourceDao() {
 		super();
-		setResourceEntity(DrugExposureOrder.class);
+		setResourceEntity(MedicationOrderView.class);
 		setValidateBean(true);
 	}
 
