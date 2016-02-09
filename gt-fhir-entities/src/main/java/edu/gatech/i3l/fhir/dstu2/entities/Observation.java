@@ -411,9 +411,7 @@ public class Observation extends BaseResourceEntity {
 		// observation.setReliability(ObservationReliabilityEnum.OK);
 
 		IDatatype value = null;
-		if (this.valueAsString != null) {
-			value = new StringDt(this.valueAsString);
-		} else if (this.valueAsNumber != null) {
+		if (this.valueAsNumber != null) {
 			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
 			quantity.setUnit(this.unit.getConceptCode());// Unit is defined as a
 															// concept code in
@@ -428,6 +426,8 @@ public class Observation extends BaseResourceEntity {
 				observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
 			if (this.rangeHigh != null)
 				observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
+		} else if (this.valueAsString != null) {
+			value = new StringDt(this.valueAsString);
 		} else if (this.valueAsConcept != null) {
 			// vocabulary is a required attribute for concept, then it's expected to not be null
 			CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
