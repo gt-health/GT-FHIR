@@ -345,7 +345,7 @@ public class Controller {
 		List<List<String>> queryIncludes = new ArrayList<List<String>>();
 
 		switch (theRequest.getFhirVersion(myConfig)) {
-		case DEV:
+//		case DEV:
 		case DSTU2:
 			haveSearchParams = extractSearchParamsDev(conformance, resourceName, includes, revIncludes, sortParams, queries, haveSearchParams, queryIncludes);
 			break;
@@ -1100,8 +1100,8 @@ public class Controller {
 
 	private IResource loadAndAddConf(HttpServletRequest theServletRequest, final HomeRequest theRequest, final ModelMap theModel) {
 		switch (theRequest.getFhirVersion(myConfig)) {
-		case DEV:
-			return loadAndAddConfDstu2(theServletRequest, theRequest, theModel);
+//		case DEV:
+//			return loadAndAddConfDstu2(theServletRequest, theRequest, theModel);
 		case DSTU1:
 			return loadAndAddConfDstu1(theServletRequest, theRequest, theModel);
 		case DSTU2:
@@ -1327,17 +1327,17 @@ public class Controller {
 			/*
 			 * DSTU2 no longer has a title in the bundle format, but it's still useful here..
 			 */
-			if (bundle != null) {
-				INarrativeGenerator gen = getContext(theRequest).getNarrativeGenerator();
-				if (gen != null) {
-					for (BundleEntry next : bundle.getEntries()) {
-						if (next.getTitle().isEmpty() && next.getResource() != null) {
-							String title = gen.generateTitle(next.getResource());
-							next.getTitle().setValue(title);
-						}
-					}
-				}
-			}
+//			if (bundle != null) {
+//				INarrativeGenerator gen = getContext(theRequest).getNarrativeGenerator();
+//				if (gen != null) {
+//					for (BundleEntry next : bundle.getEntries()) {
+//						if (next.getTitle().isEmpty() && next.getResource() != null) {
+//							String title = gen.generateTitle(next.getResource());
+//							next.getTitle().setValue(title);
+//						}
+//					}
+//				}
+//			}
 
 			resultDescription.append(" (").append(resultBody.length() + " bytes)");
 

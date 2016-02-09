@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-base</artifactId>
-			<version>1.3</version>
+			<version>${hapi_stable_version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>

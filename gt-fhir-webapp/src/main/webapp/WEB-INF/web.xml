@@ -20,7 +20,8 @@
 		<servlet-class>edu.gatech.i3l.fhir.servlet.DefaultServer</servlet-class>
 		<init-param>
 			<param-name>authServerUrl</param-name>
-			<param-value>http://localhost:9085/</param-value>
+			<!-- <param-value>http://localhost:9085/</param-value> -->
+			<param-value>http://smart-st.i3l.gatech.edu:9085/</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -33,7 +34,8 @@
 		<servlet-class>edu.gatech.i3l.fhir.smart.servlet.SmartServices</servlet-class>
 		<init-param>
 			<param-name>introspectUrl</param-name>
-			<param-value>http://localhost:9085/introspect</param-value>
+			<!-- <param-value>http://localhost:9085/introspect</param-value> -->
+			<param-value>http://smart-st.i3l.gatech.edu:9085/introspect</param-value>
 		</init-param>
 		<init-param>
 			<param-name>client_id</param-name>
