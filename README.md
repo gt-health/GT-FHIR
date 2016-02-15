@@ -26,10 +26,17 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 ### Build Instructions
 
 $ cd gt-fhir-jpabase
+
 $ mvn install -DskipTests **NB need to update tests**
+
 $ cd ../gt-fhir-entities
+
 $ mvn install
+
 $ cd ../gt-fhir-overlay
+
 $ mvn install
+
 $ cd ../gt-fhir-webapp
+
 $ mvn install
