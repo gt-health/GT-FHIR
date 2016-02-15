@@ -21,3 +21,15 @@ Tables' names and columns' names are specified under javax.persistence annotatio
 ## gt-fhir-overlay
 
 This overlay has a user interface - which follows the design of Hapi Fhir's <a href="https://github.com/jamesagnew/hapi-fhir/tree/master/hapi-fhir-testpage-overlay">Example interface</a>, being our default client for Fhir server.
+
+
+### Build Instructions
+
+$ cd gt-fhir-jpabase
+$ mvn install -DskipTests **NB need to update tests**
+$ cd ../gt-fhir-entities
+$ mvn install
+$ cd ../gt-fhir-overlay
+$ mvn install
+$ cd ../gt-fhir-webapp
+$ mvn install
