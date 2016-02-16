@@ -65,7 +65,6 @@ import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
 import ca.uhn.fhir.model.dstu2.valueset.IssueTypeEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
-import ca.uhn.fhir.model.primitive.UriDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
@@ -489,7 +488,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 									}
 								}
 
-								//resources = addResourcesAsIncludesById(retVal, includePids, resources); //TODO new capability: add includes for search results
+								resources = addResourcesAsIncludesById(retVal, includePids, resources); 
 							} while (includePids.size() > 0 && previouslyLoadedPids.size() < baseFhirDao.getConfig().getIncludeLimit());
 
 							if (previouslyLoadedPids.size() >= baseFhirDao.getConfig().getIncludeLimit()) {
@@ -521,6 +520,174 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		return retVal;
 	}
+	
+	private List<IBaseResource> addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids,
+			List<IBaseResource> resources, Class<IResourceEntity> theResourceEntity) {
+		if (!includePids.isEmpty()) {
+			ourLog.info("Loading {} included resources", includePids.size());
+			Set<Long> pids = new HashSet<Long>();
+			for (IIdType next : includePids) {
+				if (next.isIdPartValidLong()) {
+					pids.add(next.getIdPartAsLong());
+				}
+			}
+
+			if (pids.isEmpty()) {
+				return new ArrayList<IBaseResource>();
+			}
+
+			CriteriaBuilder builder = baseFhirDao.getEntityManager().getCriteriaBuilder();
+			CriteriaQuery<? extends IResourceEntity> cq = builder.createQuery(theResourceEntity);
+			Root<? extends IResourceEntity> from = cq.from(theResourceEntity);
+			cq.where(from.get("id").in(pids));
+			TypedQuery<? extends IResourceEntity> q = baseFhirDao.getEntityManager().createQuery(cq);
+
+			 for (IResourceEntity next : q.getResultList()) {
+				 IResource resource = (IResource) next.getRelatedResource();
+				 resources.add(resource);
+			 }
+
+			for (IBaseResource next : resources) {
+				ResourceMetadataKeyEnum.ENTRY_SEARCH_MODE.put((IResource) next, BundleEntrySearchModeEnum.INCLUDE);
+			}
+			theListToPopulate.addAll(resources);
+		}
+		return resources;
+	}
+//
+//
+//
+//@Override
+//public void registerDaoListener(IDaoListener theListener) {
+//// TODO Auto-generated method stub
+//
+//}
+//
+//@Override
+//public DaoMethodOutcome delete(IIdType theId) {
+//StopWatch w = new StopWatch();
+////final BaseResourceEntity entity = readEntityLatestVersion(theId);
+////if (theId.hasVersionIdPart() && theId.getVersionIdPartAsLong().longValue() != entity.getVersion()) {
+////	throw new InvalidRequestException("Trying to update " + theId + " but this is not the current version");
+////}
+////
+////BaseResourceEntity savedEntity = baseFhirDao.updateEntity(null, entity, true, new Date());
+//BaseResourceEntity reference = (BaseResourceEntity) myEntityManager.getReference(myResourceEntity, theId.getIdPartAsLong());
+//myEntityManager.remove(reference);
+//
+//myBaseFhirDao.notifyWriteCompleted();
+//
+//ourLog.info("Processed delete on {} in {}ms", theId.getValue(), w.getMillisAndRestart());
+//return toMethodOutcome(reference, null);
+//}
+//
+//@Override
+//public DaoMethodOutcome deleteByUrl(String theString) {
+//// TODO Auto-generated method stub
+//return null;
+//}
+//
+//@Override
+//public TagList getAllResourceTags() {
+//// TODO Auto-generated method stub
+//return null;
+//}
+//
+//@Override
+//public IBundleProvider history(Date theSince) {
+//return null;
+//}
+//
+//@Override
+//public IBundleProvider history(Long theId, Date theSince) {
+//final InstantDt end = DaoUtils.createHistoryToTimestamp();
+//int limit = 10000;
+//AuditReader auditReader = AuditReaderFactory.get(myEntityManager);
+//AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(myResourceEntity, true, false).setMaxResults(limit);
+//if(theId != null){
+//	query.add(AuditEntity.id().eq(theId));
+//}
+//if(theSince != null){
+//	query.add(AuditEntity.revisionNumber().ge(auditReader.getRevisionNumberForDate(theSince)));
+//}
+//query.addProjection(AuditEntity.revisionNumber());
+//query.addOrder(AuditEntity.revisionNumber().asc());
+//final List<Number> revs = query.getResultList();
+//
+//return new IBundleProvider() { 
+//	
+//	@Override
+//	public int size() {
+//		return revs.size();
+//	}
+//	
+//	@Override
+//	public Integer preferredPageSize() {
+//		return null;
+//	}
+//	
+//	@Override
+//	public List<IBaseResource> getResources(final int theFromIndex,final int theToIndex) {
+//		//final StopWatch timer = new StopWatch();
+//		TransactionTemplate template = new TransactionTemplate(myPlatformTransactionManager);
+//		return template.execute(new TransactionCallback<List<IBaseResource>>(){
+//
+//			@Override
+//			public List<IBaseResource> doInTransaction(TransactionStatus status) {
+//				ArrayList<IBaseResource> retVal = new ArrayList<IBaseResource>();
+//				if(!revs.isEmpty()){
+//					int limit = theToIndex - theFromIndex;
+//					AuditReader auditReader = AuditReaderFactory.get(myEntityManager);
+//					AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(myResourceEntity, true, false).setMaxResults(limit);
+//					query.add(AuditEntity.revisionNumber().in(revs.toArray(new Number[0])));
+//					query.addOrder(AuditEntity.revisionNumber().asc());
+//					List<? extends IResourceEntity> resEntities = query.getResultList();
+//					if (resEntities.size() > limit) {
+//						resEntities = resEntities.subList(0, limit);
+//					}
+//					for (int i = 0; i < resEntities.size(); i++) {
+//						BaseResourceEntity entity = (BaseResourceEntity) resEntities.get(i);//WARNING works only for instances of BaseResourceEntity
+//						entity.setVersion(revs.get(i).longValue());
+//						IResource resource = entity.getRelatedResource();
+//						retVal.add(resource);
+//						
+//					}
+//				}
+//				return retVal;
+//			}
+//		});
+//	}
+//	
+//	@Override
+//	public InstantDt getPublished() {
+//		return end;
+//	}
+//};
+//}
+//
+//@Override
+//public IBundleProvider history(IIdType theId, Date theSince) {
+//return history(theId.getIdPartAsLong(), theSince);//TODO add unit test
+//}
+//
+//private AuditQuery getAuditQuery(Long theId, Date theSince){
+//int limit = 10000;
+//AuditReader auditReader = AuditReaderFactory.get(myEntityManager);
+//AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(myResourceEntity, true, false).setMaxResults(limit);
+////query.add(AuditEntity.revisionNumber().in(values))
+//return query;
+//}
+//
+//@Override
+//public DaoMethodOutcome update(T theResource) {
+//return update(theResource, null);
+//}
+//
+//@Override
+//public DaoMethodOutcome update(T theResource, String theMatchUrl) {
+//return update(theResource, theMatchUrl, true);
+//}
+
 	
 	/**
 	 * @hapi {@link BaseHapiFhirResourceDao#createSort(CriteriaBuilder, Root, SortSpec, List)}

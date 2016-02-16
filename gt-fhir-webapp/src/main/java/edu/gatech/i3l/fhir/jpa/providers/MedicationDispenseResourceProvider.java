@@ -130,7 +130,7 @@ public class MedicationDispenseResourceProvider extends
 //			paramMap.add("receiver", theReceiver);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 

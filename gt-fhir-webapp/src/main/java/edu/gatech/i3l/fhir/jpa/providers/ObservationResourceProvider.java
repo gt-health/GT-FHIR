@@ -191,7 +191,7 @@ public class ObservationResourceProvider extends
 //			paramMap.add("related-target-related-type", theRelated_target_related_type);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 

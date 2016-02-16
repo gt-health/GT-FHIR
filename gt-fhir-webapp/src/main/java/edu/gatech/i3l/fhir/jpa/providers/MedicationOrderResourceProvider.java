@@ -107,7 +107,7 @@ public class MedicationOrderResourceProvider extends
 //			paramMap.add("prescriber", thePrescriber);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 
