@@ -6,12 +6,15 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
+@Transactional(propagation = Propagation.REQUIRED)
 public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>{
 	
 	public ObservationFhirResourceDao() {

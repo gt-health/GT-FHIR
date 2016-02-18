@@ -407,23 +407,21 @@ public class Observation extends BaseResourceEntity {
 		// observation.setReliability(ObservationReliabilityEnum.OK);
 
 		IDatatype value = null;
-		if (this.valueAsString != null) {
-			value = new StringDt(this.valueAsString);
-		} else if (this.valueAsNumber != null) {
+		if (this.valueAsNumber != null) {
 			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
-			quantity.setUnit(this.unit.getConceptCode());// Unit is defined as a
-															// concept code in
-															// omop v4, then
-															// unit and code are
-															// the same in this
-															// case
-			quantity.setCode(this.unit.getConceptCode());
-			quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+			if (this.unit != null) {
+				// Unit is defined as a concept code in omop v4, then unit and code are the same in this case				
+				quantity.setUnit(this.unit.getConceptCode());
+				quantity.setCode(this.unit.getConceptCode());
+				quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+			}
 			value = quantity;
 			if (this.rangeLow != null)
 				observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
 			if (this.rangeHigh != null)
 				observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
+		} else if (this.valueAsString != null) {
+			value = new StringDt(this.valueAsString);
 		} else if (this.valueAsConcept != null) {
 			// vocabulary is a required attribute for concept, then it's expected to not be null
 			CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
@@ -464,19 +462,21 @@ public class Observation extends BaseResourceEntity {
 							comp.setCode(componentCode);
 							
 							IDatatype compValue = null;
-							if (ob.valueAsString != null) {
-								compValue = new StringDt(ob.valueAsString);
-							} else if (ob.valueAsNumber != null) {
+							if (ob.valueAsNumber != null) {
 								QuantityDt quantity = new QuantityDt(ob.valueAsNumber.doubleValue());
 								// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
-								quantity.setUnit(ob.unit.getConceptCode());
-								quantity.setCode(ob.unit.getConceptCode());
-								quantity.setSystem(ob.unit.getVocabulary().getSystemUri());
+								if (ob.unit != null) {
+									quantity.setUnit(ob.unit.getConceptCode());
+									quantity.setCode(ob.unit.getConceptCode());
+									quantity.setSystem(ob.unit.getVocabulary().getSystemUri());
+								}
 								compValue = quantity;
 								if (ob.rangeLow != null)
 									comp.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(ob.rangeLow.doubleValue()));
 								if (ob.rangeHigh != null)
 									comp.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(ob.rangeHigh.doubleValue()));
+							} else if (ob.valueAsString != null) {
+								compValue = new StringDt(ob.valueAsString);
 							} else if (ob.valueAsConcept != null) {
 								// vocabulary is a required attribute for concept, then it's expected to not be null
 								CodeableConceptDt valueAsConcept = new CodeableConceptDt(ob.valueAsConcept.getVocabulary().getSystemUri(), 
@@ -501,7 +501,7 @@ public class Observation extends BaseResourceEntity {
 					} else if (relatedComponentResource[0].equalsIgnoreCase("SEQL")) {
 						obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;
 					} else if (relatedComponentResource[0].equalsIgnoreCase("RPLC")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES_REPLACES;
+						obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;
 					} else if (relatedComponentResource[0].equalsIgnoreCase("QUALF")) {
 						obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;
 					} else if (relatedComponentResource[0].equalsIgnoreCase("INTF")) {
@@ -535,7 +535,7 @@ public class Observation extends BaseResourceEntity {
 		if (this.person != null)
 			observation.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if (this.visitOccurrence != null)
-			observation.getEncounter().setReference(new IdDt(this.visitOccurrence.getId()));
+			observation.getEncounter().setReference(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId()));
 		return observation;
 	}
 
@@ -552,18 +552,19 @@ public class Observation extends BaseResourceEntity {
 
 	@Override
 	public String translateSearchParam(String theSearchParam) {
+		System.out.println("Observation Search:"+theSearchParam);
 		switch (theSearchParam) {
-		case SP_SUBJECT:
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT:
 			return "person";
-		case SP_PATIENT:
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT:
 			return "person";
-		case SP_ENCOUNTER:
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER:
 			return "visitOccurrence";
-		case SP_VALUE_QUANTITY:
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY:
 			return "valueAsNumber";
-		case SP_VALUE_STRING:
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING:
 			return "valueAsString";
-		case SP_VALUE_CONCEPT:
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT:
 			return "valueAsConcept";
 		default:
 			break;

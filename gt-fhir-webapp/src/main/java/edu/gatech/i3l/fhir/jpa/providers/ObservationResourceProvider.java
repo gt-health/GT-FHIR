@@ -113,10 +113,13 @@ public class ObservationResourceProvider extends
 //			@OptionalParam(name="data-absent-reason")
 //			TokenAndListParam theData_absent_reason, 
   
+//			@Description(shortDefinition="The subject that the observation is about (if patient)")
+//			@OptionalParam(name="patient", targetTypes={  Patient.class ,   Group.class ,   Device.class ,   Location.class   } )
+//			ReferenceAndListParam thePatient, 
 			@Description(shortDefinition="The subject that the observation is about (if patient)")
-			@OptionalParam(name="patient", targetTypes={  Patient.class ,   Group.class ,   Device.class ,   Location.class   } )
+			@OptionalParam(name="patient", targetTypes={  Patient.class  } )
 			ReferenceAndListParam thePatient, 
-  
+			  
 //			@Description(shortDefinition="The unique Id for a particular observation")
 //			@OptionalParam(name="identifier")
 //			TokenAndListParam theIdentifier, 
