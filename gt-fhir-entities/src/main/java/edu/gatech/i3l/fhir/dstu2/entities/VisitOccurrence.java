@@ -24,7 +24,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
@@ -277,4 +276,12 @@ public class VisitOccurrence extends BaseResourceEntity {
 		return param;
 	}
 
+	public Class<?> getInclude(String resourceName){
+		switch (resourceName) {
+		case "Patient":
+			return Person.class;
+		default:
+			return null;
+		}
+	}
 }

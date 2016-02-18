@@ -3,6 +3,7 @@ package edu.gatech.i3l.fhir.jpa.dao;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +32,7 @@ import javax.validation.Validator;
 
 import net.vidageek.mirror.dsl.Mirror;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -488,7 +490,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 									}
 								}
 
-								resources = addResourcesAsIncludesById(retVal, includePids, resources); 
+								addResourcesAsIncludesById(retVal, includePids, resources); 
 							} while (includePids.size() > 0 && previouslyLoadedPids.size() < baseFhirDao.getConfig().getIncludeLimit());
 
 							if (previouslyLoadedPids.size() >= baseFhirDao.getConfig().getIncludeLimit()) {
@@ -521,8 +523,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		return retVal;
 	}
 	
-	private List<IBaseResource> addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids,
-			List<IBaseResource> resources, Class<IResourceEntity> theResourceEntity) {
+	private void addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids,
+			List<IBaseResource> resources) {
 		if (!includePids.isEmpty()) {
 			ourLog.info("Loading {} included resources", includePids.size());
 			Set<Long> pids = new HashSet<Long>();
@@ -533,17 +535,28 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			}
 
 			if (pids.isEmpty()) {
-				return new ArrayList<IBaseResource>();
+				return;
 			}
-
+			Class<?> theResourceEntity = null;
+			try {
+				String fieldName = getResourceEntity().newInstance().translateSearchParam(includePids.iterator().next().getResourceType().toLowerCase());
+				Field includeField = FieldUtils.getField(getResourceEntity(), fieldName, true);
+				theResourceEntity = includeField.getType();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
 			CriteriaBuilder builder = baseFhirDao.getEntityManager().getCriteriaBuilder();
-			CriteriaQuery<? extends IResourceEntity> cq = builder.createQuery(theResourceEntity);
-			Root<? extends IResourceEntity> from = cq.from(theResourceEntity);
+			CriteriaQuery<?> cq = builder.createQuery(theResourceEntity);
+			Root<?> from = cq.from(theResourceEntity);
 			cq.where(from.get("id").in(pids));
-			TypedQuery<? extends IResourceEntity> q = baseFhirDao.getEntityManager().createQuery(cq);
+			TypedQuery<?> q = baseFhirDao.getEntityManager().createQuery(cq);
 
-			 for (IResourceEntity next : q.getResultList()) {
-				 IResource resource = (IResource) next.getRelatedResource();
+			 for (Object next : q.getResultList()) {
+				 IResource resource = (IResource) ((IResourceEntity)next).getRelatedResource();
 				 resources.add(resource);
 			 }
 
@@ -552,7 +565,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			}
 			theListToPopulate.addAll(resources);
 		}
-		return resources;
 	}
 //
 //
