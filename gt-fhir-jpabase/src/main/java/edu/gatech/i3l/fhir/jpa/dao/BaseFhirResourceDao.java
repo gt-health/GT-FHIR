@@ -436,13 +436,12 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 							}
 
 							Set<IdDt> includePids = new HashSet<IdDt>();
-							List<IBaseResource> resources = retVal;
 							do {
 								includePids.clear();
 
 								FhirTerser t = baseFhirDao.getContext().newTerser();
 								for (Include next : theParams.getIncludes()) {
-									for (IBaseResource nextResource : resources) {
+									for (IBaseResource nextResource : retVal) {
 										RuntimeResourceDefinition def = baseFhirDao.getContext().getResourceDefinition(nextResource);
 										List<Object> values = null;
 										switch (baseFhirDao.getContext().getVersion().getVersion()) {
@@ -490,7 +489,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 									}
 								}
 
-								addResourcesAsIncludesById(retVal, includePids, resources); 
+								addResourcesAsIncludesById(retVal, includePids); 
 							} while (includePids.size() > 0 && previouslyLoadedPids.size() < baseFhirDao.getConfig().getIncludeLimit());
 
 							if (previouslyLoadedPids.size() >= baseFhirDao.getConfig().getIncludeLimit()) {
@@ -523,8 +522,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		return retVal;
 	}
 	
-	private void addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids,
-			List<IBaseResource> resources) {
+	private void addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids) {
 		if (!includePids.isEmpty()) {
 			ourLog.info("Loading {} included resources", includePids.size());
 			Set<Long> pids = new HashSet<Long>();
@@ -557,13 +555,12 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 			 for (Object next : q.getResultList()) {
 				 IResource resource = (IResource) ((IResourceEntity)next).getRelatedResource();
-				 resources.add(resource);
+				 theListToPopulate.add(resource);
 			 }
 
-			for (IBaseResource next : resources) {
+			for (IBaseResource next : theListToPopulate) {
 				ResourceMetadataKeyEnum.ENTRY_SEARCH_MODE.put((IResource) next, BundleEntrySearchModeEnum.INCLUDE);
 			}
-			theListToPopulate.addAll(resources);
 		}
 	}
 //

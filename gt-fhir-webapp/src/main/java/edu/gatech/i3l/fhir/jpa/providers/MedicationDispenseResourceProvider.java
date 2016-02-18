@@ -101,7 +101,7 @@ public class MedicationDispenseResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 
-			@IncludeParam(allow = {  "MedicationDispense:medication", "MedicationDispense:patient", "*" }) 
+			@IncludeParam(allow = {  "MedicationDispense:medication", "MedicationDispense:patient" }) 
 			Set<Include> theIncludes,
 			
 			@Sort 

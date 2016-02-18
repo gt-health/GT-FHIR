@@ -83,7 +83,7 @@ public class MedicationOrderResourceProvider extends
 //			DateRangeParam theLastUpdated, 
 //
 			@IncludeParam(allow = { "MedicationPrescription:encounter", "MedicationPrescription:medication",
-					"MedicationPrescription:patient", "*" }) 
+					"MedicationPrescription:patient"}) 
 			Set<Include> theIncludes,
 			
 			@Sort 

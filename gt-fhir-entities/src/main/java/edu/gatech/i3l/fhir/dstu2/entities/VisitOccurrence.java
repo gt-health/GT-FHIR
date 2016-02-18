@@ -276,12 +276,4 @@ public class VisitOccurrence extends BaseResourceEntity {
 		return param;
 	}
 
-	public Class<?> getInclude(String resourceName){
-		switch (resourceName) {
-		case "Patient":
-			return Person.class;
-		default:
-			return null;
-		}
-	}
 }

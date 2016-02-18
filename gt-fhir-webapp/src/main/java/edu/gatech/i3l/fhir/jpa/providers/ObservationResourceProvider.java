@@ -151,7 +151,7 @@ public class ObservationResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 //
-			@IncludeParam(allow = { "Observation:patient", "Observation:subject", "Observation:encounter" , "*" }) 
+			@IncludeParam(allow = { "Observation:patient", "Observation:subject", "Observation:encounter" }) 
 			Set<Include> theIncludes,
 			
 			@Sort 

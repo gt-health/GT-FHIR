@@ -125,7 +125,7 @@ public class EncounterResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 
-			@IncludeParam(allow = { "Encounter:patient", "*" }) 
+			@IncludeParam(allow = { "Encounter:patient" }) 
 			Set<Include> theIncludes,
 			
 			@Sort 

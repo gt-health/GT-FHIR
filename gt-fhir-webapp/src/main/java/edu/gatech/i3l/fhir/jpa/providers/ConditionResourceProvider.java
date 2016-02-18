@@ -126,7 +126,7 @@ public class ConditionResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 
-			@IncludeParam(allow = { "Condition:encounter", "Condition:subject", "Condition:patient", "*" }) 
+			@IncludeParam(allow = { "Condition:encounter", "Condition:subject", "Condition:patient" }) 
 			Set<Include> theIncludes,
 			
 			@Sort 
