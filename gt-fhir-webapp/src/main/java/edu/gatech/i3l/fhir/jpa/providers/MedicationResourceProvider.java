@@ -1,10 +1,14 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
+import java.util.Set;
+
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
@@ -76,10 +80,10 @@ public class MedicationResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 //
-//			@IncludeParam(allow= {
+			@IncludeParam(allow= {
 //					"Medication:content" , 					"Medication:ingredient" , 					"Medication:manufacturer" , 						"Medication:content" , 					"Medication:ingredient" , 					"Medication:manufacturer" , 						"Medication:content" , 					"Medication:ingredient" , 					"Medication:manufacturer" 					, "*"
-//			}) 
-//			Set<Include> theIncludes,
+			}) 
+			Set<Include> theIncludes,
 			
 			@Sort 
 			SortSpec theSort,
@@ -102,7 +106,7 @@ public class MedicationResourceProvider extends
 //			paramMap.add("content", theContent);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 

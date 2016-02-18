@@ -1,11 +1,15 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
+import java.util.Set;
+
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
@@ -120,11 +124,9 @@ public class EncounterResourceProvider extends
 //			@Description(shortDefinition="Only return resources which were last updated as specified by the given range")
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
-//
-//			@IncludeParam(allow= {
-//					"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" , 						"Encounter:episodeofcare" , 					"Encounter:fulfills" , 					"Encounter:incomingreferral" , 					"Encounter:indication" , 					"Encounter:location" , 					"Encounter:part-of" , 					"Encounter:participant" , 					"Encounter:patient" , 					"Encounter:practitioner" 					, "*"
-//			}) 
-//			Set<Include> theIncludes,
+
+			@IncludeParam(allow = { "Encounter:patient" }) 
+			Set<Include> theIncludes,
 			
 			@Sort 
 			SortSpec theSort,
@@ -158,7 +160,7 @@ public class EncounterResourceProvider extends
 //			paramMap.add("practitioner", thePractitioner);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 
