@@ -25,6 +25,9 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 
 ### Build Instructions
 
+importing the sources as a maven project in IntelliJ seems to work well for testing; best is importing before building
+
+
 $ cd gt-fhir-jpabase
 
 $ mvn install -DskipTests **NB need to update tests**
@@ -40,3 +43,8 @@ $ mvn install
 $ cd ../gt-fhir-webapp
 
 $ mvn install
+
+
+create a mysql database called fhir_omop with user devuser@localhost, no password, listening on default port 3306
+
+see .idea/runConfigurations/fhir_webapp_local.xml for a deployment configuration that seems to work
