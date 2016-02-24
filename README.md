@@ -25,12 +25,53 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 
 ### Build Instructions
 
-importing the sources as a maven project in IntelliJ seems to work well for testing; best is importing before building
+importing the sources as a maven project in IntelliJ seems to work well for testing
 
+# including cleaning old artifacts
 
 $ cd gt-fhir-jpabase
 
-$ mvn install -DskipTests **NB need to update tests**
+$ mvn clean
+
+$ cd ../gt-fhir-entities
+
+$ mvn clean
+
+$ cd ../gt-fhir-overlay
+
+$ mvn clean
+
+$ cd ../gt-fhir-webapp
+
+$ mvn clean
+
+$ cd ../..
+
+$ rm -rf gtFHIR
+
+It may be worthwhile rm'ing old deployment files from [/var/lib/]tomcat/webapps too
+
+# for clean installations start here 
+
+$ git clone https://github.gatech.edu/cdchealthyweight/gtFHIR.git (edited)
+
+startup intelliJ
+
+import project -> import from external model -> Maven
+
+check 'search for projects recursively", "Import Maven projects automatically", "create module groups for multi-module projects"
+
+allow intelliJ to overwrite .idea directory during project creation
+
+then back to the console
+
+$ cd gtFHIR
+
+$ git checkout -- .idea/runConfigurations/fhir_webapp_local.xml
+
+$ cd gt-fhir-jpabase
+
+$ mvn install -DskipTests
 
 $ cd ../gt-fhir-entities
 
@@ -44,7 +85,8 @@ $ cd ../gt-fhir-webapp
 
 $ mvn install
 
-
 create a mysql database called fhir_omop with user devuser@localhost, no password, listening on default port 3306
 
-see .idea/runConfigurations/fhir_webapp_local.xml for a deployment configuration that seems to work
+then from intelliJ run->run "fhir_webapp_local"
+
+**NB need to update tests**
