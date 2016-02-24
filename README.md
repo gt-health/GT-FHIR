@@ -27,7 +27,7 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 
 importing the sources as a maven project in IntelliJ seems to work well for testing
 
-# including cleaning old artifacts
+#### including cleaning old artifacts
 
 $ cd gt-fhir-jpabase
 
@@ -51,9 +51,9 @@ $ rm -rf gtFHIR
 
 It may be worthwhile rm'ing old deployment files from [/var/lib/]tomcat/webapps too
 
-# for clean installations start here 
+#### for clean installations start here 
 
-$ git clone https://github.gatech.edu/cdchealthyweight/gtFHIR.git (edited)
+$ git clone https://github.gatech.edu/cdchealthyweight/gtFHIR.git
 
 startup intelliJ
 
