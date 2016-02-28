@@ -28,6 +28,9 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 importing the sources as a maven project in IntelliJ seems to work well for testing
 
 #### including cleaning old artifacts
+$ cd gtFHIR
+
+$ mvn clean
 
 $ cd gt-fhir-jpabase
 
@@ -68,6 +71,8 @@ then back to the console
 $ cd gtFHIR
 
 $ git checkout -- .idea/runConfigurations/fhir_webapp_local.xml
+
+$ mvn install
 
 $ cd gt-fhir-jpabase
 
