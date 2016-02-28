@@ -5,12 +5,12 @@
 	<artifactId>gt-fhir-jpabase</artifactId>
 	<packaging>jar</packaging>
 
-	<parent>
-		<groupId>edu.gatech.i3l</groupId>
-		<artifactId>gt-fhir</artifactId>
-		<version>1.2-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+        <parent>
+            <groupId>edu.gatech.i3l</groupId>
+            <artifactId>gt-fhir-parent</artifactId>
+            <version>1.2-SNAPSHOT</version>
+            <relativePath>../pom.xml</relativePath>
+        </parent>
 
 	<repositories>
 		<repository>
@@ -365,7 +365,8 @@
 					These tests all use a shared database, so it's easier if
 					they run in a predictable order 
 					-->
-					<runOrder>alphabetical</runOrder>
+                                        <skipTests>true</skipTests>
+                                        <!-- <runOrder>alphabetical</runOrder> -->
 				</configuration>
 			</plugin>
 			<!-- <plugin>
