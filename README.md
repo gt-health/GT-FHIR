@@ -28,25 +28,12 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 importing the sources as a maven project in IntelliJ seems to work well for testing
 
 #### including cleaning old artifacts
+
 $ cd gtFHIR
 
 $ mvn clean
 
-$ cd gt-fhir-jpabase
-
-$ mvn clean
-
-$ cd ../gt-fhir-entities
-
-$ mvn clean
-
-$ cd ../gt-fhir-overlay
-
-$ mvn clean
-
-$ cd ../gt-fhir-webapp
-
-$ mvn clean
+#### for a really complete clean
 
 $ cd ../..
 
@@ -72,26 +59,10 @@ $ cd gtFHIR
 
 $ git checkout -- .idea/runConfigurations/fhir_webapp_local.xml
 
-$ mvn install
-
-$ cd gt-fhir-jpabase
-
-$ mvn install -DskipTests
-
-$ cd ../gt-fhir-entities
-
-$ mvn install
-
-$ cd ../gt-fhir-overlay
-
-$ mvn install
-
-$ cd ../gt-fhir-webapp
-
-$ mvn install
+$ mvn clean install
 
 create a mysql database called fhir_omop with user devuser@localhost, no password, listening on default port 3306
 
 then from intelliJ run->run "fhir_webapp_local"
 
-**NB need to update tests**
+**NB need to update tests; currently jpabase module is building with skipTests=true**
