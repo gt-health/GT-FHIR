@@ -28,23 +28,21 @@ This overlay has a user interface - which follows the design of Hapi Fhir's <a h
 importing the sources as a maven project in IntelliJ seems to work well for testing
 
 #### including cleaning old artifacts
-
+```
 $ cd gtFHIR
-
 $ mvn clean
-
+```
 #### for a really complete clean
-
+```
 $ cd ../..
-
 $ rm -rf gtFHIR
-
-It may be worthwhile rm'ing old deployment files from [/var/lib/]tomcat/webapps too
+```
+It may be worthwhile `rm`ing old deployment files from [`/var/lib/]tomcat/`]`webapps` too
 
 #### for clean installations start here 
-
+```
 $ git clone https://github.gatech.edu/cdchealthyweight/gtFHIR.git
-
+```
 startup intelliJ
 
 import project -> import from external model -> Maven
@@ -54,15 +52,21 @@ check 'search for projects recursively", "Import Maven projects automatically", 
 allow intelliJ to overwrite .idea directory during project creation
 
 then back to the console
-
+```
 $ cd gtFHIR
-
 $ git checkout -- .idea/runConfigurations/fhir_webapp_local.xml
+```
+create a mysql database called `fhir_omop` with user `devuser@localhost`, no password, listening on default port 3306
 
-$ mvn clean install
-
-create a mysql database called fhir_omop with user devuser@localhost, no password, listening on default port 3306
+#### build/deploy
 
 then from intelliJ run->run "fhir_webapp_local"
+
+#### without IntelliJ, the 'manual' build/deploy is
+```
+[gtFHIR]$ mvn clean install
+$ cp gt-fhir-webapp/target/gt-fhir-webapp.war [/var/lib/tomcat/]webapps/
+```
+restart tomcat
 
 **NB need to update tests; currently jpabase module is building with skipTests=true**
