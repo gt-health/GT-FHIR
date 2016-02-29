@@ -37,7 +37,7 @@ $ mvn clean
 $ cd ..
 $ rm -rf gtFHIR
 ```
-It may be worthwhile `rm`ing old deployment files from [`/var/lib/]tomcat/`]`webapps` too
+It may be worthwhile `rm`ing old deployment files from [`/var/lib/`]`tomcat/webapps` too
 
 #### for clean installations start here 
 ```
@@ -65,7 +65,7 @@ then from intelliJ run->run "fhir_webapp_local"
 #### without IntelliJ, the 'manual' build/deploy is
 ```
 [gtFHIR]$ mvn clean install
-$ cp gt-fhir-webapp/target/gt-fhir-webapp.war [/var/lib/tomcat/]webapps/
+$ cp gt-fhir-webapp/target/gt-fhir-webapp.war [/var/lib/]tomcat/webapps/
 ```
 restart tomcat
 
