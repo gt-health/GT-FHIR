@@ -34,7 +34,7 @@ $ mvn clean
 ```
 #### for a really complete clean
 ```
-$ cd ../..
+$ cd ..
 $ rm -rf gtFHIR
 ```
 It may be worthwhile `rm`ing old deployment files from [`/var/lib/]tomcat/`]`webapps` too
