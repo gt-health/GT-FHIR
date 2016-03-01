@@ -6,9 +6,13 @@ import ca.uhn.fhir.model.dstu2.resource.Questionnaire;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 
+@Entity
+@Table(name="questionsanswers")
+@Audited
 public class QuestionsAnswers extends BaseResourceEntity {
 
     public static final String RESOURCE_TYPE = "Questionnaire";
