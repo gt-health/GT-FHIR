@@ -172,5 +172,15 @@
 		<property name="dao" ref="myProcedureDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
- 
+
+	<bean id="myQuestionnaireDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.QuestionnaireFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Questionnaire"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myQuestionnaireRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.QuestionnaireResourceProvider">
+		<property name="dao" ref="myQuestionnaireDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
 </beans>
