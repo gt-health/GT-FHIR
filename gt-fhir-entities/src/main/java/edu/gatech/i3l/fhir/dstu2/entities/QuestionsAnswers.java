@@ -2,43 +2,73 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.resource.Questionnaire;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
+import javax.persistence.*;
+
 public class QuestionsAnswers extends BaseResourceEntity {
+
+    public static final String RESOURCE_TYPE = "Questionnaire";
+
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name="questionsanswers_id")
+    @Access(AccessType.PROPERTY)
+    private Long id;
+
+    public QuestionsAnswers() {
+        super();
+    }
+
+    public QuestionsAnswers(Long id) {
+        this.id = id;
+    }
+
     @Override
     public Long getId() {
-        return null;
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @Override
     public FhirVersionEnum getFhirVersion() {
-        return null;
+        return FhirVersionEnum.DSTU2;
     }
 
     @Override
     public String getResourceType() {
-        return null;
+        return RESOURCE_TYPE;
     }
 
     @Override
     public InstantDt getUpdated() {
+        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String translateSearchParam(String theSearchParam) {
-        return null;
+        // TODO Auto-generated method stub
+        return "";
     }
 
     @Override
     public IResource getRelatedResource() {
-        return null;
+        Questionnaire questionnaire = new Questionnaire();
+        questionnaire.setId(this.getIdDt());
+        // TODO Auto-generated method stub
+        return questionnaire;
     }
 
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
+        // TODO Auto-generated method stub
         return null;
     }
 }
