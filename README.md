@@ -39,7 +39,7 @@ $ rm -rf gtFHIR
 ```
 It may be worthwhile `rm`ing old deployment files from [`/var/lib/`]`tomcat/webapps` too
 
-#### for clean installations start here 
+#### for clean installations start here
 ```
 $ git clone https://github.gatech.edu/cdchealthyweight/gtFHIR.git
 ```
