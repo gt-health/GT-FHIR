@@ -35,6 +35,7 @@
 	<!-- The following beans' definitions are ordered alphabetically -->
 
  	<util:list id="myResourceProvidersDstu2">
+		<ref bean="myAppointmentRpDstu2"/>
 		<ref bean="myConditionRpDstu2"/>
 		<ref bean="myEncounterRpDstu2"/>
 		<!-- <ref bean="myLocationRpDstu2"/> -->
@@ -52,8 +53,20 @@
 		<!-- <ref bean="myRelatedPersonRpDstu2"/>-->
 	</util:list>
 
- 
-    
+
+
+
+	<bean id="myAppointmentDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.AppointmentFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Appointment"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myAppointmentRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.AppointmentResourceProvider">
+		<property name="dao" ref="myAppointmentDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
 	<bean id="myConditionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ConditionFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Condition"/>
