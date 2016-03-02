@@ -11,7 +11,7 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 /**
- * Created by mark on 02/03/16.
+ * Mark Benjamin 02/03/16.
  */
 @Entity
 @Table(name="inoculationrecommendation")

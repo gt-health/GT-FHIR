@@ -6,7 +6,7 @@ import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
 /**
- * Created by mark on 01/03/16.
+ * Mark Benjamin 01/03/16.
  */
 public class AppointmentFhirResourceDao extends BaseFhirResourceDao<Appointment>{
 
