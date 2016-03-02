@@ -36,6 +36,7 @@
 
  	<util:list id="myResourceProvidersDstu2">
 		<ref bean="myAppointmentRpDstu2"/>
+		<ref bean="myAppointmentResponseRpDstu2"/>
 		<ref bean="myCommunicationRpDstu2"/>
 		<ref bean="myCommunicationRequestRpDstu2"/>
 		<ref bean="myConditionRpDstu2"/>
@@ -73,6 +74,17 @@
 	</bean>
 	<bean id="myAppointmentRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.AppointmentResourceProvider">
 		<property name="dao" ref="myAppointmentDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myAppointmentResponseDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.AppointmentResponseFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.AppointmentResponse"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myAppointmentResponseRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.AppointmentResponseResourceProvider">
+		<property name="dao" ref="myAppointmentResponseDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 
