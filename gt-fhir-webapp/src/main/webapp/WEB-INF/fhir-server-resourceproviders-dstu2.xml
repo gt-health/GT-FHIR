@@ -38,6 +38,7 @@
 		<ref bean="myAppointmentRpDstu2"/>
 		<ref bean="myConditionRpDstu2"/>
 		<ref bean="myEncounterRpDstu2"/>
+		<ref bean="myFlagRpDstu2"/>
 		<ref bean="myImmunizationRpDstu2"/>
 		<!-- <ref bean="myLocationRpDstu2"/> -->
 		<ref bean="myMedicationRpDstu2"/>
@@ -88,6 +89,17 @@
 	</bean>
 	<bean id="myEncounterRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.EncounterResourceProvider">
 		<property name="dao" ref="myEncounterDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myFlagDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.FlagFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Flag"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myFlagRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.FlagResourceProvider">
+		<property name="dao" ref="myFlagDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 
