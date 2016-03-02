@@ -52,10 +52,10 @@
 		<ref bean="myObservationRpDstu2"/>
 		<!-- <ref bean="myOrganizationRpDstu2"/>-->
 		<ref bean="myPatientRpDstu2"/>
-		<!-- <ref bean="myPersonRpDstu2"/> -->
+		<ref bean="myPersonRpDstu2"/>
+		<ref bean="myPractitionerRpDstu2"/>
 		<ref bean="myProcedureRpDstu2"/>
 		<ref bean="myProcedureRequestRpDstu2"/>
-		<ref bean="myPractitionerRpDstu2"/>
 		<ref bean="myQuestionnaireRpDstu2"/>
 		<ref bean="myQuestionnaireResponseRpDstu2"/>
 		<ref bean="myReferralRequestRpDstu2"/>
@@ -238,6 +238,17 @@
 	</bean>
 	<bean id="myPatientRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.PatientResourceProvider">
 		<property name="dao" ref="myPatientDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myPersonDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PersonFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Person"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myPersonRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.PersonResourceProvider">
+		<property name="dao" ref="myPersonDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 

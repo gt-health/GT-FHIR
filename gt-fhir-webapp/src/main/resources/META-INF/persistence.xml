@@ -21,6 +21,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Engagement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EngagementResponse</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Individual</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Inoculation</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.InoculationRecommendation</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
