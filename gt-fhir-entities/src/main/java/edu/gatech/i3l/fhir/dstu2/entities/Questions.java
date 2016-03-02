@@ -11,23 +11,23 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 @Entity
-@Table(name="questionsanswers")
+@Table(name="questions")
 @Audited
-public class QuestionsAnswers extends BaseResourceEntity {
+public class Questions extends BaseResourceEntity {
 
     public static final String RESOURCE_TYPE = "Questionnaire";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="questionsanswers_id")
+    @Column(name="questions_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public QuestionsAnswers() {
+    public Questions() {
         super();
     }
 
-    public QuestionsAnswers(Long id) {
+    public Questions(Long id) {
         this.id = id;
     }
 
