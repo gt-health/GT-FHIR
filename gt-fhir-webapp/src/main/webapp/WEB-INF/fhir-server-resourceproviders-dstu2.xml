@@ -40,6 +40,7 @@
 		<ref bean="myEncounterRpDstu2"/>
 		<ref bean="myFlagRpDstu2"/>
 		<ref bean="myImmunizationRpDstu2"/>
+		<ref bean="myImmunizationRecommendationRpDstu2"/>
 		<!-- <ref bean="myLocationRpDstu2"/> -->
 		<ref bean="myMedicationRpDstu2"/>
 		<ref bean="myMedicationDispenseRpDstu2"/>
@@ -111,6 +112,17 @@
 	</bean>
 	<bean id="myImmunizationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ImmunizationResourceProvider">
 		<property name="dao" ref="myImmunizationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myImmunizationRecommendationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ImmunizationRecommendationFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ImmunizationRecommendation"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myImmunizationRecommendationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ImmunizationRecommendationResourceProvider">
+		<property name="dao" ref="myImmunizationRecommendationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 

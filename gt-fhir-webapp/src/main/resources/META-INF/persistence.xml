@@ -20,6 +20,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Innoculation</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.InnoculationRecommendation</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
