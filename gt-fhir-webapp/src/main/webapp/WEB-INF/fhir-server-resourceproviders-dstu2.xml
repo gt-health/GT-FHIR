@@ -54,6 +54,7 @@
 		<ref bean="myProcedureRequestRpDstu2"/>
 		<ref bean="myPractitionerRpDstu2"/>
 		<ref bean="myQuestionnaireRpDstu2"/>
+		<ref bean="myRelatedPersonRpDstu2"/>
 		<!-- <ref bean="myRelatedPersonRpDstu2"/>-->
 	</util:list>
 
@@ -243,6 +244,17 @@
 	</bean>
 	<bean id="myQuestionnaireRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.QuestionnaireResourceProvider">
 		<property name="dao" ref="myQuestionnaireDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myRelatedPersonDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.RelatedPersonFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.RelatedPerson"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myRelatedPersonRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.RelatedPersonResourceProvider">
+		<property name="dao" ref="myRelatedPersonDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 </beans>
