@@ -26,6 +26,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Message</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.MessageRequest</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Observation</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
