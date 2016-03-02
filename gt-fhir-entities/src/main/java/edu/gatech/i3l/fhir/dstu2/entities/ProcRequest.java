@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.Immunization;
+import ca.uhn.fhir.model.dstu2.resource.ProcedureRequest;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -10,24 +10,28 @@ import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 
-@Entity
-@Table(name="innoculation")
-@Audited
-public class Innoculation extends BaseResourceEntity{
+/**
+ * Created by mark on 02/03/16.
+ */
 
-    public static final String RESOURCE_TYPE = "Immunization";
+@Entity
+@Table(name="procrequest")
+@Audited
+public class ProcRequest extends BaseResourceEntity{
+
+    public static final String RESOURCE_TYPE = "ProcedureRequest";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="innoculation_id")
+    @Column(name="procrequest_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public Innoculation() {
+    public ProcRequest() {
         super();
     }
 
-    public Innoculation(Long id) {
+    public ProcRequest(Long id) {
         this.id = id;
     }
 
@@ -64,15 +68,15 @@ public class Innoculation extends BaseResourceEntity{
 
     @Override
     public IResource getRelatedResource() {
-        Immunization immunization = new Immunization();
-        immunization.setId(this.getIdDt());
+        ProcedureRequest procedureRequest = new ProcedureRequest();
+        procedureRequest.setId(this.getIdDt());
+
         // TODO Auto-generated method stub
-        return immunization;
+        return procedureRequest;
     }
 
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
-        // TODO Auto-generated method stub
         return null;
     }
 }

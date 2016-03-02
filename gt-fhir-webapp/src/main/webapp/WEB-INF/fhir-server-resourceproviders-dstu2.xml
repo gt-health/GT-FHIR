@@ -47,8 +47,9 @@
 		<ref bean="myObservationRpDstu2"/>
 		<!-- <ref bean="myOrganizationRpDstu2"/>-->
 		<ref bean="myPatientRpDstu2"/>
-		<ref bean="myProcedureRpDstu2"/>
 		<!-- <ref bean="myPersonRpDstu2"/> -->
+		<ref bean="myProcedureRpDstu2"/>
+		<ref bean="myProcedureRequestRpDstu2"/>
 		<ref bean="myPractitionerRpDstu2"/>
 		<ref bean="myQuestionnaireRpDstu2"/>
 		<!-- <ref bean="myRelatedPersonRpDstu2"/>-->
@@ -196,6 +197,17 @@
 	</bean>
 	<bean id="myProcedureRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ProcedureResourceProvider">
 		<property name="dao" ref="myProcedureDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myProcedureRequestDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ProcedureRequestFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.ProcedureRequest"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myProcedureRequestRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ProcedureRequestResourceProvider">
+		<property name="dao" ref="myProcedureRequestDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 
