@@ -3,6 +3,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.ReferralRequest;
+import ca.uhn.fhir.model.dstu2.valueset.ReferralStatusEnum;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -26,12 +27,16 @@ public class ReferenceRequest  extends BaseResourceEntity {
     @Access(AccessType.PROPERTY)
     private Long id;
 
+    @Column(name="referencerequest_status_code")
+    private String statusCode;
+
     public ReferenceRequest() {
         super();
     }
 
-    public ReferenceRequest(Long id) {
+    public ReferenceRequest(Long id, String statusCode) {
         this.id = id;
+        this.setStatusCode(statusCode);
     }
 
     @Override
@@ -69,6 +74,29 @@ public class ReferenceRequest  extends BaseResourceEntity {
     public IResource getRelatedResource() {
         ReferralRequest referralRequest = new ReferralRequest();
         referralRequest.setId(this.getIdDt());
+        if (statusCode != null) { // TODO default value?
+            if (statusCode.equalsIgnoreCase("draft")) {
+                referralRequest.setStatus(ReferralStatusEnum.DRAFT);
+            }
+            if (statusCode.equalsIgnoreCase("requested")) {
+                referralRequest.setStatus(ReferralStatusEnum.REQUESTED);
+            }
+            if (statusCode.equalsIgnoreCase("active")) {
+                referralRequest.setStatus(ReferralStatusEnum.ACTIVE);
+            }
+            if (statusCode.equalsIgnoreCase("cancelled")) {
+                referralRequest.setStatus(ReferralStatusEnum.CANCELLED);
+            }
+            if (statusCode.equalsIgnoreCase("accepted")) {
+                referralRequest.setStatus(ReferralStatusEnum.ACCEPTED);
+            }
+            if (statusCode.equalsIgnoreCase("rejected")) {
+                referralRequest.setStatus(ReferralStatusEnum.REJECTED);
+            }
+            if (statusCode.equalsIgnoreCase("completed")) {
+                referralRequest.setStatus(ReferralStatusEnum.COMPLETED);
+            }
+        }
         // TODO Auto-generated method stub
 
         return referralRequest;
@@ -78,5 +106,13 @@ public class ReferenceRequest  extends BaseResourceEntity {
     public IResourceEntity constructEntityFromResource(IResource resource) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
     }
 }
