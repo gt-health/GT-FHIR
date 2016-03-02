@@ -2,14 +2,20 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.resource.ReferralRequest;
 import ca.uhn.fhir.model.dstu2.valueset.ReferralStatusEnum;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Mark Benjamin 02/03/16
@@ -29,6 +35,16 @@ public class ReferenceRequest  extends BaseResourceEntity {
 
     @Column(name="referencerequest_status_code")
     private String statusCode;
+
+    @OneToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="organization_id")
+    private Organization organization;
+
+    @Column(name = "referencerequest_date")
+    @Temporal(TemporalType.DATE)
+    private Date date;
+
+
 
     public ReferenceRequest() {
         super();
@@ -74,29 +90,20 @@ public class ReferenceRequest  extends BaseResourceEntity {
     public IResource getRelatedResource() {
         ReferralRequest referralRequest = new ReferralRequest();
         referralRequest.setId(this.getIdDt());
-        if (statusCode != null) { // TODO default value?
-            if (statusCode.equalsIgnoreCase("draft")) {
-                referralRequest.setStatus(ReferralStatusEnum.DRAFT);
-            }
-            if (statusCode.equalsIgnoreCase("requested")) {
-                referralRequest.setStatus(ReferralStatusEnum.REQUESTED);
-            }
-            if (statusCode.equalsIgnoreCase("active")) {
-                referralRequest.setStatus(ReferralStatusEnum.ACTIVE);
-            }
-            if (statusCode.equalsIgnoreCase("cancelled")) {
-                referralRequest.setStatus(ReferralStatusEnum.CANCELLED);
-            }
-            if (statusCode.equalsIgnoreCase("accepted")) {
-                referralRequest.setStatus(ReferralStatusEnum.ACCEPTED);
-            }
-            if (statusCode.equalsIgnoreCase("rejected")) {
-                referralRequest.setStatus(ReferralStatusEnum.REJECTED);
-            }
-            if (statusCode.equalsIgnoreCase("completed")) {
-                referralRequest.setStatus(ReferralStatusEnum.COMPLETED);
+        ReferralStatusEnum[] states = ReferralStatusEnum.values();
+        for (int ind = 0; ind < states.length; ind++) {
+            if (states[ind].getCode().equalsIgnoreCase(statusCode)) {
+                referralRequest.setStatus(states[ind]);
             }
         }
+
+        // referralRequest.setIdentifier(new ArrayList<IdentifierDt>().add(new IdentifierDt(organization.getIdDt())));
+
+        if (this.date != null) {
+            referralRequest.setDate(new DateTimeDt(this.date));
+        }
+
+
         // TODO Auto-generated method stub
 
         return referralRequest;
