@@ -33,6 +33,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcRequest</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Prognosis</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Questions</class>

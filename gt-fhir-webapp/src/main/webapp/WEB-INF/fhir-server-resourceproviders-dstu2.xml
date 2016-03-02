@@ -59,7 +59,7 @@
 		<ref bean="myQuestionnaireResponseRpDstu2"/>
 		<ref bean="myReferralRequestRpDstu2"/>
 		<ref bean="myRelatedPersonRpDstu2"/>
-		<!-- <ref bean="myRelatedPersonRpDstu2"/>-->
+		<ref bean="myRiskAssessmentRpDstu2"/>
 	</util:list>
 
 
@@ -303,6 +303,17 @@
 	</bean>
 	<bean id="myRelatedPersonRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.RelatedPersonResourceProvider">
 		<property name="dao" ref="myRelatedPersonDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myRiskAssessmentDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.RiskAssessmentFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.RiskAssessment"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myRiskAssessmentRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.RiskAssessmentResourceProvider">
+		<property name="dao" ref="myRiskAssessmentDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 </beans>
