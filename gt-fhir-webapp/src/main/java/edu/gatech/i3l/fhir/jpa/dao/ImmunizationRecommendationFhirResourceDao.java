@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.ImmunizationRecommendation;
-import edu.gatech.i3l.fhir.dstu2.entities.InnoculationRecommendation;
+import edu.gatech.i3l.fhir.dstu2.entities.InoculationRecommendation;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -11,7 +11,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 public class ImmunizationRecommendationFhirResourceDao extends BaseFhirResourceDao<ImmunizationRecommendation>{
 
     public ImmunizationRecommendationFhirResourceDao() {
-        setResourceEntity(InnoculationRecommendation.class);
+        setResourceEntity(InoculationRecommendation.class);
         setValidateBean(true);
     }
 

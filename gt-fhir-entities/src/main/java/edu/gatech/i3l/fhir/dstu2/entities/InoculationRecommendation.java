@@ -14,24 +14,24 @@ import javax.persistence.*;
  * Created by mark on 02/03/16.
  */
 @Entity
-@Table(name="innoculationrecommendation")
+@Table(name="inoculationrecommendation")
 @Audited
-public class InnoculationRecommendation extends BaseResourceEntity{
+public class InoculationRecommendation extends BaseResourceEntity{
 
     public static final String RESOURCE_TYPE = "ImmunizationRecommendation";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="innoculationrecommendation_id")
+    @Column(name="inoculationrecommendation_id")
     @Access(AccessType.PROPERTY)
 
     private Long id;
 
-    public InnoculationRecommendation() {
+    public InoculationRecommendation() {
         super();
     }
 
-    public InnoculationRecommendation(Long id) {
+    public InoculationRecommendation(Long id) {
         this.id = id;
     }
 
