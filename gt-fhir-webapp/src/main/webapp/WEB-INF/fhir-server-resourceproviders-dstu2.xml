@@ -36,6 +36,7 @@
 
  	<util:list id="myResourceProvidersDstu2">
 		<ref bean="myAppointmentRpDstu2"/>
+		<ref bean="myCommunicationRpDstu2"/>
 		<ref bean="myConditionRpDstu2"/>
 		<ref bean="myEncounterRpDstu2"/>
 		<ref bean="myFlagRpDstu2"/>
@@ -179,6 +180,17 @@
 	</bean>
 	<bean id="myMedicationAdministrationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationAdministrationResourceProvider">
 		<property name="dao" ref="myMedicationAdministrationDaoDstu2"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+	</bean>
+
+	<bean id="myCommunicationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.CommunicationFhirResourceDao">
+		<property name="beanValidator" ref="myBeanValidator"/>
+		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Communication"/>
+		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="baseFhirDao" ref="myBaseDao"></property>
+	</bean>
+	<bean id="myCommunicationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.CommunicationResourceProvider">
+		<property name="dao" ref="myCommunicationDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	
