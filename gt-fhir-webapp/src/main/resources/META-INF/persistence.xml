@@ -34,6 +34,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Questions</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.QuestionsAnswers</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.RelatedIndividual</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class>
