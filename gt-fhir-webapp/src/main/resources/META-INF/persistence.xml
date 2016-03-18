@@ -8,6 +8,7 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 
 		<!-- The below classes are in alphabetic order with their simple names -->
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Alert</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.CareSite</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
@@ -17,17 +18,30 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Engagement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.EngagementResponse</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Individual</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Inoculation</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.InoculationRecommendation</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Message</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.MessageRequest</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Observation</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcRequest</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Prognosis</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.Questions</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.QuestionsAnswers</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.ReferenceRequest</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.RelatedIndividual</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
