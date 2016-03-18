@@ -1,19 +1,22 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
+import java.util.Set;
+
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Procedure;
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.StringParam;
-import ca.uhn.fhir.rest.param.TokenAndListParam;
 // import ca.uhn.fhir.model.dstu2.resource.Bundle;
 // import ca.uhn.fhir.model.api.Bundle;
 import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
@@ -121,11 +124,9 @@ public class ProcedureResourceProvider extends
 //			@Description(shortDefinition="Only return resources which were last updated as specified by the given range")
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
-//
-//			@IncludeParam(allow= {
-//					"Condition:asserter" , 					"Condition:dueto-item" , 					"Condition:encounter" , 					"Condition:following-item" , 					"Condition:patient" , 					"Condition:subject" , 						"Condition:asserter" , 					"Condition:dueto-item" , 					"Condition:encounter" , 					"Condition:following-item" , 					"Condition:patient" , 					"Condition:subject" , 						"Condition:asserter" , 					"Condition:dueto-item" , 					"Condition:encounter" , 					"Condition:following-item" , 					"Condition:patient" , 					"Condition:subject" , 						"Condition:asserter" , 					"Condition:dueto-item" , 					"Condition:encounter" , 					"Condition:following-item" , 					"Condition:patient" , 					"Condition:subject" , 						"Condition:asserter" , 					"Condition:dueto-item" , 					"Condition:encounter" , 					"Condition:following-item" , 					"Condition:patient" , 					"Condition:subject" , 						"Condition:asserter" , 					"Condition:dueto-item" , 					"Condition:encounter" , 					"Condition:following-item" , 					"Condition:patient" , 					"Condition:subject" 					, "*"
-//			}) 
-//			Set<Include> theIncludes,
+
+			@IncludeParam(allow = { "Condition:patient", "Condition:subject", "Condition:encounter"}) 
+			Set<Include> theIncludes,
 			
 			@Sort 
 			SortSpec theSort,
@@ -159,7 +160,7 @@ public class ProcedureResourceProvider extends
 //			paramMap.add("following-item", theFollowing_item);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 

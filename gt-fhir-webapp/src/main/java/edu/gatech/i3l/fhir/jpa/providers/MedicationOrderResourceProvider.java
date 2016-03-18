@@ -1,13 +1,17 @@
 
 package edu.gatech.i3l.fhir.jpa.providers;
 
+import java.util.Set;
+
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
@@ -78,10 +82,9 @@ public class MedicationOrderResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 //
-//			@IncludeParam(allow= {
-//					"MedicationPrescription:encounter" , 					"MedicationPrescription:medication" , 					"MedicationPrescription:patient" , 					"MedicationPrescription:prescriber" , 						"MedicationPrescription:encounter" , 					"MedicationPrescription:medication" , 					"MedicationPrescription:patient" , 					"MedicationPrescription:prescriber" , 						"MedicationPrescription:encounter" , 					"MedicationPrescription:medication" , 					"MedicationPrescription:patient" , 					"MedicationPrescription:prescriber" , 						"MedicationPrescription:encounter" , 					"MedicationPrescription:medication" , 					"MedicationPrescription:patient" , 					"MedicationPrescription:prescriber" 					, "*"
-//			}) 
-//			Set<Include> theIncludes,
+			@IncludeParam(allow = { "MedicationPrescription:encounter", "MedicationPrescription:medication",
+					"MedicationPrescription:patient"}) 
+			Set<Include> theIncludes,
 			
 			@Sort 
 			SortSpec theSort,
@@ -104,7 +107,7 @@ public class MedicationOrderResourceProvider extends
 //			paramMap.add("prescriber", thePrescriber);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
-//			paramMap.setIncludes(theIncludes);
+			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 
