@@ -21,3 +21,54 @@ Tables' names and columns' names are specified under javax.persistence annotatio
 ## gt-fhir-overlay
 
 This overlay has a user interface - which follows the design of Hapi Fhir's <a href="https://github.com/jamesagnew/hapi-fhir/tree/master/hapi-fhir-testpage-overlay">Example interface</a>, being our default client for Fhir server.
+
+
+### Build Instructions
+
+importing the sources as a maven project in IntelliJ seems to work well for testing
+
+#### including cleaning old artifacts
+```
+$ cd GT-FHIR
+$ mvn clean
+```
+#### for a really complete clean
+```
+$ cd ..
+$ rm -rf GT-FHIR
+```
+It may be worthwhile `rm`ing old deployment files from [`/var/lib/`]`tomcat/webapps` too
+
+#### for clean installations start here
+```
+$ git clone https://github.com/i3l/GT-FHIR.git
+```
+startup intelliJ
+
+import project -> import from external model -> Maven
+
+check 'search for projects recursively", "Import Maven projects automatically", "create module groups for multi-module projects"
+
+allow intelliJ to overwrite .idea directory during project creation
+
+then back to the console
+```
+$ cd GT-FHIR
+$ git checkout -- .idea/runConfigurations/fhir_webapp_local.xml
+```
+create a mysql database called `fhir_omop` with user `devuser@localhost`, no password, listening on default port 3306
+
+config files that may need changing for local testing include setting the database username to devuser [more secure locally than setting no password for the root MySQL username] in `gt-fhir-webapp/src/main/webapp/WEB-INF/fhir-server-database-config.xml`, setting the Release Server to localhost in `gt-fhir-webapp/src/main/webapp/WEB-INF/fhir-webapp-config.xml`
+
+#### build/deploy
+
+then from intelliJ run->run "fhir_webapp_local"
+
+#### without IntelliJ, the 'manual' build/deploy is
+```
+[GT-FHIR]$ mvn clean install
+$ cp gt-fhir-webapp/target/gt-fhir-webapp.war [/var/lib/]tomcat/webapps/
+```
+restart tomcat
+
+**NB need to update tests; currently jpabase module is building with skipTests=true**

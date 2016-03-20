@@ -18,6 +18,20 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRAppointment</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRAppointmentResponse</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRCommunication</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRCommunicationRequest</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRFlag</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRImmunization</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRImmunizationRecommendation</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRPerson</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRProcedureRequest</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRQuestionnaire</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRQuestionnaireResponse</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRReferralRequest</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRRelatedPerson</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.FHIRRiskAssessment</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>

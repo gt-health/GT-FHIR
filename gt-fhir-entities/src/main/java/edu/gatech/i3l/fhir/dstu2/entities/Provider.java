@@ -15,6 +15,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.StringDt;
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
@@ -24,6 +28,9 @@ import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="provider")
@@ -125,7 +132,8 @@ public class Provider extends BaseResourceEntity {
 	@Override
 	public Practitioner getRelatedResource() {
 		Practitioner practitioner = new Practitioner();
-		
+		practitioner.setId(this.getIdDt());
+
 		// TODO set parameters
 		
 		return practitioner;
