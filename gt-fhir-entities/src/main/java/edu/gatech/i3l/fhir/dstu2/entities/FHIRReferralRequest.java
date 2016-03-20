@@ -60,7 +60,7 @@ public class FHIRReferralRequest extends BaseResourceEntity {
     private Person person; // FHIR Patient
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="f_referralrequest_individual_id")
+    @JoinColumn(name="f_referralrequest_f_person_id")
     private FHIRPerson requester; // TODO see FHIR doc; requester should in fact be
                                   // {FHIR Practitioner | FHIR Organization | FHIR Patient}
 
