@@ -41,7 +41,7 @@ It may be worthwhile `rm`ing old deployment files from [`/var/lib/`]`tomcat/weba
 
 #### for clean installations start here
 ```
-$ git clone https://github.gatech.edu/cdchealthyweight/gtFHIR.git
+$ git clone https://github.com/i3l/GT-FHIR.git
 ```
 startup intelliJ
 
