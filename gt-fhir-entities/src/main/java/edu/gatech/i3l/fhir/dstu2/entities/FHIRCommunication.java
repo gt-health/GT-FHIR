@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.RiskAssessment;
+import ca.uhn.fhir.model.dstu2.resource.Communication;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -13,25 +13,24 @@ import javax.persistence.*;
 /**
  * Mark Benjamin 02/03/16
  */
-
 @Entity
-@Table(name="prognosis")
+@Table(name="f_communication")
 @Audited
-public class Prognosis extends BaseResourceEntity {
+public class FHIRCommunication extends BaseResourceEntity {
 
-    public static final String RESOURCE_TYPE = "RiskAssessment";
+    public static final String RESOURCE_TYPE = "Communication";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="prognosis_id")
+    @Column(name="f_communication_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public Prognosis() {
+    public FHIRCommunication() {
         super();
     }
 
-    public Prognosis(Long id) {
+    public FHIRCommunication(Long id) {
         this.id = id;
     }
 
@@ -68,11 +67,11 @@ public class Prognosis extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        RiskAssessment riskAssessment = new RiskAssessment();
-        riskAssessment.setId(this.getIdDt());
+        Communication communication = new Communication();
+        communication.setId(this.getIdDt());
         // TODO Auto-generated method stub
 
-        return riskAssessment;
+        return communication;
     }
 
     @Override

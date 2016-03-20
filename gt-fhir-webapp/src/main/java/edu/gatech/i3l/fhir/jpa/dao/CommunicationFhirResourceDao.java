@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.Communication;
-import edu.gatech.i3l.fhir.dstu2.entities.Message;
+import edu.gatech.i3l.fhir.dstu2.entities.FHIRCommunication;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -10,7 +10,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
  */
 public class CommunicationFhirResourceDao extends BaseFhirResourceDao<Communication>{
     public CommunicationFhirResourceDao() {
-        setResourceEntity(Message.class);
+        setResourceEntity(FHIRCommunication.class);
         setValidateBean(true);
     }
 

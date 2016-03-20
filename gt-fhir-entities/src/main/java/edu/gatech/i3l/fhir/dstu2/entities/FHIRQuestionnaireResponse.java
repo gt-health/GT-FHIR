@@ -2,8 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.Communication;
-import ca.uhn.fhir.model.dstu2.resource.CommunicationRequest;
+import ca.uhn.fhir.model.dstu2.resource.QuestionnaireResponse;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -15,23 +14,23 @@ import javax.persistence.*;
  * Mark Benjamin 02/03/16
  */
 @Entity
-@Table(name="messagerequest")
+@Table(name="f_questionnaireresponse")
 @Audited
-public class MessageRequest extends BaseResourceEntity {
+public class FHIRQuestionnaireResponse extends BaseResourceEntity {
 
-    public static final String RESOURCE_TYPE = "CommunicationRequest";
+    public static final String RESOURCE_TYPE = "QuestionnaireResponse";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="messagerequest_id")
+    @Column(name="f_questionnaireresponse_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public MessageRequest() {
+    public FHIRQuestionnaireResponse() {
         super();
     }
 
-    public MessageRequest(Long id) {
+    public FHIRQuestionnaireResponse(Long id) {
         this.id = id;
     }
 
@@ -68,11 +67,11 @@ public class MessageRequest extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        CommunicationRequest communicationRequest = new CommunicationRequest();
-        communicationRequest.setId(this.getIdDt());
+        QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId(this.getIdDt());
         // TODO Auto-generated method stub
 
-        return communicationRequest;
+        return questionnaireResponse;
     }
 
     @Override

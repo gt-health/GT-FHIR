@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.QuestionnaireResponse;
+import ca.uhn.fhir.model.dstu2.resource.Immunization;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -10,27 +10,24 @@ import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 
-/**
- * Mark Benjamin 02/03/16
- */
 @Entity
-@Table(name="questionsanswers")
+@Table(name="f_immunization")
 @Audited
-public class QuestionsAnswers extends BaseResourceEntity {
+public class FHIRImmunization extends BaseResourceEntity{
 
-    public static final String RESOURCE_TYPE = "QuestionnaireResponse";
+    public static final String RESOURCE_TYPE = "Immunization";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="questionsanswers_id")
+    @Column(name="f_immunization_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public QuestionsAnswers() {
+    public FHIRImmunization() {
         super();
     }
 
-    public QuestionsAnswers(Long id) {
+    public FHIRImmunization(Long id) {
         this.id = id;
     }
 
@@ -67,11 +64,10 @@ public class QuestionsAnswers extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setId(this.getIdDt());
+        Immunization immunization = new Immunization();
+        immunization.setId(this.getIdDt());
         // TODO Auto-generated method stub
-
-        return questionnaireResponse;
+        return immunization;
     }
 
     @Override

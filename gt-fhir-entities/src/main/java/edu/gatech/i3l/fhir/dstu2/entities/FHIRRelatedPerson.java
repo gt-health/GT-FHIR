@@ -14,23 +14,23 @@ import javax.persistence.*;
  * Mark Benjamin 02/03/16.
  */
 @Entity
-@Table(name="relatedindividual")
+@Table(name="f_relatedperson")
 @Audited
-public class RelatedIndividual extends BaseResourceEntity{
+public class FHIRRelatedPerson extends BaseResourceEntity{
 
     public static final String RESOURCE_TYPE = "RelatedPerson";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="relatedindividual_id")
+    @Column(name="f_relatedperson_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public RelatedIndividual() {
+    public FHIRRelatedPerson() {
         super();
     }
 
-    public RelatedIndividual(Long id) {
+    public FHIRRelatedPerson(Long id) {
         this.id = id;
     }
 

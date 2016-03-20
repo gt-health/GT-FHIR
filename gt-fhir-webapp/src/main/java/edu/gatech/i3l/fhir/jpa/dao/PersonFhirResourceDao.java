@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.Person;
-import edu.gatech.i3l.fhir.dstu2.entities.Individual;
+import edu.gatech.i3l.fhir.dstu2.entities.FHIRPerson;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -11,7 +11,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 public class PersonFhirResourceDao extends BaseFhirResourceDao<Person>{
 
     public PersonFhirResourceDao() {
-        setResourceEntity(Individual.class);
+        setResourceEntity(FHIRPerson.class);
         setValidateBean(true);
     }
 

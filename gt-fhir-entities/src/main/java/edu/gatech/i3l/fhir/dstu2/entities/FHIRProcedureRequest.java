@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.AppointmentResponse;
+import ca.uhn.fhir.model.dstu2.resource.ProcedureRequest;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -11,25 +11,27 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 /**
- * Mark Benjamin 02/03/16
- */@Entity
-@Table(name="engagementresponse")
-@Audited
-public class EngagementResponse extends BaseResourceEntity {
+ * Mark Benjamin 02/03/16.
+ */
 
-    public static final String RESOURCE_TYPE = "AppointmentResponse";
+@Entity
+@Table(name="f_procedurerequest")
+@Audited
+public class FHIRProcedureRequest extends BaseResourceEntity{
+
+    public static final String RESOURCE_TYPE = "ProcedureRequest";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="engagementresponse_id")
+    @Column(name="f_procedurerequest_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public EngagementResponse() {
+    public FHIRProcedureRequest() {
         super();
     }
 
-    public EngagementResponse(long id) {
+    public FHIRProcedureRequest(Long id) {
         this.id = id;
     }
 
@@ -38,7 +40,7 @@ public class EngagementResponse extends BaseResourceEntity {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -66,15 +68,15 @@ public class EngagementResponse extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        AppointmentResponse appointmentResponse = new AppointmentResponse();
-        appointmentResponse.setId(this.getIdDt());
+        ProcedureRequest procedureRequest = new ProcedureRequest();
+        procedureRequest.setId(this.getIdDt());
+
         // TODO Auto-generated method stub
-        return appointmentResponse;
+        return procedureRequest;
     }
 
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
-        // TODO Auto-generated method stub
         return null;
     }
 }

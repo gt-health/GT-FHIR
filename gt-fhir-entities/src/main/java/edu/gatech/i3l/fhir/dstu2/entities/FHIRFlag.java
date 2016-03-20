@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.resource.Communication;
+import ca.uhn.fhir.model.dstu2.resource.Flag;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -11,26 +11,26 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 /**
- * Mark Benjamin 02/03/16
+ * Mark Benjamin 02/03/16.
  */
 @Entity
-@Table(name="message")
+@Table(name="f_flag")
 @Audited
-public class Message extends BaseResourceEntity {
+public class FHIRFlag extends BaseResourceEntity{
 
-    public static final String RESOURCE_TYPE = "Communication";
+    public static final String RESOURCE_TYPE = "Flag";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="message_id")
+    @Column(name="f_flag_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    public Message() {
+    public FHIRFlag() {
         super();
     }
 
-    public Message(Long id) {
+    public FHIRFlag(Long id) {
         this.id = id;
     }
 
@@ -67,11 +67,10 @@ public class Message extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        Communication communication = new Communication();
-        communication.setId(this.getIdDt());
+        Flag flag = new Flag();
+        flag.setId(this.getIdDt());
         // TODO Auto-generated method stub
-
-        return communication;
+        return flag;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.QuestionnaireResponse;
-import edu.gatech.i3l.fhir.dstu2.entities.QuestionsAnswers;
+import edu.gatech.i3l.fhir.dstu2.entities.FHIRQuestionnaireResponse;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -10,7 +10,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
  */
 public class QuestionnaireResponseFhirResourceDao  extends BaseFhirResourceDao<QuestionnaireResponse>{
     public QuestionnaireResponseFhirResourceDao() {
-        setResourceEntity(QuestionsAnswers.class);
+        setResourceEntity(FHIRQuestionnaireResponse.class);
         setValidateBean(true);
     }
 

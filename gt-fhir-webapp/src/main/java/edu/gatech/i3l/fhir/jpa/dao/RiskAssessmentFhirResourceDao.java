@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.RiskAssessment;
-import edu.gatech.i3l.fhir.dstu2.entities.Prognosis;
+import edu.gatech.i3l.fhir.dstu2.entities.FHIRRiskAssessment;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -10,7 +10,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
  */
 public class RiskAssessmentFhirResourceDao  extends BaseFhirResourceDao<RiskAssessment>{
     public RiskAssessmentFhirResourceDao() {
-        setResourceEntity(Prognosis.class);
+        setResourceEntity(FHIRRiskAssessment.class);
         setValidateBean(true);
     }
 

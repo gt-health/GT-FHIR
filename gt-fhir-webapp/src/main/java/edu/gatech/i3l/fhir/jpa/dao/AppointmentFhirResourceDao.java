@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.Appointment;
-import edu.gatech.i3l.fhir.dstu2.entities.Engagement;
+import edu.gatech.i3l.fhir.dstu2.entities.FHIRAppointment;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -11,7 +11,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 public class AppointmentFhirResourceDao extends BaseFhirResourceDao<Appointment>{
 
     public AppointmentFhirResourceDao() {
-        setResourceEntity(Engagement.class);
+        setResourceEntity(FHIRAppointment.class);
         setValidateBean(true);
     }
 

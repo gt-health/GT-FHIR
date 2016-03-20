@@ -3,7 +3,6 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.ReferralRequest;
 import ca.uhn.fhir.model.dstu2.valueset.ReferralStatusEnum;
@@ -15,57 +14,55 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Mark Benjamin 02/03/16
  */
 @Entity
-@Table(name="referencerequest")
+@Table(name="f_referralrequest")
 @Audited
-public class ReferenceRequest  extends BaseResourceEntity {
+public class FHIRReferralRequest extends BaseResourceEntity {
 
     public static final String RESOURCE_TYPE = "ReferralRequest";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="referencerequest_id")
+    @Column(name="f_referralrequest_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    @Column(name="referencerequest_status_code")
+    @Column(name="f_referralrequest_status_code")
     private String statusCode;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="referencerequest_organization_id")
+    @JoinColumn(name="f_referralrequest_organization_id")
     private Organization organization;
 
-    @Column(name = "referencerequest_date")
+    @Column(name = "f_referralrequest_date")
     @Temporal(TemporalType.DATE)
     private Date date;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="referencerequest_type_concept_id")
+    @JoinColumn(name="f_referralrequest_type_concept_id")
     private Concept typeConcept;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="referencerequest_specialty_concept_id")
+    @JoinColumn(name="f_referralrequest_specialty_concept_id")
     private Concept specialtyConcept;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="referencerequest_priority_concept_id")
+    @JoinColumn(name="f_referralrequest_priority_concept_id")
     private Concept priorityConcept;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="referencerequest_person_id")
-    private Person person;
+    @JoinColumn(name="f_referralrequest_person_id")
+    private Person person; // FHIR Patient
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="referencerequest_individual_id")
-    private Individual requester;
+    @JoinColumn(name="f_referralrequest_individual_id")
+    private FHIRPerson requester; // TODO see FHIR doc; requester should in fact be
+                                  // {FHIR Practitioner | FHIR Organization | FHIR Patient}
 
     // recipient
 
@@ -85,11 +82,11 @@ public class ReferenceRequest  extends BaseResourceEntity {
 
 
 
-    public ReferenceRequest() {
+    public FHIRReferralRequest() {
         super();
     }
 
-    public ReferenceRequest(Long id, String statusCode) {
+    public FHIRReferralRequest(Long id, String statusCode) {
         this.id = id;
         this.setStatusCode(statusCode);
     }
@@ -157,7 +154,7 @@ public class ReferenceRequest  extends BaseResourceEntity {
             referralRequest.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
         }
 
-        referralRequest.setRequester(new ResourceReferenceDt(new IdDt(Individual.RESOURCE_TYPE, this.requester.getId())));
+        referralRequest.setRequester(new ResourceReferenceDt(new IdDt(FHIRPerson.RESOURCE_TYPE, this.requester.getId())));
 
 
         // TODO Auto-generated method stub

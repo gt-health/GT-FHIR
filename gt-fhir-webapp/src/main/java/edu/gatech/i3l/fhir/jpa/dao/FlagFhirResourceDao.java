@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import ca.uhn.fhir.model.dstu2.resource.Flag;
-import edu.gatech.i3l.fhir.dstu2.entities.Alert;
+import edu.gatech.i3l.fhir.dstu2.entities.FHIRFlag;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -10,7 +10,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
  */
 public class FlagFhirResourceDao extends BaseFhirResourceDao<Flag>{
     public FlagFhirResourceDao() {
-        setResourceEntity(Alert.class);
+        setResourceEntity(FHIRFlag.class);
         setValidateBean(true);
     }
     @Override
