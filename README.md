@@ -29,13 +29,13 @@ importing the sources as a maven project in IntelliJ seems to work well for test
 
 #### including cleaning old artifacts
 ```
-$ cd gtFHIR
+$ cd GT-FHIR
 $ mvn clean
 ```
 #### for a really complete clean
 ```
 $ cd ..
-$ rm -rf gtFHIR
+$ rm -rf GT-FHIR
 ```
 It may be worthwhile `rm`ing old deployment files from [`/var/lib/`]`tomcat/webapps` too
 
@@ -53,10 +53,12 @@ allow intelliJ to overwrite .idea directory during project creation
 
 then back to the console
 ```
-$ cd gtFHIR
+$ cd GT-FHIR
 $ git checkout -- .idea/runConfigurations/fhir_webapp_local.xml
 ```
 create a mysql database called `fhir_omop` with user `devuser@localhost`, no password, listening on default port 3306
+
+config files that may need changing for local testing include setting the database username to devuser [more secure locally than setting no password for the root MySQL username] in `gt-fhir-webapp/src/main/webapp/WEB-INF/fhir-server-database-config.xml`, setting the Release Server to localhost in `gt-fhir-webapp/src/main/webapp/WEB-INF/fhir-webapp-config.xml`
 
 #### build/deploy
 
@@ -64,7 +66,7 @@ then from intelliJ run->run "fhir_webapp_local"
 
 #### without IntelliJ, the 'manual' build/deploy is
 ```
-[gtFHIR]$ mvn clean install
+[GT-FHIR]$ mvn clean install
 $ cp gt-fhir-webapp/target/gt-fhir-webapp.war [/var/lib/]tomcat/webapps/
 ```
 restart tomcat
