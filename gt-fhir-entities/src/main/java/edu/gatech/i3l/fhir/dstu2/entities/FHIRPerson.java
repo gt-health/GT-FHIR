@@ -27,7 +27,7 @@ public class FHIRPerson extends BaseResourceEntity{
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="individual_id")
+    @Column(name="f_person_id")
     @Access(AccessType.PROPERTY)
     private Long id;
 
