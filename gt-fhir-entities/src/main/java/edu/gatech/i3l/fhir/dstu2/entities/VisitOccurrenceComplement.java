@@ -59,6 +59,7 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 		super(id, person, startDate, endDate, placeOfServiceConcept, careSite, placeOfServiceSourceValue);
 		
 		this.episodeOfCare = episodeOfCare;
+		this.status = status;
 		this.note = note;
 		
 	}
@@ -107,6 +108,7 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 			episodeReferences.add(episodeReference);
 			encounter.setEpisodeOfCare(episodeReferences);
 		}
+		
 
 		// set Reason
 		// TODO: note or linked condition may have this information.
@@ -118,12 +120,12 @@ public class VisitOccurrenceComplement extends VisitOccurrence {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		super.constructEntityFromResource(resource);
 		Encounter encounter = (Encounter) resource;
-		String status = encounter.getStatus();
+		String status = encounter.getStatus().toString();
 		if(status != null){
 			EncounterStateEnum[] values = EncounterStateEnum.values();
 			for (int i = 0; i < values.length; i++) {
-				if(status.equals(values[i].getCode())){
-					this.setStatus(values[i].getCode());
+				if((status.toLowerCase()).equals((values[i].getCode().toLowerCase()))){
+					this.setStatus((values[i].getCode().toLowerCase()));
 					break;
 				}
 			}
