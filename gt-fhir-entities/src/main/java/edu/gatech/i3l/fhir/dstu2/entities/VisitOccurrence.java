@@ -24,7 +24,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
@@ -192,7 +191,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 		/* Set Period */
 		this.startDate = encounter.getPeriod().getStart();
 		this.endDate = encounter.getPeriod().getEnd();
-
+		
+		
 		/* Set care site */
 		Long locationRef = encounter.getLocationFirstRep().getLocation().getReference().getIdPartAsLong();
 		if(locationRef != null){
@@ -217,10 +217,10 @@ public class VisitOccurrence extends BaseResourceEntity {
 		String place_of_service = this.placeOfServiceConcept.getName().toLowerCase();
 		if (place_of_service.contains("inpatient")) {
 			encounter.setClassElement(EncounterClassEnum.INPATIENT);			
-		} else if (place_of_service.contains("outpatient")) {
+		} else if (place_of_service.toLowerCase().contains("outpatient")) {
 			encounter.setClassElement(EncounterClassEnum.OUTPATIENT);			
-		} else if (place_of_service.contains("ambulatory")
-				|| place_of_service.contains("office")) {
+		} else if (place_of_service.toLowerCase().contains("ambulatory")
+				|| place_of_service.toLowerCase().contains("office")) {
 			encounter.setClassElement(EncounterClassEnum.AMBULATORY);			
 		} else if (place_of_service.toLowerCase().contains("home")) {
 			encounter.setClassElement(EncounterClassEnum.HOME);			
