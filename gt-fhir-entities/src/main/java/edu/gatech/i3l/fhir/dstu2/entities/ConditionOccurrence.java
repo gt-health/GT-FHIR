@@ -90,7 +90,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 * @omopVersion 4.0
 	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="associated_provider_id")
+	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -100,13 +100,16 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_source_value")
 	private String sourceValue; 
 
+	@Column(name="condition_source_concept_id")
+	private Concept sourceConcept;
+	
 	public ConditionOccurrence() {
 		super();
 	}
 
 	public ConditionOccurrence(Long id, Person person, Concept conditionConcept, Date startDate, Date endDate,
 			Concept conditionTypeConcept, String stopReason, Provider provider, VisitOccurrence encounter,
-			String sourceValue) {
+			String sourceValue, Concept sourceConcept) {
 		super();
 
 		this.id = id;
@@ -119,6 +122,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		this.provider = provider;
 		this.encounter = encounter;
 		this.sourceValue = sourceValue;
+		this.sourceConcept = sourceConcept;
 	}
 
 	
@@ -206,6 +210,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 	public void setSourceValue(String sourceValue) {
 		this.sourceValue = sourceValue;
+	}
+	
+	public Concept getSourceConcept() {
+		return sourceConcept;
+	}
+	
+	public void setSourceConcept(Concept sourceConcept) {
+		this.sourceConcept = sourceConcept;
 	}
 
 	@Override

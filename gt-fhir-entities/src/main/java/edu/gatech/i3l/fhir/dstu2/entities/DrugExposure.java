@@ -25,19 +25,27 @@ import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 @Table(name="drug_exposure")
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("CASE WHEN drug_type_concept_id = (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription written') THEN 'PrescriptionWritten' "+
-							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription dispensed in pharmacy' OR concept.concept_name LIKE 'Prescription dispensed through mail order') THEN 'PrescriptionDispensed' "+
+							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE '%Prescription dispensed in pharmacy%') THEN 'PrescriptionDispensed' "+
 							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id=36) THEN 'DrugAdministration' END")
 public abstract class DrugExposure extends BaseResourceEntity {
-
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="drug_exposure_id", updatable= false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@OneToOne(mappedBy="prescription", 
-			cascade={CascadeType.ALL}, fetch=FetchType.LAZY)
-	private DrugExposureComplement complement;
+	@Column(name = "effective_drug_dose")
+	private Double effectiveDrugDose;
+	
+	@Column(name = "dose_unit_concept_id")
+	private Concept doseUnitConcept;
+	
+	@Column(name = "dose_unit_source_value")
+	private String doseUnitSourceValue;
+	
+//	@OneToOne(mappedBy="prescription", 
+//			cascade={CascadeType.ALL}, fetch=FetchType.LAZY)
+//	private DrugExposureComplement complement;
 
 	@Override
 	public Long getId() {
@@ -48,11 +56,35 @@ public abstract class DrugExposure extends BaseResourceEntity {
 		this.id = id;
 	}
 
-	public DrugExposureComplement getComplement() {
-		return complement;
+	public Double getEffectiveDrugDose() {
+		return effectiveDrugDose;
+	}
+	
+	public void setEffectiveDrugDose(Double effectiveDrugDose) {
+		this.effectiveDrugDose = effectiveDrugDose;
+	}
+	
+	public Concept getDoseUnitConcept() {
+		return doseUnitConcept;
+	}
+	
+	public void setDoseUnitConcept(Concept doseUnitConcept) {
+		this.doseUnitConcept = doseUnitConcept;
+	}
+	
+	public String getDoseUnitSourceValue() {
+		return doseUnitSourceValue;
+	}
+	
+	public void setDoseUnitSourceValue(String doseUnitSourceValue) {
+		this.doseUnitSourceValue = doseUnitSourceValue;
 	}
 
-	public void setComplement(DrugExposureComplement complement) {
-		this.complement = complement;
-	}
+//	public DrugExposureComplement getComplement() {
+//		return complement;
+//	}
+//
+//	public void setComplement(DrugExposureComplement complement) {
+//		this.complement = complement;
+//	}
 }

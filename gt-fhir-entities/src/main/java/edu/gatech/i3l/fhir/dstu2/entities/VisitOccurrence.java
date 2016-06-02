@@ -6,6 +6,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_DATE;
 import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.persistence.Access;
@@ -60,49 +61,65 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@NotNull
 	private Person person;
 	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="visit_concept_id")
+	private Concept visitConcept;
+	
 	@Column(name="visit_start_date", nullable=false)
 	@NotNull
 	private Date startDate;
+	
+	@Column(name="visit_start_time")
+	private String startTime;
 	
 	@Column(name="visit_end_date", nullable=false)
 	@NotNull
 	private Date endDate;
 	
-	@ManyToOne
-	@JoinColumn(name="place_of_service_concept_id", nullable=false)
-	@NotNull
-	private Concept placeOfServiceConcept;
+	@Column(name="visit_end_time")
+	private String endTime;
 	
-	/**
-	 * The location (care site) here is set as required, since the field 'placeOfServiceConcept' is required in Omop v4.0 and it is derived
-	 * from {@link CareSite#getPlaceOfServiceConcept()}.
-	 * 
-	 * @fhir Location, List of locations the patient has been at
-	 * @fhirVersion 0.5.0
-	 */
+	@ManyToOne
+	@JoinColumn(name="visit_type_concept_id")
+	private Concept visitTypeConcept;
+	
+	@ManyToOne
+	@JoinColumn(name="provider_id")
+	private Provider provider;
+	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="care_site_id")
 	@NotNull
 	private CareSite careSite; //FIXME field names should reflect fhir names, for validation purposes.
 	
-	@Column(name="place_of_service_source_value")
-	private String placeOfServiceSourceValue;
+	@Column(name="visit_source_value")
+	private String visitSourceValue;
 	
+	@ManyToOne
+	@JoinColumn(name="visit_source_concept_id")
+	private Concept visitSourceConcept;
+
 	public VisitOccurrence() {
 		super();
 	}
 	
-	public VisitOccurrence(Long id, Person person, Date startDate, Date endDate,
-			Concept placeOfServiceConcept, CareSite careSite, String placeOfServiceSourceValue) {
+	public VisitOccurrence(Long id, Person person, Concept visitConcept, Date startDate, 
+			String startTime, Date endDate, String endTime, Concept visitTypeConcept, 
+			Provider provider, CareSite careSite, String visitSourceValue, Concept visitSourceConcept) {
 		super();
 		
 		this.id = id;
 		this.person = person;
+		this.visitConcept = visitConcept;
 		this.startDate = startDate;
+		this.startTime = startTime;
 		this.endDate = endDate;
-		this.placeOfServiceConcept = placeOfServiceConcept;
+		this.endTime = endTime;
+		this.visitTypeConcept = visitTypeConcept;
+		this.provider = provider;
 		this.careSite = careSite;
-		this.placeOfServiceSourceValue = placeOfServiceSourceValue;
+		this.visitSourceValue = visitSourceValue;
+		this.visitSourceConcept = visitSourceConcept;
 	}
 	
 	public Person getPerson() {
@@ -113,12 +130,28 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.person = person;
 	}
 	
+	public Concept getVisitConcept() {
+		return visitConcept;
+	}
+	
+	public void setVisitConcept(Concept visitConcept) {
+		this.visitConcept = visitConcept;
+	}
+	
 	public Date getStartDate() {
 		return startDate;
 	}
 	
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
+	}
+	
+	public String getStartTime() {
+		return startTime;
+	}
+	
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
 	}
 	
 	public Date getEndDate() {
@@ -129,12 +162,28 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.endDate = endDate;
 	}
 	
-	public Concept getPlaceOfServiceConcept() {
-		return placeOfServiceConcept;
+	public String getEndTime() {
+		return endTime;
 	}
 	
-	public void setPlaceOfServiceConcept(Concept placeOfServiceConcept) {
-		this.placeOfServiceConcept = placeOfServiceConcept;
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
+	}
+	
+	public Concept getVisitTypeConcept() {
+		return visitTypeConcept;
+	}
+	
+	public void setVisitTypeConcept(Concept visitTypeConcept) {
+		this.visitTypeConcept = visitTypeConcept;
+	}
+	
+	public Provider getProvider() {
+		return provider;
+	}
+	
+	public void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 	
 	public CareSite getCareSite() {
@@ -145,12 +194,20 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.careSite = careSite;
 	}
 	
-	public String getPlaceOfServiceSourceValue() {
-		return placeOfServiceSourceValue;
+	public String getVisitSourceValue() {
+		return visitSourceValue;
 	}
 	
-	public void setPlaceOfServiceSourceValue(String placeOfServiceSourceValue) {
-		this.placeOfServiceSourceValue = placeOfServiceSourceValue;
+	public void setVisitSourceValue(String visitSourceValue) {
+		this.visitSourceValue = visitSourceValue;
+	}
+	
+	public Concept getVisitSourceConcept() {
+		return visitSourceConcept;
+	}
+	
+	public void setVisitSourceConcept(Concept visitSourceConcept) {
+		this.visitSourceConcept = visitSourceConcept;
 	}
 	
 	@Override
@@ -190,20 +247,31 @@ public class VisitOccurrence extends BaseResourceEntity {
 		}
 		/* Set Period */
 		this.startDate = encounter.getPeriod().getStart();
-		this.endDate = encounter.getPeriod().getEnd();
+		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
+		this.startTime = fmt.format(this.startDate);
 		
+		this.endDate = encounter.getPeriod().getEnd();
+		this.endTime = fmt.format(this.endDate);
 		
 		/* Set care site */
 		Long locationRef = encounter.getLocationFirstRep().getLocation().getReference().getIdPartAsLong();
-		if(locationRef != null){
+		if (locationRef > 0L){
 			CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, locationRef);
-			if(careSite != null){
+			if (careSite != null) {
 				this.careSite = careSite;
-				/* Set place of service concept */
-				this.placeOfServiceConcept = new Concept();
-				this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
+//				/* Set place of service concept */
+//				this.placeOfServiceConcept = new Concept();
+//				this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
 			}
 			
+		}
+		
+		Long providerRef = encounter.getServiceProvider().getReference().getIdPartAsLong();
+		if (providerRef > 0L) {
+			Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, providerRef);
+			if (provider != null) {
+				this.provider = provider;
+			}
 		}
 		
 		return this;
@@ -214,23 +282,23 @@ public class VisitOccurrence extends BaseResourceEntity {
 		Encounter encounter = new Encounter();
 		
 		encounter.setId(this.getIdDt());
-		String place_of_service = this.placeOfServiceConcept.getName().toLowerCase();
-		if (place_of_service.contains("inpatient")) {
+		String visitString = this.visitConcept.getName().toLowerCase();
+		if (visitString.contains("inpatient")) {
 			encounter.setClassElement(EncounterClassEnum.INPATIENT);			
-		} else if (place_of_service.toLowerCase().contains("outpatient")) {
+		} else if (visitString.toLowerCase().contains("outpatient")) {
 			encounter.setClassElement(EncounterClassEnum.OUTPATIENT);			
-		} else if (place_of_service.toLowerCase().contains("ambulatory")
-				|| place_of_service.toLowerCase().contains("office")) {
+		} else if (visitString.toLowerCase().contains("ambulatory")
+				|| visitString.toLowerCase().contains("office")) {
 			encounter.setClassElement(EncounterClassEnum.AMBULATORY);			
-		} else if (place_of_service.toLowerCase().contains("home")) {
+		} else if (visitString.toLowerCase().contains("home")) {
 			encounter.setClassElement(EncounterClassEnum.HOME);			
-		} else if (place_of_service.toLowerCase().contains("emergency")) {
+		} else if (visitString.toLowerCase().contains("emergency")) {
 			encounter.setClassElement(EncounterClassEnum.EMERGENCY);			
-		} else if (place_of_service.toLowerCase().contains("field")) {
+		} else if (visitString.toLowerCase().contains("field")) {
 			encounter.setClassElement(EncounterClassEnum.FIELD);			
-		} else if (place_of_service.toLowerCase().contains("daytime")) {
+		} else if (visitString.toLowerCase().contains("daytime")) {
 			encounter.setClassElement(EncounterClassEnum.DAYTIME);			
-		} else if (place_of_service.toLowerCase().contains("virtual")) {
+		} else if (visitString.toLowerCase().contains("virtual")) {
 			encounter.setClassElement(EncounterClassEnum.VIRTUAL);			
 		} else {
 			encounter.setClassElement(EncounterClassEnum.OTHER);			
@@ -253,9 +321,9 @@ public class VisitOccurrence extends BaseResourceEntity {
 			encounter.getLocationFirstRep().getLocation().setReference(new IdDt(CareSite.RES_TYPE, careSite.getId()));
 			
 			// set serviceProvider
-			Organization organization = careSite.getOrganization();
-			if (organization != null) {
-				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(Organization.RESOURCE_TYPE, organization.getId()));
+			Provider prov = this.getProvider();
+			if (prov != null) {
+				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(prov.RESOURCE_TYPE, prov.getId()));
 				encounter.setServiceProvider(serviceProviderReference);
 			}
 		}

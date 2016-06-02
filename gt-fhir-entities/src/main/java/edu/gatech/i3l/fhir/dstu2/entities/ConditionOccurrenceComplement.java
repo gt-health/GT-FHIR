@@ -48,11 +48,11 @@ public class ConditionOccurrenceComplement extends ConditionOccurrence {
 	public ConditionOccurrenceComplement(Long id, Person person,
 			Concept conditionConcept, Date startDate, Date endDate,
 			Concept conditionTypeConcept, String stopReason, Provider provider,
-			VisitOccurrence encounter, String sourceValue, String statusCode,
-			String display, Concept severityConcept) {
+			VisitOccurrence encounter, String sourceValue, Concept sourceConcept, 
+			String statusCode, String display, Concept severityConcept) {
 		super(id, person, conditionConcept, startDate, endDate,
 				conditionTypeConcept, stopReason, provider, encounter,
-				sourceValue);
+				sourceValue, sourceConcept);
 
 		this.statusCode = statusCode;
 		this.display = display;

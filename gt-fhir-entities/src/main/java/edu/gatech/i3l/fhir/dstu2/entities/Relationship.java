@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 public class Relationship {
 
-	private Long id;
+	private String id;
 	private String name;
 
 	/* 
@@ -20,25 +20,30 @@ public class Relationship {
 	 * relationships. Valid values are Y or NULL.
 	 */
 	private Character definesAncestry;
+	
+	private String reverseRelationshipId;
+	private Concept relationshipConcept;
 
 	public Relationship() {
 		super();
 	}
 
-	public Relationship(Long id, String name, Character isHierarchical,
-			Character definesAncestry) {
+	public Relationship(String id, String name, Character isHierarchical,
+			Character definesAncestry, String reverseRelationshipId, Concept relationshipConcept) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.isHierarchical = isHierarchical;
 		this.definesAncestry = definesAncestry;
+		this.reverseRelationshipId = reverseRelationshipId;
+		this.relationshipConcept = relationshipConcept;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -66,4 +71,19 @@ public class Relationship {
 		this.definesAncestry = definesAncestry;
 	}
 
+	public String getReverseRelationshipId() {
+		return reverseRelationshipId;
+	}
+	
+	public void setReverseRelationshipId(String reverseRelationshipId) {
+		this.reverseRelationshipId = reverseRelationshipId;
+	}
+	
+	public Concept getRelationshipConcept() {
+		return relationshipConcept;
+	}
+	
+	public void setRelationshipConcept(Concept relationshipConcept) {
+		this.relationshipConcept = relationshipConcept;
+	}
 }

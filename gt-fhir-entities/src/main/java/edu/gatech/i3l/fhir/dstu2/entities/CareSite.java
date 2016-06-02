@@ -52,6 +52,9 @@ public class CareSite extends BaseResourceEntity{
 	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 	private Concept placeOfServiceConcept;
 	
+	@Column(name="care_site_name")
+	private String careSiteName;
+	
 	@Column(name="care_site_source_value")
 	private String careSiteSourceValue;
 	
@@ -63,14 +66,16 @@ public class CareSite extends BaseResourceEntity{
 	}
 	
 	public CareSite(Long id, Location location, Organization organization, 
-			Concept placeOfServiceConcept, String careSiteSourceValue) {
+			Concept placeOfServiceConcept, String careSiteName, String careSiteSourceValue, String placeOfServiceSourceValue) {
 		super();
 		
 		this.id = id;
 		this.location = location;
 		this.organization = organization;
 		this.placeOfServiceConcept = placeOfServiceConcept;
+		this.careSiteName = careSiteName;
 		this.careSiteSourceValue = careSiteSourceValue;
+		this.placeOfServiceSourceValue = placeOfServiceSourceValue;
 	}
 	
 	public Long getId() {
@@ -103,6 +108,14 @@ public class CareSite extends BaseResourceEntity{
 	
 	public void setPlaceOfServiceConcept(Concept placeOfServiceConcept) {
 		this.placeOfServiceConcept = placeOfServiceConcept;
+	}
+	
+	public String getCareSiteName() {
+		return careSiteName;
+	}
+	
+	public void setCareSiteName(String careSiteName) {
+		this.careSiteName = careSiteName;
 	}
 	
 	public String getCareSiteSourceValue() {

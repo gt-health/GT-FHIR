@@ -40,7 +40,7 @@ public class OmopConceptMapping implements Runnable {
 	public static final String MARITAL_STATUS = "Marital Status";
 	public static final String DRUG_EXPOSURE_TYPE = "Drug Exposure Type";
 	public static final String CLINICAL_FINDING = "Clinical finding";
-	public static final String QUALIFIER_VALUE = "Qualifier value";
+	public static final String QUALIFIER_VALUE = "Qualifier Value";
 	public static final String PROCEDURE = "Procedure";
 	public static final String OBSERVABLE_ENTITY = "Observable entity";
 	public static final String CONDITION_TYPE = "Condition Occurrence Type";

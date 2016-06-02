@@ -21,7 +21,7 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 @Table(name="location")
 @Inheritance(strategy=InheritanceType.JOINED)
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-public class Location{ 
+public class Location { 
 	
 	public static final String DATA_TYPE = "AddressDt";
 

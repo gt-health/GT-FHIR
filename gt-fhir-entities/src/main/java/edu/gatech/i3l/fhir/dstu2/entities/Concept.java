@@ -33,11 +33,14 @@ public class Concept{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-	@Column(name="concept_level", updatable=false)
-	private Integer level;
+	@Column(name="domain_id", updatable=false)
+	private Domain domain;
 	
-	@Column(name="concept_class", updatable=false)
-	private String conceptClass;
+	@Column(name="concept_class_id", updatable=false)
+	private String conceptClassId;
+	
+	@Column(name="standard_concept", updatable=false)
+	private Character standardConcept;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="vocabulary_id", insertable=false, updatable=false)
@@ -59,19 +62,26 @@ public class Concept{
 		super();
 	}
 	
+	public Concept(Long id) {
+		super();
+		this.id = id;
+	}
+	
 	public Concept(Long id, String name){
+		super();
 		this.id = id;
 		this.name = name;
 	}
 
-	public Concept(Long id, String name, Integer level, String conceptClass,
+	public Concept(Long id, String name, Domain domain, String conceptClassId, Character standardConcept,
 			Vocabulary vocabulary, String conceptCode, Date validStartDate,
 			Date validEndDate, String invalidReason) {
 		super();
 		this.id = id;
 		this.name = name;
-		this.level = level;
-		this.conceptClass = conceptClass;
+		this.domain = domain;
+		this.conceptClassId = conceptClassId;
+		this.standardConcept = standardConcept;
 		this.vocabulary = vocabulary;
 		this.conceptCode = conceptCode;
 		this.validStartDate = validStartDate;
@@ -95,22 +105,30 @@ public class Concept{
 		this.name = name;
 	}
 
-	public Integer getLevel() {
-		return level;
+	public Domain getDomainId() {
+		return domain;
 	}
 
-	public void setLevel(Integer level) {
-		this.level = level;
+	public void setDomainId(Domain domain) {
+		this.domain = domain;
 	}
 
-	public String getConceptClass() {
-		return conceptClass;
+	public String getConceptClassId() {
+		return conceptClassId;
 	}
 
-	public void setConceptClass(String conceptClass) {
-		this.conceptClass = conceptClass;
+	public void setConceptClassId(String conceptClassId) {
+		this.conceptClassId = conceptClassId;
 	}
 
+	public Character getStandardConcept() {
+		return standardConcept;
+	}
+	
+	public void setStandardConcept(Character standardConcept) {
+		this.standardConcept = standardConcept;
+	}
+	
 	public Vocabulary getVocabulary() {
 		return vocabulary;
 	}
@@ -156,8 +174,9 @@ public class Concept{
 		//Since this is an omop v.4 based model, all the information below is expected to be not null.
 		return this.getId() + ", "
 						+ this.getName() + ", "
-						+ this.getLevel() + ", "
-						+ this.getConceptClass() + ", "
+						+ this.getDomainId() + ", "
+						+ this.getConceptClassId() + ", "
+						+ this.getStandardConcept() + ", "
 						+ this.getVocabulary().getId() + ", "
 						+ this.getConceptCode() + ", "
 						+ this.getValidStartDate() + ", "

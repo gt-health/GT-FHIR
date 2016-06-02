@@ -24,6 +24,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -180,9 +181,9 @@ public final class MedicationConcept extends BaseResourceEntity{
 	@Override
 	public IResource getRelatedResource() {
 		Medication resource = new Medication();
-		resource.setId(this.getIdDt());
+		resource.setId(new IdDt(this.getId()));
 		CodeableConceptDt code = new CodeableConceptDt(this.getVocabulary().getSystemUri(), this.getConceptCode());
-		code.getCodingFirstRep().setDisplay(super.toString());
+		code.getCodingFirstRep().setDisplay(this.getName());
 		resource.setCode(code); 
 		NarrativeDt narrative = new NarrativeDt();
 		narrative.setDiv(this.toString());
