@@ -33,7 +33,8 @@ public class Concept{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-	@Column(name="domain_id", updatable=false)
+	@ManyToOne
+	@JoinColumn(name="domain_id", referencedColumnName="domain_id")
 	private Domain domain;
 	
 	@Column(name="concept_class_id", updatable=false)
@@ -173,14 +174,14 @@ public class Concept{
 	public String toString() {
 		//Since this is an omop v.4 based model, all the information below is expected to be not null.
 		return this.getId() + ", "
-						+ this.getName() + ", "
-						+ this.getDomainId() + ", "
-						+ this.getConceptClassId() + ", "
-						+ this.getStandardConcept() + ", "
-						+ this.getVocabulary().getId() + ", "
-						+ this.getConceptCode() + ", "
-						+ this.getValidStartDate() + ", "
-						+ this.getValidEndDate();
+				+ this.getName() + ", "
+				+ this.getDomainId() + ", "
+				+ this.getConceptClassId() + ", "
+				+ this.getStandardConcept() + ", "
+				+ this.getVocabulary().getId() + ", "
+				+ this.getConceptCode() + ", "
+				+ this.getValidStartDate() + ", "
+				+ this.getValidEndDate();
 	}
 
 }

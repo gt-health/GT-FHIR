@@ -39,6 +39,9 @@ public class Provider extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
+	@Column(name="provider_name")
+	private String providerName;
+
 	@Column(name="npi")
 	private String npi;
 	
@@ -53,25 +56,67 @@ public class Provider extends BaseResourceEntity {
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	
+	@Column(name="year_of_birth")
+	private Integer yearOfBirth;
+	
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name="gender_concept_id")
+	private Concept genderConcept;
+
 	@Column(name="provider_source_value", nullable=false)
 	private String providerSourceValue;
 	
 	@Column(name="specialty_source_value")
 	private String specialtySourceValue;
 	
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name="specialty_source_concept_id")
+	private Concept specialtySourceConcept;
+
+	@Column(name="gender_source_value")
+	private String genderSourceValue;
+	
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name="gender_source_concept_id")
+	private Concept genderSourceConcept;
+
 	public Provider() {
 		super();
 	}
 	
-	public Provider(Long id, String npi, String dea, Concept specialtyConcept, CareSite careSite,
-			String providerSourceValue, String specialtySourceValue) {
+	public Provider(Long id, String providerName, String npi, String dea, Concept specialtyConcept, 
+			CareSite careSite, Integer yearOfBirth, Concept genderConcept, String providerSourceValue, 
+			String specialtySourceValue, Concept specialtySourceConcept, String genderSourceValue,
+			Concept genderSourceConcept) {
 		this.id = id;
+		this.providerName = providerName;
 		this.npi = npi;
 		this.dea = dea;
 		this.specialtyConcept = specialtyConcept;
 		this.careSite = careSite;
+		this.yearOfBirth = yearOfBirth;
+		this.genderConcept = genderConcept;
 		this.providerSourceValue = providerSourceValue;
 		this.specialtySourceValue = specialtySourceValue;
+		this.specialtySourceConcept = specialtySourceConcept;
+		this.genderSourceValue = genderSourceValue;
+		this.genderSourceConcept = genderSourceConcept;
+	}
+	@Override
+	public Long getId() {
+		return id;
+	}
+	
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getProviderName() {
+		return providerName;
+	}
+	
+	public void setProviderName(String providerName) {
+		this.providerName = providerName;
 	}
 	
 	public String getNpi() {
@@ -106,6 +151,14 @@ public class Provider extends BaseResourceEntity {
 		this.careSite = careSite;
 	}
 	
+	public Integer getYearOfBirth() {
+		return yearOfBirth;
+	}
+	
+	public void setYearOfBirth(Integer yearOfBirth) {
+		this.yearOfBirth = yearOfBirth;
+	}
+	
 	public String getProviderSourceValue() {
 		return providerSourceValue;
 	}
@@ -129,15 +182,6 @@ public class Provider extends BaseResourceEntity {
 		// TODO set parameters
 		
 		return practitioner;
-	}
-
-	@Override
-	public Long getId() {
-		return id;
-	}
-	
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	@Override

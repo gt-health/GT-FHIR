@@ -43,10 +43,6 @@ public class CareSite extends BaseResourceEntity{
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
-	@JoinColumn(name="organization_id")
-	private Organization organization;
-	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="place_of_service_concept_id")
 	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
@@ -65,13 +61,11 @@ public class CareSite extends BaseResourceEntity{
 		super();
 	}
 	
-	public CareSite(Long id, Location location, Organization organization, 
-			Concept placeOfServiceConcept, String careSiteName, String careSiteSourceValue, String placeOfServiceSourceValue) {
+	public CareSite(Long id, Location location, Concept placeOfServiceConcept, String careSiteName, String careSiteSourceValue, String placeOfServiceSourceValue) {
 		super();
 		
 		this.id = id;
 		this.location = location;
-		this.organization = organization;
 		this.placeOfServiceConcept = placeOfServiceConcept;
 		this.careSiteName = careSiteName;
 		this.careSiteSourceValue = careSiteSourceValue;
@@ -92,14 +86,6 @@ public class CareSite extends BaseResourceEntity{
 	
 	public void setLocation(Location location) {
 		this.location = location;
-	}
-	
-	public Organization getOrganization() {
-		return organization;
-	}
-	
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
 	}
 	
 	public Concept getPlaceOfServiceConcept() {

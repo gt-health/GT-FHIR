@@ -1,8 +1,28 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+
+@Entity
+@Table(name="domain")
+@Audited
 public class Domain {
+	@Id
+	@Column(name="domain_id")
 	private String domainId;
+	
+	@Column(name="domain_name")
 	private String domainName;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="domain_concept_id")
 	private Concept domainConcept;
 	
 	public Domain() {

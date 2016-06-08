@@ -100,7 +100,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_source_value")
 	private String sourceValue; 
 
-	@Column(name="condition_source_concept_id")
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="condition_source_concept_id")
 	private Concept sourceConcept;
 	
 	public ConditionOccurrence() {

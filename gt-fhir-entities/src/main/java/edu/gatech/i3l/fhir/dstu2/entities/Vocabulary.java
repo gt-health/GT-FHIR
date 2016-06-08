@@ -64,7 +64,7 @@ public class Vocabulary {
 	// FIXME This is FHIR related. We may need to do this in the database. But, for quick
 	// initial implementation, we do this. Later, we may extend vocabulary table.
 	public String getSystemUri() {
-		String uri = "";
+		String uri = "http://none";
 		
 		if (id.equalsIgnoreCase("SNOMED")) uri = "http://snomed.info/sct";
 		else if (id.equalsIgnoreCase("ICD9CM")) uri = "http://hl7.org/fhir/sid/icd-9-cm";

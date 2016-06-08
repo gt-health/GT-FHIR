@@ -11,6 +11,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -26,7 +28,7 @@ import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("CASE WHEN drug_type_concept_id = (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription written') THEN 'PrescriptionWritten' "+
 							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE '%Prescription dispensed in pharmacy%') THEN 'PrescriptionDispensed' "+
-							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id=36) THEN 'DrugAdministration' END")
+							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id='Drug Type') THEN 'DrugAdministration' END")
 public abstract class DrugExposure extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -37,7 +39,8 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	@Column(name = "effective_drug_dose")
 	private Double effectiveDrugDose;
 	
-	@Column(name = "dose_unit_concept_id")
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name = "dose_unit_concept_id")
 	private Concept doseUnitConcept;
 	
 	@Column(name = "dose_unit_source_value")
