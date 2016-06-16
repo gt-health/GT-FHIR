@@ -26,9 +26,13 @@ import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 @Entity
 @Table(name="drug_exposure")
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
-@DiscriminatorFormula("CASE WHEN drug_type_concept_id = (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription written') THEN 'PrescriptionWritten' "+
-							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE '%Prescription dispensed in pharmacy%') THEN 'PrescriptionDispensed' "+
-							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id='Drug Type') THEN 'DrugAdministration' END")
+@DiscriminatorFormula("CASE WHEN drug_type_concept_id = 38000177 THEN 'PrescriptionWritten' "+
+		"WHEN drug_type_concept_id in (38000176, 38000175) THEN 'PrescriptionDispensed' "+
+		"WHEN drug_type_concept_id in (38000179, 43542356, 43542357, 43542358) THEN 'DrugAdministration' END")
+
+//@DiscriminatorFormula("CASE WHEN drug_type_concept_id = (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE 'Prescription written') THEN 'PrescriptionWritten' "+
+//							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE concept.concept_name LIKE '%Prescription dispensed in pharmacy%') THEN 'PrescriptionDispensed' "+
+//							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id='Drug Type') THEN 'DrugAdministration' END")
 public abstract class DrugExposure extends BaseResourceEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

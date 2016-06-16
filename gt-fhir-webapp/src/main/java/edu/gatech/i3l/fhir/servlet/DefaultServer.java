@@ -113,8 +113,8 @@ public class DefaultServer extends RestfulServer {
 		 * memory
 		 */
 		FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
-		pp.setDefaultPageSize(200);
-		pp.setMaximumPageSize(400);
+		pp.setDefaultPageSize(50);
+		pp.setMaximumPageSize(100);
 		// setPagingProvider(new FifoMemoryPagingProvider(10));
 		setPagingProvider(pp);
 

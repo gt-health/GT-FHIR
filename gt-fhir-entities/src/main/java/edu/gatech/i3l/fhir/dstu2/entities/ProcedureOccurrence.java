@@ -49,14 +49,13 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private Person person;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "procedure_concept_id", nullable = false)
-	@NotNull
+	@ManyToOne(cascade = CascadeType.MERGE)
+	@JoinColumn(name = "procedure_concept_id")
 	private Concept procedureConcept;
 
 	@Column(name = "procedure_date", nullable = false)
@@ -65,30 +64,28 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	private Date date;
 
 	@ManyToOne(cascade = { CascadeType.MERGE })
-	@JoinColumn(name = "procedure_type_concept_id", nullable = false)
-	@NotNull
+	@JoinColumn(name = "procedure_type_concept_id")
 	private Concept procedureTypeConcept;
 
-	@ManyToOne(cascade = { CascadeType.MERGE })
-	@JoinColumn(name = "modifier_concept_id", nullable = false)
-	@NotNull
+	@ManyToOne
+	@JoinColumn(name = "modifier_concept_id")
 	private Concept modifierConcept;
 	
 	@Column(name="quantity")
 	private Long quantity;
 	
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne   // (cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "provider_id")
 	private Provider provider;
 
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
 	@Column(name = "procedure_source_value")
 	private String procedureSourceValue;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "procedure_source_concept_id")
 	private Concept procedureSourceConcept;
 
@@ -270,6 +267,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 			CodingDt coding = new CodingDt(theSystem, theCode);
 			coding.setDisplay(procedureConcept.getName());
 			procedureCodeConcept.addCoding(coding);
+			procedure.setCode(procedureCodeConcept);
 		}
 
 		// FHIR does not require the coding. If our System URI is not mappable
@@ -277,10 +275,12 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		// is not required in FHIR. But, then no reason to have this condition, I think...
 		String theText = procedureConcept.getName() + ", " + procedureConcept.getVocabulary().getName() + ", "
 				+ procedureConcept.getConceptCode();
-
+//
+//		System.out.println("Procedure:"+theText);
+//
 		procedureCodeConcept.setText(theText);
 
-		procedure.setCode(procedureCodeConcept);
+//		procedure.setCode(procedureCodeConcept);
 
 		//procedure.setType(procedureCodeConcept);
 		

@@ -31,6 +31,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -374,6 +375,9 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			periodDt.setEnd(endDateDt);
 			condition.setOnset(periodDt);
 		}
+
+		// VerficationStutus 
+		condition.setVerificationStatus(ConditionVerificationStatusEnum.CONFIRMED);
 
 		return condition;
 	}

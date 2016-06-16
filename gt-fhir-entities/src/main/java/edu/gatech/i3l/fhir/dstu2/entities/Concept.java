@@ -44,7 +44,7 @@ public class Concept{
 	private Character standardConcept;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="vocabulary_id", insertable=false, updatable=false)
+	@JoinColumn(name="vocabulary_id", referencedColumnName="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	
 	@Column(name="concept_code", updatable=false)

@@ -18,6 +18,9 @@ import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -144,8 +147,23 @@ public class CareSite extends BaseResourceEntity{
 
 	@Override
 	public IResource getRelatedResource() {
-		// TODO Auto-generated method stub
-		return null;
+		ca.uhn.fhir.model.dstu2.resource.Location locationResource = new ca.uhn.fhir.model.dstu2.resource.Location();
+		locationResource.setId(new IdDt(this.getId()));
+		
+		if (this.careSiteName != null && this.careSiteName != "") {
+			locationResource.setName(this.careSiteName);			
+		}
+		
+		if (this.placeOfServiceConcept != null) {
+			String codeString = this.placeOfServiceConcept.getConceptCode();
+			String systemUriString = this.placeOfServiceConcept.getVocabulary().getVocabularyReference();
+			String displayString = this.placeOfServiceConcept.getName();
+			
+			CodeableConceptDt typeCodeableConcept = new CodeableConceptDt(systemUriString, codeString);
+			typeCodeableConcept.getCodingFirstRep().setDisplay(displayString);
+//			locationResource.setType(typeCodeableConcept);
+		}
+		return locationResource;
 	}
 
 	@Override

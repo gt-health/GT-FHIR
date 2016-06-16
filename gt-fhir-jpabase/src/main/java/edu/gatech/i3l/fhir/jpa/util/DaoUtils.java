@@ -32,6 +32,7 @@ public class DaoUtils {
 		String idPart = theId.getIdPart();
 		for (int i = 0; i < idPart.length(); i++) {
 			char nextChar = idPart.charAt(i);
+			if (i == 0 && idPart.length() > 1 && nextChar == '-') continue;
 			if (nextChar < '0' || nextChar > '9') {
 				return false;
 			}

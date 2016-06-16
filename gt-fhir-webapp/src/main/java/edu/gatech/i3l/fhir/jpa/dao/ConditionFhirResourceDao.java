@@ -4,7 +4,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.uhn.fhir.model.dstu2.resource.Condition;
-import edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement;
+import edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence;
+//import edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
@@ -14,7 +15,7 @@ public class ConditionFhirResourceDao extends BaseFhirResourceDao<Condition> {
 
 	public ConditionFhirResourceDao() {
 		super();
-		setResourceEntity(ConditionOccurrenceComplement.class);
+		setResourceEntity(ConditionOccurrence.class);
 		setValidateBean(true);
 	}
 	

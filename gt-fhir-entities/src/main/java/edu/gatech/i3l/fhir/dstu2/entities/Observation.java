@@ -68,8 +68,8 @@ public class Observation extends BaseResourceEntity {
 	private static final String RES_TYPE = "Observation";
 	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
 	public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
-	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;
-	
+	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;		
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "observation_id")
@@ -302,6 +302,9 @@ public class Observation extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO: This is view, which is read-only. We need to come up with a way to write
+		// to either measurement or observation tables in OMOP. We may write them manually
+		// and just return null for this. But then, response will not be correct. Revisit this.
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 
@@ -401,46 +404,22 @@ public class Observation extends BaseResourceEntity {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
 		observation.setId(this.getIdDt());
 
-		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(),
-				this.observationConcept.getConceptCode());
-		// code.getCodingFirstRep().setDisplay(this.observationConcept.toString());
-		code.getCodingFirstRep().setDisplay(this.observationConcept.getName());
-		observation.setCode(code);
-		observation.setStatus(STATUS);
-		// observation.setMethod(new CodeableConceptDt(theSystem, theCode));
-
-		// Smart on FHIR wants reliability. We don't have this in the database.
-		// So, we put "ok".
-		// observation.setReliability(ObservationReliabilityEnum.OK);
-
-		IDatatype value = null;
-		if (this.valueAsNumber != null) {
-			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
-			if (this.unit != null) {
-				// Unit is defined as a concept code in omop v4, then unit and code are the same in this case				
-				quantity.setUnit(this.unit.getConceptCode());
-				quantity.setCode(this.unit.getConceptCode());
-				quantity.setSystem(this.unit.getVocabulary().getSystemUri());
-			}
-			value = quantity;
-			if (this.rangeLow != null)
-				observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
-			if (this.rangeHigh != null)
-				observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
-		} else if (this.valueAsString != null) {
-			value = new StringDt(this.valueAsString);
-		} else if (this.valueAsConcept != null) {
-			// vocabulary is a required attribute for concept, then it's expected to not be null
-			CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
-					this.valueAsConcept.getConceptCode());
-			value = valueAsConcept;
-		}
-		observation.setValue(value);
-
-		// The observation should always filter out diastolic value. 
-		// If this is BP Systolic Value, then we need to find the matching Distolic value and
-		// use it with component value.
-		if (this.observationConcept.getId() == SYSTOLIC_CONCEPT_ID) {
+		String systemUriString = this.observationConcept.getVocabulary().getSystemUri();
+		String codeString = this.observationConcept.getConceptCode();
+		String displayString = this.observationConcept.getName();
+		
+		// OMOP database maintains Systolic and Diastolic Blood Pressures separately.
+		// FHIR however keeps them together. Observation DAO filters out Diastolic values.
+		// Here, when we are reading systolic, we search for matching diastolic and put them
+		// together. The Observation ID will be systolic's OMOP ID. 
+		// public static final Long SYSTOLIC_CONCEPT_ID = new Long(3004249);
+		// public static final Long DIASTOLIC_CONCEPT_ID = new Long(3012888);		
+		if (SYSTOLIC_CONCEPT_ID.equals(this.observationConcept.getId())) {
+			// Set coding for systolic and diastolic observation
+			systemUriString = "http://loinc.org";
+			codeString = "55284-4";
+			displayString = "Blood pressure systolic & diastolic";
+			
 			List<Component> components = new ArrayList<Component>();
 			// First we add systolic component.
 			Component comp = new Component();
@@ -470,9 +449,6 @@ public class Observation extends BaseResourceEntity {
 			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
 			Root<Observation> from = criteria.from(Observation.class);
-//			ParameterExpression<Concept> c = builder.parameter(Concept.class);
-//			ParameterExpression<Person> p = builder.parameter(Person.class);
-//			ParameterExpression<String> t = builder.parameter(String.class);
 			criteria.select(from).where(
 					builder.equal(from.get("observationConcept").get("id"), DIASTOLIC_CONCEPT_ID),
 					builder.equal(from.get("person").get("id"), this.person.getId()),
@@ -480,9 +456,6 @@ public class Observation extends BaseResourceEntity {
 					builder.equal(from.get("time"),  this.time)
 					);
 			TypedQuery<Observation> query = entityManager.createQuery(criteria);
-//			query.setParameter(c, new Concept(DIASTOLIC_CONCEPT_ID));
-//			query.setParameter(p, this.person);
-//			query.setParameter(t, this.time);
 			List<Observation> results = query.getResultList();
 			if (results.size() > 0) {
 				Observation diastolicOb = results.get(0);				
@@ -510,8 +483,40 @@ public class Observation extends BaseResourceEntity {
 			if (components.size() > 0) {
 				observation.setComponent(components);
 			}
+		} else {
+			IDatatype value = null;
+			if (this.valueAsNumber != null) {
+				QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
+				if (this.unit != null) {
+					// Unit is defined as a concept code in omop v4, then unit and code are the same in this case				
+					quantity.setUnit(this.unit.getConceptCode());
+					quantity.setCode(this.unit.getConceptCode());
+					quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+				}
+				value = quantity;
+			} else if (this.valueAsString != null) {
+				value = new StringDt(this.valueAsString);
+			} else if (this.valueAsConcept != null) {
+				// vocabulary is a required attribute for concept, then it's expected to not be null
+				CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
+						this.valueAsConcept.getConceptCode());
+				value = valueAsConcept;
+			}
+			observation.setValue(value);
 		}
+
+		if (this.rangeLow != null)
+			observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
+		if (this.rangeHigh != null)
+			observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
 		
+		CodeableConceptDt code = new CodeableConceptDt(systemUriString, codeString);
+		code.getCodingFirstRep().setDisplay(displayString);
+		observation.setCode(code);
+		
+		observation.setStatus(STATUS);
+		// observation.setMethod(new CodeableConceptDt(theSystem, theCode));
+
 		
 //		// We may have related or component resources within observation.
 //		// If this observation has the relationshipType, it should be specified

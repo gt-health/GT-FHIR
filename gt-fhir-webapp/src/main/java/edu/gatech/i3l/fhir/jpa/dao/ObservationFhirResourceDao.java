@@ -38,7 +38,9 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 			
 			@Override
 			public Predicate addCommonPredicate(CriteriaBuilder builder, From<? extends IResourceEntity, ? extends IResourceEntity> from) {
-				return builder.notEqual(from.get("observationConcept").get("id"), edu.gatech.i3l.fhir.dstu2.entities.Observation.DIASTOLIC_CONCEPT_ID);//In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8
+//				builder.asc(from.get("id"));
+				return builder.notEqual(from.get("observationConcept").get("id"), edu.gatech.i3l.fhir.dstu2.entities.Observation.DIASTOLIC_CONCEPT_ID);
+				//In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8
 			}
 
 			@Override

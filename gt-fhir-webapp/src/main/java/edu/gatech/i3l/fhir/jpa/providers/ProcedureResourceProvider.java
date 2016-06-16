@@ -125,7 +125,7 @@ public class ProcedureResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 
-			@IncludeParam(allow = { "Condition:patient", "Condition:subject", "Condition:encounter"}) 
+			@IncludeParam(allow = { "Procedure:patient", "Procedure:subject", "Procedure:encounter"}) 
 			Set<Include> theIncludes,
 			
 			@Sort 

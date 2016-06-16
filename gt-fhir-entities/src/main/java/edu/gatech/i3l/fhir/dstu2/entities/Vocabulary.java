@@ -30,6 +30,10 @@ public class Vocabulary {
 	@Column(name="vocabulary_name", updatable=false)
 	private String name;
 	
+	@Column(name="vocabulary_reference")
+	private String vocabularyReference;
+	
+	
 	public Vocabulary() {
 		super();
 	}
@@ -61,10 +65,18 @@ public class Vocabulary {
 		this.name = name;
 	}
 
+	public String getVocabularyReference() {
+		return vocabularyReference;
+	}
+	
+	public void setVocabularyReference(String vocabularyReference) {
+		this.vocabularyReference = vocabularyReference;
+	}
+
 	// FIXME This is FHIR related. We may need to do this in the database. But, for quick
 	// initial implementation, we do this. Later, we may extend vocabulary table.
 	public String getSystemUri() {
-		String uri = "http://none";
+		String uri = "";
 		
 		if (id.equalsIgnoreCase("SNOMED")) uri = "http://snomed.info/sct";
 		else if (id.equalsIgnoreCase("ICD9CM")) uri = "http://hl7.org/fhir/sid/icd-9-cm";

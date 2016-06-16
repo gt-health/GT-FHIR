@@ -288,7 +288,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	@Override
 	public BaseResourceEntity readEntity(IIdType theId, boolean theCheckForForcedId) {
 	
-		Long pid = theId.getIdPartAsLong(); 
+		Long pid = theId.getIdPartAsLong();
 		BaseResourceEntity entity = (BaseResourceEntity) myEntityManager.find(getResourceEntity(), pid);
 	//	if (theId.hasVersionIdPart()) { //TODO new capability: Read resource from history, id-format = 'id/_history/version'
 	//		if (entity.getVersion() != theId.getVersionIdPartAsLong()) {

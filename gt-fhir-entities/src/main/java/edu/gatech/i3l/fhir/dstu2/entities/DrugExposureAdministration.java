@@ -194,9 +194,9 @@ public final class DrugExposureAdministration extends DrugExposure {
         	Concept myDoseUnitConcept = this.getDoseUnitConcept();
         	if (myDoseUnitConcept != null) {
             	dose.setUnit(myDoseUnitConcept.getConceptCode());
-            	dosage.setQuantity(dose);
-            	resource.setDosage(dosage);
         	}
+        	dosage.setQuantity(dose);
+        	resource.setDosage(dosage);
         }
 //    	DrugExposureComplement f_drug = this.getComplement();
 //		if (f_drug != null) {
@@ -212,16 +212,19 @@ public final class DrugExposureAdministration extends DrugExposure {
 //		}
 
 		
-		Calendar c = Calendar.getInstance();
-		c.setTime(this.startDate);
-		PeriodDt period = new PeriodDt();
-		period.setStart(new DateTimeDt(c.getTime()));
+//		Calendar c = Calendar.getInstance();
+//		c.setTime(this.startDate);
 		if (this.endDate != null) {
-			c.setTime(this.endDate);
-			period.setEnd(new DateTimeDt(c.getTime()));
+//			c.setTime(this.endDate);
+			PeriodDt period = new PeriodDt();
+//			period.setStart(new DateTimeDt(c.getTime()));
+//			period.setEnd(new DateTimeDt(c.getTime()));
+			period.setStart(new DateTimeDt(this.startDate));
+			period.setEnd(new DateTimeDt(this.endDate));
+			resource.setEffectiveTime(period);
+		} else {
+			resource.setEffectiveTime(new DateTimeDt(this.startDate));
 		}
-
-		resource.setEffectiveTime(period);
 
 		return resource;
 	}
