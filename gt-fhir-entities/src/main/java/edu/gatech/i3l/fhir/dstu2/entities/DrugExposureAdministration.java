@@ -160,7 +160,7 @@ public final class DrugExposureAdministration extends DrugExposure {
 	public IResource getRelatedResource() {
 		MedicationAdministration resource = new MedicationAdministration();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
 
 		// Adding medication to Contained.
 		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());

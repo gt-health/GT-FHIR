@@ -286,7 +286,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId()));
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
@@ -295,7 +295,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// we just create this reference resource manually. When encounter
 			// is implemented, we
 			// will get it from visit_occurrence class.
-			ResourceReferenceDt encounterReference = new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.encounter.getId()));
+			ResourceReferenceDt encounterReference = new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.encounter.getId()));
 			condition.setEncounter(encounterReference);
 		}
 

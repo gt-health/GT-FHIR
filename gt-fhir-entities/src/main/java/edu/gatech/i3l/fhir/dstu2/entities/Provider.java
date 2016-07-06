@@ -1,5 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -19,9 +22,15 @@ import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner.PractitionerRole;
+import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
@@ -178,9 +187,88 @@ public class Provider extends BaseResourceEntity {
 	@Override
 	public Practitioner getRelatedResource() {
 		Practitioner practitioner = new Practitioner();
+		practitioner.setId(this.getIdDt());
+		HumanNameDt humanName = new HumanNameDt();
+		String[] names = this.getProviderName().trim().split(",");
+		List<StringDt> familyNames = new ArrayList<StringDt>();
+		List<StringDt> givenNames = new ArrayList<StringDt>();
+		List<StringDt> suffixes = new ArrayList<StringDt>();
+		if (names.length > 1) {
+			if (names.length > 2) {
+				familyNames.add(new StringDt(names[0].trim()));
+				suffixes.add(new StringDt(names[names.length-1].trim()));
+				
+				for (int i=1; i < names.length-1; i++) {
+					String[] subnames = names[i].trim().split(" ");
+					for (int j=0; j < subnames.length; j++) {
+						givenNames.add(new StringDt(subnames[j].trim()));
+					}
+				}
+			} else {
+				suffixes.add(new StringDt(names[1].trim()));
+				String[] subnames = names[0].trim().split(" ");
+				familyNames.add(new StringDt(subnames[subnames.length-1]));
+				for (int i=0; i < subnames.length-1; i++) {
+					givenNames.add(new StringDt(subnames[i].trim()));
+				}
+			}
+		} else {
+			names = this.getProviderName().trim().split(" ");
+			if (names.length > 0) {
+				familyNames.add(new StringDt(names[names.length-1].trim()));
+				for (int i=0; i < names.length-1; i++) {
+					givenNames.add(new StringDt(names[i].trim()));
+				}
+			} else {
+				familyNames.add(new StringDt(this.getProviderName().trim()));
+			}
+		}
+		humanName.setFamily(familyNames);
+		humanName.setGiven(givenNames);
+		humanName.setSuffix(suffixes);
 		
-		// TODO set parameters
+		practitioner.setName(humanName);
 		
+		PractitionerRole practitionerRole = new PractitionerRole();
+		
+		if (this.getCareSite() != null) {
+			ResourceReferenceDt organizationResource = new ResourceReferenceDt(this.getCareSite().getIdDt());
+//			List<ResourceReferenceDt> listResourceRef = new ArrayList<ResourceReferenceDt>();
+//			listResourceRef.add(organizationResource);
+			practitionerRole.setManagingOrganization(organizationResource);
+		}
+		
+		if (this.getSpecialtyConcept() != null &&
+				this.getSpecialtyConcept().getId() > 0) {
+			String systemUriString = this.getSpecialtyConcept().getVocabulary().getVocabularyReference();
+			String displayString = this.getSpecialtyConcept().getName();
+			String codeString = this.getSpecialtyConcept().getConceptCode();
+			
+			CodeableConceptDt specialtyCode = new CodeableConceptDt(systemUriString, codeString);
+			specialtyCode.getCodingFirstRep().setDisplay(displayString);
+			
+			List<CodeableConceptDt> listSpecialtyCode = new ArrayList<CodeableConceptDt>();
+			practitionerRole.setSpecialty(listSpecialtyCode);
+		}
+		
+		List<PractitionerRole> listPracRole = new ArrayList<PractitionerRole>();
+		listPracRole.add(practitionerRole);
+		
+		practitioner.setPractitionerRole(listPracRole);
+		
+		if(this.genderConcept != null){
+			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
+			String gName = this.genderConcept.getName(); 
+			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
+			for (int i = 0; i < values.length; i++) {
+				if(gName.equalsIgnoreCase(values[i].getCode())){
+					admGender = values[i];
+					break;
+				}
+			}
+			practitioner.setGender(admGender);
+		}
+
 		return practitioner;
 	}
 

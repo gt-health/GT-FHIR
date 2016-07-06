@@ -332,9 +332,9 @@ public final class MedicationOrderView extends DrugExposure {
 		/* End Setting Dispense */
 		if (this.visitOccurrence != null) {
 			resource.setEncounter(
-					new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));
 		}
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
 //		if (this.relevantCondition != null)
 //			// FIXME the reference above doesn't corresponde to a
 //			// ResourceEntity; it should be a reference to Resource Condition

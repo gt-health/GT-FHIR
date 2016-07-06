@@ -1,12 +1,5 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
-
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,7 +25,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.ParameterExpression;
+//import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
@@ -48,8 +41,8 @@ import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.Observation.Component;
-import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
-import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
+//import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
+//import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -642,9 +635,9 @@ public class Observation extends BaseResourceEntity {
 //			observation.setEffective(appliesDate);
 //		}
 		if (this.person != null)
-			observation.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+			observation.setSubject(new ResourceReferenceDt(this.person.getIdDt()));
 		if (this.visitOccurrence != null)
-			observation.getEncounter().setReference(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId()));
+			observation.getEncounter().setReference(new IdDt (VisitOccurrence.RES_TYPE, this.visitOccurrence.getId()));
 		return observation;
 	}
 

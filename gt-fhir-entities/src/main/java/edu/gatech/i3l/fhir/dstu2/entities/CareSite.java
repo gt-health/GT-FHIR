@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -34,7 +35,7 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 //})
 public class CareSite extends BaseResourceEntity{
 	
-	public static final String RES_TYPE = "Location";
+	public static final String RES_TYPE = "Organization";
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -147,8 +148,8 @@ public class CareSite extends BaseResourceEntity{
 
 	@Override
 	public IResource getRelatedResource() {
-		ca.uhn.fhir.model.dstu2.resource.Location locationResource = new ca.uhn.fhir.model.dstu2.resource.Location();
-		locationResource.setId(new IdDt(this.getId()));
+		Organization locationResource = new Organization();
+		locationResource.setId(this.getIdDt());
 		
 		if (this.careSiteName != null && this.careSiteName != "") {
 			locationResource.setName(this.careSiteName);			
@@ -161,7 +162,7 @@ public class CareSite extends BaseResourceEntity{
 			
 			CodeableConceptDt typeCodeableConcept = new CodeableConceptDt(systemUriString, codeString);
 			typeCodeableConcept.getCodingFirstRep().setDisplay(displayString);
-//			locationResource.setType(typeCodeableConcept);
+			locationResource.setType(typeCodeableConcept);
 		}
 		return locationResource;
 	}

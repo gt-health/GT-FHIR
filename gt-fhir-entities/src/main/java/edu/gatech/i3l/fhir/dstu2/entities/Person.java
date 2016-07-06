@@ -42,7 +42,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Inheritance(strategy=InheritanceType.JOINED)
 public class Person extends BaseResourceEntity{
 
-	public static final String RESOURCE_TYPE = "Patient";
+	public static final String RES_TYPE = "Patient";
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -353,7 +353,7 @@ public class Person extends BaseResourceEntity{
 
 	@Override
 	public String getResourceType() {
-		return RESOURCE_TYPE;
+		return RES_TYPE;
 	}
 
 	@Override

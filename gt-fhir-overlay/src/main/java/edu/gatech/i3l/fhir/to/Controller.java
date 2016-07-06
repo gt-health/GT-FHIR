@@ -49,12 +49,13 @@ import ca.uhn.fhir.model.api.BundleEntry;
 import ca.uhn.fhir.model.api.ExtensionDt;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
-import ca.uhn.fhir.model.dstu.resource.Conformance;
-import ca.uhn.fhir.model.dstu.resource.Conformance.Rest;
 import ca.uhn.fhir.model.dstu.resource.Conformance.RestQuery;
-import ca.uhn.fhir.model.dstu.resource.Conformance.RestResource;
-import ca.uhn.fhir.model.dstu.resource.Conformance.RestResourceSearchParam;
-import ca.uhn.fhir.model.dstu.valueset.SearchParamTypeEnum;
+import ca.uhn.fhir.model.dstu2.resource.Conformance;
+import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance.RestQuery;
+import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResource;
+import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam;
+import ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ResourceTypeEnum;
 import ca.uhn.fhir.model.primitive.BoundCodeDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
@@ -66,6 +67,10 @@ import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.rest.client.GenericClient;
 import ca.uhn.fhir.rest.client.IClientInterceptor;
 import ca.uhn.fhir.rest.client.IGenericClient;
+import ca.uhn.fhir.rest.client.apache.ApacheHttpRequest;
+import ca.uhn.fhir.rest.client.apache.ApacheHttpResponse;
+import ca.uhn.fhir.rest.client.api.IHttpRequest;
+import ca.uhn.fhir.rest.client.api.IHttpResponse;
 import ca.uhn.fhir.rest.gclient.ICreateTyped;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.gclient.IUntypedQuery;
@@ -340,7 +345,7 @@ public class Controller {
 		TreeSet<String> includes = new TreeSet<String>();
 		TreeSet<String> revIncludes = new TreeSet<String>();
 		TreeSet<String> sortParams = new TreeSet<String>();
-		List<RestQuery> queries = new ArrayList<Conformance.RestQuery>();
+		List<RestQuery> queries = new ArrayList<RestQuery>();
 		boolean haveSearchParams = false;
 		List<List<String>> queryIncludes = new ArrayList<List<String>>();
 
@@ -349,9 +354,9 @@ public class Controller {
 		case DSTU2:
 			haveSearchParams = extractSearchParamsDev(conformance, resourceName, includes, revIncludes, sortParams, queries, haveSearchParams, queryIncludes);
 			break;
-		case DSTU1:
-			haveSearchParams = extractSearchParamsDstu1(conformance, resourceName, includes, sortParams, queries, haveSearchParams, queryIncludes);
-			break;
+//		case DSTU1:
+//			haveSearchParams = extractSearchParamsDstu1(conformance, resourceName, includes, sortParams, queries, haveSearchParams, queryIncludes);
+//			break;
 		default:
 			throw new IllegalStateException("Unknown FHIR version: " + theRequest.getFhirVersion(myConfig));
 		}
@@ -755,54 +760,54 @@ public class Controller {
 		return haveSearchParams;
 	}
 
-	private boolean extractSearchParamsDstu1(IResource theConformance, String resourceName, TreeSet<String> includes, TreeSet<String> sortParams, List<RestQuery> queries, boolean haveSearchParams,
-			List<List<String>> queryIncludes) {
-		Conformance conformance = (Conformance) theConformance;
-		for (Rest nextRest : conformance.getRest()) {
-			for (RestResource nextRes : nextRest.getResource()) {
-				if (nextRes.getType().getValue().equals(resourceName)) {
-					for (StringDt next : nextRes.getSearchInclude()) {
-						if (next.isEmpty() == false) {
-							includes.add(next.getValue());
-						}
-					}
-					for (RestResourceSearchParam next : nextRes.getSearchParam()) {
-						if (next.getType().getValueAsEnum() != SearchParamTypeEnum.COMPOSITE) {
-							sortParams.add(next.getName().getValue());
-						}
-					}
-					if (nextRes.getSearchParam().size() > 0) {
-						haveSearchParams = true;
-					}
-				}
-			}
-			for (RestQuery nextQuery : nextRest.getQuery()) {
-				boolean queryMatchesResource = false;
-				List<ExtensionDt> returnTypeExt = nextQuery.getUndeclaredExtensionsByUrl(ExtensionConstants.QUERY_RETURN_TYPE);
-				if (returnTypeExt != null) {
-					for (ExtensionDt nextExt : returnTypeExt) {
-						if (resourceName.equals(nextExt.getValueAsPrimitive().getValueAsString())) {
-							queries.add(nextQuery);
-							queryMatchesResource = true;
-							break;
-						}
-					}
-				}
-
-				if (queryMatchesResource) {
-					ArrayList<String> nextQueryIncludes = new ArrayList<String>();
-					queryIncludes.add(nextQueryIncludes);
-					List<ExtensionDt> includesExt = nextQuery.getUndeclaredExtensionsByUrl(ExtensionConstants.QUERY_ALLOWED_INCLUDE);
-					if (includesExt != null) {
-						for (ExtensionDt nextExt : includesExt) {
-							nextQueryIncludes.add(nextExt.getValueAsPrimitive().getValueAsString());
-						}
-					}
-				}
-			}
-		}
-		return haveSearchParams;
-	}
+//	private boolean extractSearchParamsDstu1(IResource theConformance, String resourceName, TreeSet<String> includes, TreeSet<String> sortParams, List<RestQuery> queries, boolean haveSearchParams,
+//			List<List<String>> queryIncludes) {
+//		Conformance conformance = (Conformance) theConformance;
+//		for (Rest nextRest : conformance.getRest()) {
+//			for (RestResource nextRes : nextRest.getResource()) {
+//				if (nextRes.getType().getValue().equals(resourceName)) {
+//					for (StringDt next : nextRes.getSearchInclude()) {
+//						if (next.isEmpty() == false) {
+//							includes.add(next.getValue());
+//						}
+//					}
+//					for (RestResourceSearchParam next : nextRes.getSearchParam()) {
+//						if (next.getType().getValueAsEnum() != SearchParamTypeEnum.COMPOSITE) {
+//							sortParams.add(next.getName().getValue());
+//						}
+//					}
+//					if (nextRes.getSearchParam().size() > 0) {
+//						haveSearchParams = true;
+//					}
+//				}
+//			}
+//			for (RestQuery nextQuery : nextRest.getQuery()) {
+//				boolean queryMatchesResource = false;
+//				List<ExtensionDt> returnTypeExt = nextQuery.getUndeclaredExtensionsByUrl(ExtensionConstants.QUERY_RETURN_TYPE);
+//				if (returnTypeExt != null) {
+//					for (ExtensionDt nextExt : returnTypeExt) {
+//						if (resourceName.equals(nextExt.getValueAsPrimitive().getValueAsString())) {
+//							queries.add(nextQuery);
+//							queryMatchesResource = true;
+//							break;
+//						}
+//					}
+//				}
+//
+//				if (queryMatchesResource) {
+//					ArrayList<String> nextQueryIncludes = new ArrayList<String>();
+//					queryIncludes.add(nextQueryIncludes);
+//					List<ExtensionDt> includesExt = nextQuery.getUndeclaredExtensionsByUrl(ExtensionConstants.QUERY_ALLOWED_INCLUDE);
+//					if (includesExt != null) {
+//						for (ExtensionDt nextExt : includesExt) {
+//							nextQueryIncludes.add(nextExt.getValueAsPrimitive().getValueAsString());
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return haveSearchParams;
+//	}
 
 	private String format(String theResultBody, EncodingEnum theEncodingEnum) {
 		String str = StringEscapeUtils.escapeHtml4(theResultBody);
@@ -1102,72 +1107,72 @@ public class Controller {
 		switch (theRequest.getFhirVersion(myConfig)) {
 //		case DEV:
 //			return loadAndAddConfDstu2(theServletRequest, theRequest, theModel);
-		case DSTU1:
-			return loadAndAddConfDstu1(theServletRequest, theRequest, theModel);
+//		case DSTU1:
+//			return loadAndAddConfDstu1(theServletRequest, theRequest, theModel);
 		case DSTU2:
 			return loadAndAddConfDstu2(theServletRequest, theRequest, theModel);
 		}
 		throw new IllegalStateException("Unknown version: " + theRequest.getFhirVersion(myConfig));
 	}
 
-	private Conformance loadAndAddConfDstu1(HttpServletRequest theServletRequest, final HomeRequest theRequest, final ModelMap theModel) {
-		IGenericClient client = getContext(theRequest).newRestfulGenericClient(theRequest.getServerBase(theServletRequest, myConfig));
-
-		Conformance conformance;
-		try {
-			conformance = (Conformance) client.conformance();
-		} catch (Exception e) {
-			ourLog.warn("Failed to load conformance statement", e);
-			theModel.put("errorMsg", "Failed to load conformance statement, error was: " + e.toString());
-			conformance = new Conformance();
-		}
-
-		theModel.put("jsonEncodedConf", getContext(theRequest).newJsonParser().encodeResourceToString(conformance));
-
-		Map<String, Number> resourceCounts = new HashMap<String, Number>();
-		long total = 0;
-		for (Rest nextRest : conformance.getRest()) {
-			for (RestResource nextResource : nextRest.getResource()) {
-				List<ExtensionDt> exts = nextResource.getUndeclaredExtensionsByUrl(RESOURCE_COUNT_EXT_URL);
-				if (exts != null && exts.size() > 0) {
-					Number nextCount = ((DecimalDt) (exts.get(0).getValue())).getValueAsNumber();
-					resourceCounts.put(nextResource.getType().getValue(), nextCount);
-					total += nextCount.longValue();
-				}
-			}
-		}
-		theModel.put("resourceCounts", resourceCounts);
-
-		if (total > 0) {
-			for (Rest nextRest : conformance.getRest()) {
-				Collections.sort(nextRest.getResource(), new Comparator<RestResource>() {
-					@Override
-					public int compare(RestResource theO1, RestResource theO2) {
-						DecimalDt count1 = new DecimalDt();
-						List<ExtensionDt> count1exts = theO1.getUndeclaredExtensionsByUrl(RESOURCE_COUNT_EXT_URL);
-						if (count1exts != null && count1exts.size() > 0) {
-							count1 = (DecimalDt) count1exts.get(0).getValue();
-						}
-						DecimalDt count2 = new DecimalDt();
-						List<ExtensionDt> count2exts = theO2.getUndeclaredExtensionsByUrl(RESOURCE_COUNT_EXT_URL);
-						if (count2exts != null && count2exts.size() > 0) {
-							count2 = (DecimalDt) count2exts.get(0).getValue();
-						}
-						int retVal = count2.compareTo(count1);
-						if (retVal == 0) {
-							retVal = theO1.getType().getValue().compareTo(theO2.getType().getValue());
-						}
-						return retVal;
-					}
-				});
-			}
-		}
-
-		theModel.put("conf", conformance);
-		theModel.put("requiredParamExtension", ExtensionConstants.PARAM_IS_REQUIRED);
-
-		return conformance;
-	}
+//	private Conformance loadAndAddConfDstu1(HttpServletRequest theServletRequest, final HomeRequest theRequest, final ModelMap theModel) {
+//		IGenericClient client = getContext(theRequest).newRestfulGenericClient(theRequest.getServerBase(theServletRequest, myConfig));
+//
+//		Conformance conformance;
+//		try {
+//			conformance = (Conformance) client.conformance();
+//		} catch (Exception e) {
+//			ourLog.warn("Failed to load conformance statement", e);
+//			theModel.put("errorMsg", "Failed to load conformance statement, error was: " + e.toString());
+//			conformance = new Conformance();
+//		}
+//
+//		theModel.put("jsonEncodedConf", getContext(theRequest).newJsonParser().encodeResourceToString(conformance));
+//
+//		Map<String, Number> resourceCounts = new HashMap<String, Number>();
+//		long total = 0;
+//		for (Rest nextRest : conformance.getRest()) {
+//			for (RestResource nextResource : nextRest.getResource()) {
+//				List<ExtensionDt> exts = nextResource.getUndeclaredExtensionsByUrl(RESOURCE_COUNT_EXT_URL);
+//				if (exts != null && exts.size() > 0) {
+//					Number nextCount = ((DecimalDt) (exts.get(0).getValue())).getValueAsNumber();
+//					resourceCounts.put(nextResource.getType().getValue(), nextCount);
+//					total += nextCount.longValue();
+//				}
+//			}
+//		}
+//		theModel.put("resourceCounts", resourceCounts);
+//
+//		if (total > 0) {
+//			for (Rest nextRest : conformance.getRest()) {
+//				Collections.sort(nextRest.getResource(), new Comparator<RestResource>() {
+//					@Override
+//					public int compare(RestResource theO1, RestResource theO2) {
+//						DecimalDt count1 = new DecimalDt();
+//						List<ExtensionDt> count1exts = theO1.getUndeclaredExtensionsByUrl(RESOURCE_COUNT_EXT_URL);
+//						if (count1exts != null && count1exts.size() > 0) {
+//							count1 = (DecimalDt) count1exts.get(0).getValue();
+//						}
+//						DecimalDt count2 = new DecimalDt();
+//						List<ExtensionDt> count2exts = theO2.getUndeclaredExtensionsByUrl(RESOURCE_COUNT_EXT_URL);
+//						if (count2exts != null && count2exts.size() > 0) {
+//							count2 = (DecimalDt) count2exts.get(0).getValue();
+//						}
+//						int retVal = count2.compareTo(count1);
+//						if (retVal == 0) {
+//							retVal = theO1.getType().getValue().compareTo(theO2.getType().getValue());
+//						}
+//						return retVal;
+//					}
+//				});
+//			}
+//		}
+//
+//		theModel.put("conf", conformance);
+//		theModel.put("requiredParamExtension", ExtensionConstants.PARAM_IS_REQUIRED);
+//
+//		return conformance;
+//	}
 
 	private IResource loadAndAddConfDstu2(HttpServletRequest theServletRequest, final HomeRequest theRequest, final ModelMap theModel) {
 		IGenericClient client = getContext(theRequest).newRestfulGenericClient(theRequest.getServerBase(theServletRequest, myConfig));
@@ -1341,6 +1346,8 @@ public class Controller {
 
 			resultDescription.append(" (").append(resultBody.length() + " bytes)");
 
+//			Header[] requestHeaders = lastRequest != null ? applyHeaderFilters(lastRequest.getAllHeaders()) : new Header[0];
+//			Header[] responseHeaders = lastResponse != null ? applyHeaderFilters(lastResponse.getAllHeaders()) : new Header[0];
 			Header[] requestHeaders = lastRequest != null ? applyHeaderFilters(lastRequest.getAllHeaders()) : new Header[0];
 			Header[] responseHeaders = lastResponse != null ? applyHeaderFilters(lastResponse.getAllHeaders()) : new Header[0];
 
@@ -1395,14 +1402,15 @@ public class Controller {
 		}
 
 		@Override
-		public void interceptRequest(HttpRequestBase theRequest) {
+		public void interceptRequest(IHttpRequest theRequest) {
 			assert myLastRequest == null;
-			myLastRequest = theRequest;
+			myLastRequest = ((ApacheHttpRequest) theRequest).getApacheRequest();
 		}
 
 		@Override
-		public void interceptResponse(HttpResponse theResponse) throws IOException {
+		public void interceptResponse(IHttpResponse myResponse) throws IOException {
 			assert myLastResponse == null;
+			HttpResponse theResponse = ((ApacheHttpResponse) myResponse).getResponse();
 			myLastResponse = theResponse;
 
 			HttpEntity respEntity = theResponse.getEntity();
@@ -1418,6 +1426,31 @@ public class Controller {
 				theResponse.setEntity(new MyEntityWrapper(respEntity, bytes));
 			}
 		}
+
+//		@Override
+//		public void interceptRequest(HttpRequestBase theRequest) {
+//			assert myLastRequest == null;
+//			myLastRequest = theRequest;
+//		}
+//
+//		@Override
+//		public void interceptResponse(HttpResponse theResponse) throws IOException {
+//			assert myLastResponse == null;
+//			myLastResponse = theResponse;
+//
+//			HttpEntity respEntity = theResponse.getEntity();
+//			if (respEntity != null) {
+//				final byte[] bytes;
+//				try {
+//					bytes = IOUtils.toByteArray(respEntity.getContent());
+//				} catch (IllegalStateException e) {
+//					throw new InternalErrorException(e);
+//				}
+//
+//				myResponseBody = new String(bytes, "UTF-8");
+//				theResponse.setEntity(new MyEntityWrapper(respEntity, bytes));
+//			}
+//		}
 
 		private static class MyEntityWrapper extends HttpEntityWrapper {
 

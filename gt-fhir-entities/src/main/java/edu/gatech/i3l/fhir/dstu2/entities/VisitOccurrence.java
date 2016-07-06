@@ -7,7 +7,9 @@ import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_DATE;
 import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -32,6 +34,7 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
+import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -48,7 +51,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Audited
 public class VisitOccurrence extends BaseResourceEntity {
 	
-	public static final String RESOURCE_TYPE = "Encounter";
+	public static final String RES_TYPE = "Encounter";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -221,7 +224,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 
 	@Override
 	public String getResourceType() {
-		return RESOURCE_TYPE;
+		return RES_TYPE;
 	}
 
 	@Override
@@ -304,8 +307,10 @@ public class VisitOccurrence extends BaseResourceEntity {
 			encounter.setClassElement(EncounterClassEnum.OTHER);			
 		}
 		
+		encounter.setStatus(EncounterStateEnum.FINISHED);
+		
 		// set Patient Reference
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, person.getId())); 
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, person.getId())); 
 		encounter.setPatient(patientReference);
 		
 		// set Period
@@ -315,17 +320,30 @@ public class VisitOccurrence extends BaseResourceEntity {
 		encounter.setPeriod(visitPeriod);
 		
 		// we get some information from care site.
-		CareSite careSite = getCareSite();
+//		CareSite careSite = getCareSite();
+//		System.out.println("CareSite ID="+careSite.getId());
 		if (careSite != null) {
 			// set Location
-			encounter.getLocationFirstRep().getLocation().setReference(new IdDt(CareSite.RES_TYPE, careSite.getId()));
+//			encounter.getLocationFirstRep().getLocation().setReference(new IdDt(CareSite.RES_TYPE, careSite.getId()));
 			
 			// set serviceProvider
-			Provider prov = this.getProvider();
-			if (prov != null) {
-				ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(prov.RESOURCE_TYPE, prov.getId()));
-				encounter.setServiceProvider(serviceProviderReference);
-			}
+//			Provider prov = this.getProvider();
+//			if (provider != null) {
+			ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(CareSite.RES_TYPE, careSite.getId()));
+			serviceProviderReference.setDisplay(careSite.getCareSiteName());
+			encounter.setServiceProvider(serviceProviderReference);
+//			}
+		}
+		
+		if (provider != null) {
+			Encounter.Participant participant = new Encounter.Participant();
+			ResourceReferenceDt individualReference = new ResourceReferenceDt(provider.getIdDt());
+			individualReference.setDisplay(provider.getProviderName());
+			participant.setIndividual(individualReference);
+			
+			List<Encounter.Participant> listParticipant = new ArrayList<Encounter.Participant>();
+			listParticipant.add(participant);
+			encounter.setParticipant(listParticipant);
 		}
 		
 		return encounter;

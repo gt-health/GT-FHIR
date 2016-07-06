@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_PATIENT;
-import static ca.uhn.fhir.model.dstu.resource.Procedure.SP_SUBJECT;
+import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_SUBJECT;
 
 import java.math.BigDecimal;
 import java.util.Date;

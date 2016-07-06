@@ -785,7 +785,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						continue;
 					} else {
 						for (IQueryParameterType next : nextValue) {
-							String value = next.getValueAsQueryToken();
+							String value = next.getValueAsQueryToken(myContext);
 							IdDt valueId = new IdDt(value);
 							try {
 								if (DaoUtils.isValidPid(valueId)) {

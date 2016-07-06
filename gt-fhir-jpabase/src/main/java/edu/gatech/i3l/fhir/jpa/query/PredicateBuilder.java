@@ -11,6 +11,7 @@ import javax.persistence.criteria.Root;
 import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
 import ca.uhn.fhir.rest.param.DateRangeParam;
+import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 public interface PredicateBuilder {
@@ -27,7 +28,7 @@ public interface PredicateBuilder {
 			From<? extends IResourceEntity, ? extends IResourceEntity> theFrom, CriteriaBuilder theBuilder);
 
 	Predicate translatePredicateQuantityValue(Class<? extends IResourceEntity> theResourceEntity, String theParamName, CriteriaBuilder theBuilder,
-			From<? extends IResourceEntity, ? extends IResourceEntity> theFrom, QuantityCompararatorEnum cmpValue, BigDecimal valueValue,
+			From<? extends IResourceEntity, ? extends IResourceEntity> theFrom, ParamPrefixEnum cmpValue, BigDecimal valueValue,
 			boolean approx);
 
 	Predicate translatePredicateQuantityCode(Class<? extends IResourceEntity> theResourceEntity, String theParamName, CriteriaBuilder theBuilder,
@@ -40,6 +41,6 @@ public interface PredicateBuilder {
 	
 	Predicate addCommonPredicate( CriteriaBuilder theBuilder, From<? extends IResourceEntity, ? extends IResourceEntity> theFrom);
 
-	Predicate translatePredicateValueNumber(Class<? extends IResourceEntity> myResourceEntity, CriteriaBuilder theBuilder, Root<? extends IResourceEntity> theFrom, String theParamName, QuantityCompararatorEnum comparator, BigDecimal value);
+	Predicate translatePredicateValueNumber(Class<? extends IResourceEntity> myResourceEntity, CriteriaBuilder theBuilder, Root<? extends IResourceEntity> theFrom, String theParamName, ParamPrefixEnum paramPrefixEnum, BigDecimal value);
 
 }

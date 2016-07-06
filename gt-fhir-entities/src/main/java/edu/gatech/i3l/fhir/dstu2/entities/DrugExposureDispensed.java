@@ -156,7 +156,7 @@ public final class DrugExposureDispensed extends DrugExposure{
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.MedicationDispense resource = new ca.uhn.fhir.model.dstu2.resource.MedicationDispense();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
 		// resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		// we return medication with contained codeable concept instead of reference.
 	

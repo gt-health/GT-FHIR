@@ -12,6 +12,7 @@
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
