@@ -52,7 +52,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 
 	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "procedure_concept_id")
@@ -96,7 +96,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		super();
 	}
 
-	public ProcedureOccurrence(Long id, Person person, Concept procedureConcept, Date date, Concept procedureTypeConcept,
+	public ProcedureOccurrence(Long id, PersonComplement person, Concept procedureConcept, Date date, Concept procedureTypeConcept,
 			Concept modifierConcept, Long quantity, Provider provider, VisitOccurrence visitOccurrence, 
 			String procedureSourceValue, Concept procedureSourceConcept, String qualifierSourceValue) {
 		super();
@@ -123,11 +123,11 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		this.id = id;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -249,7 +249,18 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		procedure.setId(this.getIdDt());
 		
 		// Set patient 
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(this.person.getResourceType(), this.person.getId()));
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(person.getResourceType(), person.getId()));
+		String patientName = "";
+		if (!person.getGivenName1().isEmpty()) {
+			patientName = person.getGivenName1();
+		}
+		if (!person.getGivenName2().isEmpty()) {
+			patientName += " "+person.getGivenName2();
+		}
+		if (!person.getFamilyName().isEmpty()) {
+			patientName += " "+person.getFamilyName();
+		}
+		patientReference.setDisplay(patientName);
 		procedure.setSubject(patientReference);
 		
 		//TODO: revisit this. For now just set to in-progress
