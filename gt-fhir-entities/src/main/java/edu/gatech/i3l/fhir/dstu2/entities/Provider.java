@@ -231,18 +231,19 @@ public class Provider extends BaseResourceEntity {
 		
 		PractitionerRole practitionerRole = new PractitionerRole();
 		
-		if (this.getCareSite() != null) {
-			ResourceReferenceDt organizationResource = new ResourceReferenceDt(this.getCareSite().getIdDt());
+		if (careSite != null) {
+			ResourceReferenceDt organizationResource = new ResourceReferenceDt(careSite.getIdDt());
 //			List<ResourceReferenceDt> listResourceRef = new ArrayList<ResourceReferenceDt>();
 //			listResourceRef.add(organizationResource);
+			organizationResource.setDisplay(careSite.getCareSiteName());
 			practitionerRole.setManagingOrganization(organizationResource);
 		}
 		
-		if (this.getSpecialtyConcept() != null &&
-				this.getSpecialtyConcept().getId() > 0) {
-			String systemUriString = this.getSpecialtyConcept().getVocabulary().getVocabularyReference();
-			String displayString = this.getSpecialtyConcept().getName();
-			String codeString = this.getSpecialtyConcept().getConceptCode();
+		if (specialtyConcept != null &&
+				specialtyConcept.getId() > 0) {
+			String systemUriString = specialtyConcept.getVocabulary().getVocabularyReference();
+			String displayString = specialtyConcept.getName();
+			String codeString = specialtyConcept.getConceptCode();
 			
 			CodeableConceptDt specialtyCode = new CodeableConceptDt(systemUriString, codeString);
 			specialtyCode.getCodingFirstRep().setDisplay(displayString);
