@@ -45,6 +45,7 @@ public class OmopConceptMapping implements Runnable {
 	public static final String OBSERVABLE_ENTITY = "Observable entity";
 	public static final String CONDITION_TYPE = "Condition Type";
 	public static final String LOINC_CODE = "LOINC Code";
+	public static final String SPECIALTY = "Specialty";
 	public static final String UCUM_CODE = "UCUM";
 	public static final String UCUM_CODE_STANDARD = "UCUM Standard";
 	public static final String UCUM_CODE_CUSTOM = "UCUM Custom";
