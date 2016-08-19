@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
@@ -26,7 +27,8 @@ public class Location {
 	public static final String DATA_TYPE = "AddressDt";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="location_seq_gen")
+	@SequenceGenerator(name="location_seq_gen", sequenceName="location_id_seq")
 	@Column(name="location_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;

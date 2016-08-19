@@ -17,6 +17,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -45,7 +46,8 @@ public class Person extends BaseResourceEntity{
 	public static final String RES_TYPE = "Patient";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="persons_seq_gen")
+	@SequenceGenerator(name="persons_seq_gen", sequenceName="person_id_seq")
 	@Column(name="person_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
@@ -400,6 +402,17 @@ public class Person extends BaseResourceEntity{
 //			location.setStartDate(address.getPeriod().getStart());
 			this.location = location;
 		}
+		
+		//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
+		//      But, FHIR Patient does not have race data element
+		Concept race = new Concept();
+		race.setId(8552L);
+		this.setRaceConcept(race);
+		
+		// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
+		Concept ethnicity = new Concept();
+		ethnicity.setId(0L);
+		this.setEthnicityConcept(ethnicity);
 		
 		return this;
 	}
