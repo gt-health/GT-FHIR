@@ -201,5 +201,16 @@ public class PersonComplement extends Person{
 		return this;
 	}
 
+	public String getNameAsSingleString() {
+		String name="";
+		if (!this.givenName1.isEmpty())
+			name = this.givenName1;
+		if (!this.givenName2.isEmpty())
+			name = name+" "+this.givenName2;
+		if (!this.familyName.isEmpty()) 
+			name = name+" "+this.familyName;
+		
+		return name;
+	}
 	
 }

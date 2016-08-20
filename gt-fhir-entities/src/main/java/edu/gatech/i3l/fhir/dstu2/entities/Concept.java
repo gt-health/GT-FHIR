@@ -17,10 +17,11 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 @Entity
 @Table(name="concept")
-@Audited
+@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 @NamedQueries(value = { @NamedQuery( name = "findConceptByCode", query = "select id from Concept c where c.conceptCode like :code")})
 public class Concept{
 	

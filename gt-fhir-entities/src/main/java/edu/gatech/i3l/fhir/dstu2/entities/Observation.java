@@ -72,7 +72,7 @@ public class Observation extends BaseResourceEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 
 	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_concept_id", nullable = false)
@@ -135,7 +135,7 @@ public class Observation extends BaseResourceEntity {
 		super();
 	}
 
-	public Observation(Long id, Person person, Concept observationConcept, Date date, String time, String valueAsString,
+	public Observation(Long id, PersonComplement person, Concept observationConcept, Date date, String time, String valueAsString,
 			BigDecimal valueAsNumber, Concept valueAsConcept, /*Concept relevantCondition,*/ Concept type,
 			Provider provider, VisitOccurrence visitOccurrence, String sourceValue, Concept unit,
 			String unitsSourceValue) {
@@ -189,11 +189,11 @@ public class Observation extends BaseResourceEntity {
 		this.rangeHigh = rangeHigh;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -317,7 +317,7 @@ public class Observation extends BaseResourceEntity {
 		IdDt reference = observation.getSubject().getReference();
 		if (reference.getIdPartAsLong() != null) {
 			if ("Patient".equals(reference.getResourceType())) {
-				this.person = new Person();
+				this.person = new PersonComplement();
 				this.person.setId(reference.getIdPartAsLong());
 			} else if ("Group".equals(reference.getResourceType())) {
 				//
@@ -634,8 +634,11 @@ public class Observation extends BaseResourceEntity {
 //			DateTimeDt appliesDate = new DateTimeDt(this.time);
 //			observation.setEffective(appliesDate);
 //		}
-		if (this.person != null)
-			observation.setSubject(new ResourceReferenceDt(this.person.getIdDt()));
+		if (this.person != null) {
+			ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
+			personRef.setDisplay(this.person.getNameAsSingleString());
+			observation.setSubject(personRef);
+		}
 		if (this.visitOccurrence != null)
 			observation.getEncounter().setReference(new IdDt (VisitOccurrence.RES_TYPE, this.visitOccurrence.getId()));
 		return observation;

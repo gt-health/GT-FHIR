@@ -49,6 +49,7 @@ public class OmopConceptMapping implements Runnable {
 	public static final String UCUM_CODE = "UCUM";
 	public static final String UCUM_CODE_STANDARD = "UCUM Standard";
 	public static final String UCUM_CODE_CUSTOM = "UCUM Custom";
+	public static final String VISIT = "Visit";
 	public static final String PLACE_OF_SERVICE = "Place of Service";
 	
 	
@@ -82,6 +83,7 @@ public class OmopConceptMapping implements Runnable {
 		concepts.put(UCUM_CODE, findConceptMap(builder, UCUM_CODE, UCUM));
 		concepts.put(UCUM_CODE_STANDARD, findConceptMap(builder, UCUM_CODE, UCUM));
 		concepts.put(UCUM_CODE_CUSTOM, findConceptMap(builder, UCUM_CODE, UCUM));
+		concepts.put(VISIT, findConceptMap(builder, VISIT, null));
 	}
 	
 	public static OmopConceptMapping getInstance(){

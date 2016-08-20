@@ -100,9 +100,9 @@ public class ConditionResourceProvider extends
 			@OptionalParam(name="patient", targetTypes={  Patient.class   } )
 			ReferenceAndListParam thePatient, 
   
-			@Description(shortDefinition="")
-			@OptionalParam(name="subject", targetTypes={  Patient.class   } )
-			ReferenceAndListParam theSubject, 
+//			@Description(shortDefinition="")
+//			@OptionalParam(name="subject", targetTypes={  Patient.class   } )
+//			ReferenceAndListParam theSubject, 
 //  
 //			@Description(shortDefinition="")
 //			@OptionalParam(name="dueto-code")
@@ -126,7 +126,7 @@ public class ConditionResourceProvider extends
 //			@OptionalParam(name="_lastUpdated")
 //			DateRangeParam theLastUpdated, 
 
-			@IncludeParam(allow = { "Condition:encounter", "Condition:subject", "Condition:patient" }) 
+			@IncludeParam(allow = { "Condition:encounter", "Condition:patient" }) 
 			Set<Include> theIncludes,
 			
 			@Sort 
@@ -154,7 +154,7 @@ public class ConditionResourceProvider extends
 //			paramMap.add("location", theLocation);
 //			paramMap.add("stage", theStage);
 			paramMap.add("patient", thePatient);
-			paramMap.add("subject", theSubject);
+//			paramMap.add("subject", theSubject);
 //			paramMap.add("dueto-code", theDueto_code);
 //			paramMap.add("dueto-item", theDueto_item);
 //			paramMap.add("following-code", theFollowing_code);

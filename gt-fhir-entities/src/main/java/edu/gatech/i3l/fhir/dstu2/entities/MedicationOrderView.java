@@ -56,7 +56,7 @@ public final class MedicationOrderView extends DrugExposure {
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 
 	/**
 	 * For this entity, drug type (name of the concept) is Prescription Written;
@@ -147,11 +147,11 @@ public final class MedicationOrderView extends DrugExposure {
 	 * ******************************** END ATTRIBUTES FOR DISPENSE
 	 ********************************/
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -334,14 +334,19 @@ public final class MedicationOrderView extends DrugExposure {
 			resource.setEncounter(
 					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));
 		}
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
+		ResourceReferenceDt patientRef = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		patientRef.setDisplay(this.person.getNameAsSingleString());
+		resource.setPatient(patientRef);
+		
 //		if (this.relevantCondition != null)
 //			// FIXME the reference above doesn't corresponde to a
 //			// ResourceEntity; it should be a reference to Resource Condition
 //			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
-		if (this.prescribingProvider != null)
-			resource.setPrescriber(
-					new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
+		if (this.prescribingProvider != null) {
+			ResourceReferenceDt prescriberRef = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId()));
+			prescriberRef.setDisplay(this.prescribingProvider.getProviderName());
+			resource.setPrescriber(prescriberRef);
+		}
 
         Double doseValue = this.getEffectiveDrugDose();
         if (doseValue >= 0.0)  {
@@ -420,7 +425,7 @@ public final class MedicationOrderView extends DrugExposure {
 		/* Set patient */
 		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
 		if (patientRef != null) {
-			this.person = new Person();
+			this.person = new PersonComplement();
 			this.person.setId(patientRef);
 		}
 		// OMOP can handle only one dosage.

@@ -61,7 +61,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id", nullable=false)
@@ -109,7 +109,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		super();
 	}
 
-	public ConditionOccurrence(Long id, Person person, Concept conditionConcept, Date startDate, Date endDate,
+	public ConditionOccurrence(Long id, PersonComplement person, Concept conditionConcept, Date startDate, Date endDate,
 			Concept conditionTypeConcept, String stopReason, Provider provider, VisitOccurrence encounter,
 			String sourceValue, Concept sourceConcept) {
 		super();
@@ -142,11 +142,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return RESOURCE_TYPE;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -228,7 +228,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			Condition condition = (Condition) resource;
 			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
 			if(patientRef != null){
-				this.person =  new Person();
+				this.person =  new PersonComplement();
 				this.person.setId(patientRef);
 			}
 
@@ -287,6 +287,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		patientReference.setDisplay(this.person.getNameAsSingleString());
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
@@ -303,6 +304,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// This can be either Patient or Practitioner.
 		if (provider != null && provider.getId() > 0) {
 			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, provider.getId()));
+			practitionerReference.setDisplay(this.provider.getProviderName());
 			condition.setAsserter(practitionerReference);
 		}
 
@@ -319,14 +321,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		String theSystem;
 		String theCode;
 		String theDisplay = "";
-		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
-			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
-			theCode = this.sourceValue.substring(9);
-		} else {
-			theSystem = conditionConcept.getVocabulary().getSystemUri();
-			theCode = conditionConcept.getConceptCode();
-			theDisplay = conditionConcept.getName();
-		}
+//		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
+//			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
+//			theCode = this.sourceValue.substring(9);
+//		} else {
+		theSystem = conditionConcept.getVocabulary().getSystemUri();
+		theCode = conditionConcept.getConceptCode();
+		theDisplay = conditionConcept.getName();
+//		}
 
 		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {

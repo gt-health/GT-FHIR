@@ -6,8 +6,11 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_DATE;
 import static ca.uhn.fhir.model.dstu2.resource.Encounter.SP_PATIENT;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +26,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -30,9 +34,11 @@ import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
+import ca.uhn.fhir.model.dstu2.resource.Encounter.Participant;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -54,7 +60,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 	public static final String RES_TYPE = "Encounter";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="visit_seq_gen")
+	@SequenceGenerator(name="visit_seq_gen", sequenceName="visit_occurrence_id_seq")
 	@Column(name="visit_occurrence_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
@@ -62,7 +69,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@ManyToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="visit_concept_id")
@@ -106,7 +113,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		super();
 	}
 	
-	public VisitOccurrence(Long id, Person person, Concept visitConcept, Date startDate, 
+	public VisitOccurrence(Long id, PersonComplement person, Concept visitConcept, Date startDate, 
 			String startTime, Date endDate, String endTime, Concept visitTypeConcept, 
 			Provider provider, CareSite careSite, String visitSourceValue, Concept visitSourceConcept) {
 		super();
@@ -125,11 +132,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.visitSourceConcept = visitSourceConcept;
 	}
 	
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 	
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 	
@@ -245,7 +252,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.id = encounter.getId().getIdPartAsLong();
 		Long patientRef = encounter.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
-			this.person = new Person();
+			this.person = new PersonComplement();
 			this.person.setId(patientRef);
 		}
 		/* Set Period */
@@ -256,24 +263,55 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.endDate = encounter.getPeriod().getEnd();
 		this.endTime = fmt.format(this.endDate);
 		
-		/* Set care site */
-		Long locationRef = encounter.getLocationFirstRep().getLocation().getReference().getIdPartAsLong();
-		if (locationRef > 0L){
-			CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, locationRef);
-			if (careSite != null) {
-				this.careSite = careSite;
-//				/* Set place of service concept */
-//				this.placeOfServiceConcept = new Concept();
-//				this.placeOfServiceConcept.setId(this.careSite.getPlaceOfServiceConcept().getId()); //TODO add test case, to avoid optionallity of care site 
+		/* Set Class 
+		 * - IP: Inpatient Visit
+		 * - OP: Outpient Visit
+		 * - ER: Emergency Room Visit
+		 * - LTCP: Long Term Care Visit
+		 * - */
+		String classElement = encounter.getClassElement();
+		String classType2Use = null;
+		if (classElement != null && !classElement.isEmpty()) {
+			String classLowerString = classElement.toLowerCase();
+			if (classLowerString.contains("inpatient")) {
+				classType2Use = "ip";
+			} else if (classLowerString.contains("outpatient")) {
+				classType2Use = "op";
+			} else if (classLowerString.contains("emergency")) {
+				classType2Use = "er";
 			}
-			
 		}
 		
-		Long providerRef = encounter.getServiceProvider().getReference().getIdPartAsLong();
-		if (providerRef > 0L) {
-			Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, providerRef);
-			if (provider != null) {
-				this.provider = provider;
+		if (classType2Use != null && !classType2Use.isEmpty()) {
+			Long id = OmopConceptMapping.getInstance().get(classType2Use.toLowerCase(), OmopConceptMapping.VISIT);
+			Concept visitConcept = new Concept ();
+			visitConcept.setId(id);
+			this.setVisitConcept(visitConcept);
+		}
+		
+		/* Set Visit Type - we hardcode this */
+		Concept visitTypeConcept = new Concept();
+		visitTypeConcept.setId(44818518L); // This is Visit derived from EHR
+		this.setVisitTypeConcept(visitTypeConcept);
+		
+		/* Set care site */
+		Participant participant = encounter.getParticipantFirstRep();
+		if (participant != null){
+			ResourceReferenceDt individualRef = participant.getIndividual();
+			if (individualRef != null) {
+				Long provider_id = individualRef.getReference().getIdPartAsLong();
+				Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, provider_id);
+				if (provider != null) {
+					this.setProvider(provider);
+				}
+			}			
+		}
+		
+		Long careSiteRef = encounter.getServiceProvider().getReference().getIdPartAsLong();
+		if (careSiteRef > 0L) {
+			CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, careSiteRef);
+			if (careSite != null) {
+				this.setCareSite(careSite);
 			}
 		}
 		
@@ -310,13 +348,32 @@ public class VisitOccurrence extends BaseResourceEntity {
 		encounter.setStatus(EncounterStateEnum.FINISHED);
 		
 		// set Patient Reference
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, person.getId())); 
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, person.getId()));
+		patientReference.setDisplay(person.getNameAsSingleString());
 		encounter.setPatient(patientReference);
 		
 		// set Period
 		PeriodDt visitPeriod = new PeriodDt();
-		visitPeriod.setStartWithSecondsPrecision(startDate);
-		visitPeriod.setEndWithSecondsPrecision(endDate);
+//		visitPeriod.setStartWithSecondsPrecision(startDate);
+//		visitPeriod.setEndWithSecondsPrecision(endDate);
+		DateFormat dateOnlyFormat = new SimpleDateFormat("yyyy/MM/dd");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+		try {
+			// For start Date
+			String dateTimeString = dateOnlyFormat.format(startDate)+" "+startTime;
+			Date DateTime = dateFormat.parse(dateTimeString);
+			visitPeriod.setStartWithSecondsPrecision(DateTime);
+
+			// For end Date
+			dateTimeString = dateOnlyFormat.format(endDate)+" "+endTime;
+			DateTime = dateFormat.parse(dateTimeString);
+			visitPeriod.setEndWithSecondsPrecision(DateTime);
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
 		encounter.setPeriod(visitPeriod);
 		
 		// we get some information from care site.
