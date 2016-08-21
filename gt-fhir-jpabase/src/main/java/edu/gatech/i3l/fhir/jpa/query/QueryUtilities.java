@@ -14,6 +14,7 @@ public class QueryUtilities {
 				out[j++] = c;
 			}
 		}
-		return new String(out).toUpperCase();
+//		return new String(out).toUpperCase();
+		return new String(out);
 	}
 }

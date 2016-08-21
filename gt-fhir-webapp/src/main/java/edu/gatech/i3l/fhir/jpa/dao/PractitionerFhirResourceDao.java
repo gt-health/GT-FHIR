@@ -33,17 +33,17 @@ public class PractitionerFhirResourceDao extends BaseFhirResourceDao<Practitione
 					From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder) {
 				Predicate singleCode = null;
 				switch (theParamName) {
-				case Patient.SP_ADDRESS:
-					Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
-					Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
-					Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
-					Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
-					Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
-					Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
-					singleCode = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
-					break;
+//				case Patient.SP_ADDRESS:
+//					Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
+//					Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
+//					Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
+//					Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
+//					Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
+//					Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
+//					singleCode = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
+//					break;
 				case Patient.SP_NAME:
-					singleCode = theBuilder.like(from.get("familyName").as(String.class), likeExpression);
+					singleCode = theBuilder.like(from.get("providerName").as(String.class), likeExpression);
 					break;
 				default:
 					break;
