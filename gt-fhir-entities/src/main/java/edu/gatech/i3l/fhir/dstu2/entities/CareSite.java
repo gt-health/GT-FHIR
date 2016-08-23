@@ -40,7 +40,7 @@ public class CareSite extends BaseResourceEntity{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="caresite_seq_gen")
-	@SequenceGenerator(name="caresite_seq_gen", sequenceName="caresite_id_seq")
+	@SequenceGenerator(name="caresite_seq_gen", sequenceName="caresite_id_seq", allocationSize=1)
 	@Column(name="care_site_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;

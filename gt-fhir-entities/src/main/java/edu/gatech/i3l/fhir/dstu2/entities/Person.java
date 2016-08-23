@@ -46,8 +46,8 @@ public class Person extends BaseResourceEntity{
 	public static final String RES_TYPE = "Patient";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="persons_seq_gen")
-	@SequenceGenerator(name="persons_seq_gen", sequenceName="person_id_seq")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="person_id_seq")
+	@SequenceGenerator(name="person_id_seq", sequenceName="person_id_seq", allocationSize=1)
 	@Column(name="person_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;

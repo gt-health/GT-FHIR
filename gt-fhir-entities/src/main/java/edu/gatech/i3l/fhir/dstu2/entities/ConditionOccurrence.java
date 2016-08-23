@@ -17,6 +17,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -31,7 +32,9 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
+import ca.uhn.fhir.model.primitive.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -53,7 +56,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public static final String RESOURCE_TYPE = "Condition";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="condition_occurrence_seq_gen")
+	@SequenceGenerator(name="condition_occurrence_seq_gen", sequenceName="condition_occurrence_id_seq", allocationSize=1)
 	@Column(name="condition_occurrence_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
@@ -250,13 +254,20 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 			Long encounterReference = condition.getEncounter().getReference().getIdPartAsLong();
 			this.conditionTypeConcept = new Concept();
-			if (encounterReference == null) {
-				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
-				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
-			} else {
+			if (encounterReference != null) {
 				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
 				this.encounter = new VisitOccurrence();
 				this.encounter.setId(encounterReference);
+			}
+			
+			ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt<ConditionCategoryCodesEnum> condCategory = condition.getCategory();
+			CodingDt condCatCoding = condCategory.getCodingFirstRep();
+			if (condCatCoding != null) {
+				if (condCatCoding.getCode().equalsIgnoreCase(ConditionCategoryCodesEnum.COMPLAINT.getCode())) {
+					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId());
+				} else {
+					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
+				}
 			}
 
 			// this.stopReason = stopReason; NOTE: no FHIR parameter for
@@ -376,6 +387,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			periodDt.setStart(startDateDt);
 			periodDt.setEnd(endDateDt);
 			condition.setOnset(periodDt);
+		}
+		
+		// Category
+		Concept myCat = this.getConditionConcept();
+		if (myCat.getId() == Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId()) {
+			condition.setCategory(ConditionCategoryCodesEnum.COMPLAINT);
+		} else {
+			condition.setCategory(ConditionCategoryCodesEnum.FINDING);
 		}
 
 		// VerficationStutus 
