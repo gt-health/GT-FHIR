@@ -30,10 +30,19 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 			private static final String LOINC = "loinc";
 			private static final String SNOMED = "snomed";
 			private static final String ICD_9 = "icd-9";
+			private static final String ICD_9_CM = "icd-9-cm";
+			private static final String ICD_9_PROC = "icd-9-proc";
 			private static final String RXNORM = "rxnorm";
 			private static final String UCUM = "ucum";
 			private static final String ICD_10 = "icd-10";
 			
+			@Override
+			public Predicate addCommonPredicate(CriteriaBuilder builder, From<? extends IResourceEntity, ? extends IResourceEntity> from) {
+//				builder.asc(from.get("id"));
+				return builder.notEqual(from.get("observationConcept").get("id"), edu.gatech.i3l.fhir.dstu2.entities.Observation.DIASTOLIC_CONCEPT_ID);
+				//In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8
+			}
+
 			@Override
 			public Predicate translatePredicateTokenSystem(Class<? extends IResourceEntity> entity, String theParamName, String system, From<? extends IResourceEntity, ? extends IResourceEntity> from,
 					CriteriaBuilder theBuilder) {
@@ -47,7 +56,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 				Path<Object> path = null;
 				switch (theParamName) {
 				case Observation.SP_CODE:
-					path = from.get("observationConcept").get("vocabulary").get("name");
+					path = from.get("observationConcept").get("vocabulary").get("id");
 					break;
 				default:
 					break;
@@ -62,17 +71,21 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 			
 			private String getVocabularyName(String system) {
 				if(system.contains(SNOMED)){
-					return SNOMED;
+					return "SNOMED";
 				} else if (system.contains(LOINC)){
-					return LOINC;
+					return "LOINC";
 				} else if (system.contains(ICD_10)){
-					return ICD_10;
+					return "ICD10";
 				} else if (system.contains(ICD_9)){
-					return ICD_9;
+					return "ICD9CM";
+				} else if (system.contains(ICD_9_CM)){
+					return "ICD9CM";
+				} else if (system.contains(ICD_9_PROC)){
+					return "ICD9Proc";
 				} else if (system.contains(RXNORM)){
-					return RXNORM;
+					return "RxNorm";
 				} else if (system.contains(UCUM)){
-					return UCUM;
+					return "UCUM";
 				}
 				return "";
 			}

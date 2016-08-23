@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
 import ca.uhn.fhir.rest.param.DateRangeParam;
+import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 public abstract class AbstractPredicateBuilder implements PredicateBuilder{
@@ -78,7 +79,7 @@ public abstract class AbstractPredicateBuilder implements PredicateBuilder{
 	
 
 	@Override
-	public Predicate translatePredicateValueNumber(Class<? extends IResourceEntity> myResourceEntity, CriteriaBuilder builder, Root<? extends IResourceEntity> from, String theParamName, QuantityCompararatorEnum comparator, BigDecimal value) {
+	public Predicate translatePredicateValueNumber(Class<? extends IResourceEntity> myResourceEntity, CriteriaBuilder builder, Root<? extends IResourceEntity> from, String theParamName, ParamPrefixEnum comparator, BigDecimal value) {
 		Predicate predicate = null;
 		Path<? extends Object> fromObj = getPath(myResourceEntity, theParamName, from);
 		if (comparator == null) {
@@ -133,7 +134,7 @@ public abstract class AbstractPredicateBuilder implements PredicateBuilder{
 
 	@Override
 	public Predicate translatePredicateQuantityValue(Class<? extends IResourceEntity> entity, String theParamName, CriteriaBuilder builder,
-			From<? extends IResourceEntity, ? extends IResourceEntity> from, QuantityCompararatorEnum cmpValue, BigDecimal valueValue,
+			From<? extends IResourceEntity, ? extends IResourceEntity> from, ParamPrefixEnum cmpValue, BigDecimal valueValue,
 			boolean approx) {
 		Predicate num;
 		Path<? extends Object> path = getPath(entity, theParamName, from);
@@ -160,7 +161,7 @@ public abstract class AbstractPredicateBuilder implements PredicateBuilder{
 				num = builder.le(path.as(Number.class), valueValue);
 				break;
 			default:
-				throw new IllegalStateException(cmpValue.getCode());
+				throw new IllegalStateException(cmpValue.getValue());
 			}
 		}
 		return num;

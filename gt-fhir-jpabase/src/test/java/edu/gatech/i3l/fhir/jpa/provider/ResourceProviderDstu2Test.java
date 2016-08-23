@@ -60,8 +60,8 @@ import ca.uhn.fhir.model.api.BundleEntry;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
-import ca.uhn.fhir.model.dstu.resource.Device;
-import ca.uhn.fhir.model.dstu.resource.Practitioner;
+import ca.uhn.fhir.model.dstu2.resource.Device;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.MetaDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
@@ -676,7 +676,7 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 	@Test
 	public void testDocumentManifestResources() throws Exception {
 		ourCtx.getResourceDefinition(Practitioner.class);
-		ourCtx.getResourceDefinition(ca.uhn.fhir.model.dstu.resource.DocumentManifest.class);
+		ourCtx.getResourceDefinition(ca.uhn.fhir.model.dstu2.resource.DocumentManifest.class);
 
 		IGenericClient client = ourClient;
 

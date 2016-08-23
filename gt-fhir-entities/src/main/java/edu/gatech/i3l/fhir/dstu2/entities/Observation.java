@@ -1,13 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_ENCOUNTER;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_PATIENT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_QUANTITY;
-import static ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_STRING;
-
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +25,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+//import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
@@ -45,8 +41,8 @@ import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.Observation.Component;
-import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
-import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
+//import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
+//import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -59,12 +55,14 @@ import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
-@Table(name = "observation")
+@Table(name = "f_observation_view")
 public class Observation extends BaseResourceEntity {
 
 	private static final String RES_TYPE = "Observation";
 	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
-	
+	public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
+	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;		
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "observation_id")
@@ -74,7 +72,7 @@ public class Observation extends BaseResourceEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 
 	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_concept_id", nullable = false)
@@ -88,7 +86,7 @@ public class Observation extends BaseResourceEntity {
 
 	@Column(name = "observation_time")
 	// @Temporal(TemporalType.TIME)
-	private Date time;
+	private String time;
 
 	@Column(name = "value_as_string")
 	private String valueAsString;
@@ -106,9 +104,9 @@ public class Observation extends BaseResourceEntity {
 	@JoinColumn(name = "value_as_concept_id")
 	private Concept valueAsConcept;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "relevant_condition_concept_id")
-	private Concept relevantCondition;
+//	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+//	@JoinColumn(name = "relevant_condition_concept_id")
+//	private Concept relevantCondition;
 
 	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_type_concept_id", nullable = false)
@@ -116,29 +114,29 @@ public class Observation extends BaseResourceEntity {
 	private Concept type;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "associated_provider_id")
+	@JoinColumn(name = "provider_id")
 	private Provider provider;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
-	@Column(name = "observation_source_value")
+	@Column(name = "source_value")
 	private String sourceValue;
 
 	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_concept_id")
 	private Concept unit;
 
-	@Column(name = "units_source_value")
-	private String unitsSourceValue;
+	@Column(name = "unit_source_value")
+	private String unitSourceValue;
 
 	public Observation() {
 		super();
 	}
 
-	public Observation(Long id, Person person, Concept observationConcept, Date date, String valueAsString,
-			BigDecimal valueAsNumber, Concept valueAsConcept, Concept relevantCondition, Concept type,
+	public Observation(Long id, PersonComplement person, Concept observationConcept, Date date, String time, String valueAsString,
+			BigDecimal valueAsNumber, Concept valueAsConcept, /*Concept relevantCondition,*/ Concept type,
 			Provider provider, VisitOccurrence visitOccurrence, String sourceValue, Concept unit,
 			String unitsSourceValue) {
 		super();
@@ -146,16 +144,17 @@ public class Observation extends BaseResourceEntity {
 		this.person = person;
 		this.observationConcept = observationConcept;
 		this.date = date;
+		this.time = time;
 		this.valueAsString = valueAsString;
 		this.valueAsNumber = valueAsNumber;
 		this.valueAsConcept = valueAsConcept;
-		this.relevantCondition = relevantCondition;
+//		this.relevantCondition = relevantCondition;
 		this.type = type;
 		this.provider = provider;
 		this.visitOccurrence = visitOccurrence;
 		this.sourceValue = sourceValue;
 		this.unit = unit;
-		this.unitsSourceValue = unitsSourceValue;
+		this.unitSourceValue = unitsSourceValue;
 	}
 
 	public Long getId() {
@@ -166,11 +165,11 @@ public class Observation extends BaseResourceEntity {
 		this.id = id;
 	}
 
-	public Date getTime() {
+	public String getTime() {
 		return time;
 	}
 
-	public void setTime(Date time) {
+	public void setTime(String time) {
 		this.time = time;
 	}
 
@@ -190,11 +189,11 @@ public class Observation extends BaseResourceEntity {
 		this.rangeHigh = rangeHigh;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -238,13 +237,13 @@ public class Observation extends BaseResourceEntity {
 		this.valueAsConcept = valueAsConcept;
 	}
 
-	public Concept getRelevantCondition() {
-		return relevantCondition;
-	}
-
-	public void setRelevantCondition(Concept relevantCondition) {
-		this.relevantCondition = relevantCondition;
-	}
+//	public Concept getRelevantCondition() {
+//		return relevantCondition;
+//	}
+//
+//	public void setRelevantCondition(Concept relevantCondition) {
+//		this.relevantCondition = relevantCondition;
+//	}
 
 	public Concept getType() {
 		return type;
@@ -286,25 +285,29 @@ public class Observation extends BaseResourceEntity {
 		this.unit = unit;
 	}
 
-	public String getUnitsSourceValue() {
-		return unitsSourceValue;
+	public String getUnitSourceValue() {
+		return unitSourceValue;
 	}
 
-	public void setUnitsSourceValue(String unitsSourceValue) {
-		this.unitsSourceValue = unitsSourceValue;
+	public void setUnitSourceValue(String unitSourceValue) {
+		this.unitSourceValue = unitSourceValue;
 	}
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
+		// TODO: This is view, which is read-only. We need to come up with a way to write
+		// to either measurement or observation tables in OMOP. We may write them manually
+		// and just return null for this. But then, response will not be correct. Revisit this.
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 
 		if (observation.getEffective() instanceof DateTimeDt) {
 			this.date = ((DateTimeDt) observation.getEffective()).getValue();
-			this.time = ((DateTimeDt) observation.getEffective()).getValue();
+			SimpleDateFormat timeFormat = new SimpleDateFormat ("HH:mm:ss");
+			this.time = timeFormat.format(((DateTimeDt) observation.getEffective()).getValue());
 		} else if (observation.getEffective() instanceof PeriodDt) {
 			// TODO: we need to handle period. We can probably use
-			// observation_period table in OMOP
+			// we can use range_low and range_high. These are only available in Measurement
 		}
 
 		/*
@@ -314,7 +317,7 @@ public class Observation extends BaseResourceEntity {
 		IdDt reference = observation.getSubject().getReference();
 		if (reference.getIdPartAsLong() != null) {
 			if ("Patient".equals(reference.getResourceType())) {
-				this.person = new Person();
+				this.person = new PersonComplement();
 				this.person.setId(reference.getIdPartAsLong());
 			} else if ("Group".equals(reference.getResourceType())) {
 				//
@@ -394,148 +397,250 @@ public class Observation extends BaseResourceEntity {
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
 		observation.setId(this.getIdDt());
 
-		CodeableConceptDt code = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(),
-				this.observationConcept.getConceptCode());
-		// code.getCodingFirstRep().setDisplay(this.observationConcept.toString());
-		code.getCodingFirstRep().setDisplay(this.observationConcept.getName());
+		String systemUriString = this.observationConcept.getVocabulary().getSystemUri();
+		String codeString = this.observationConcept.getConceptCode();
+		String displayString = this.observationConcept.getName();
+		
+		// OMOP database maintains Systolic and Diastolic Blood Pressures separately.
+		// FHIR however keeps them together. Observation DAO filters out Diastolic values.
+		// Here, when we are reading systolic, we search for matching diastolic and put them
+		// together. The Observation ID will be systolic's OMOP ID. 
+		// public static final Long SYSTOLIC_CONCEPT_ID = new Long(3004249);
+		// public static final Long DIASTOLIC_CONCEPT_ID = new Long(3012888);		
+		if (SYSTOLIC_CONCEPT_ID.equals(this.observationConcept.getId())) {
+			// Set coding for systolic and diastolic observation
+			systemUriString = "http://loinc.org";
+			codeString = "55284-4";
+			displayString = "Blood pressure systolic & diastolic";
+			
+			List<Component> components = new ArrayList<Component>();
+			// First we add systolic component.
+			Component comp = new Component();
+			CodeableConceptDt componentCode = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(),
+					this.observationConcept.getConceptCode());
+			componentCode.getCodingFirstRep().setDisplay(this.observationConcept.getName());
+			comp.setCode(componentCode);
+			
+			IDatatype compValue = null;
+			if (this.valueAsNumber != null) {
+				QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
+				// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
+				if (this.unit != null) {
+					quantity.setUnit(this.unit.getConceptCode());
+					quantity.setCode(this.unit.getConceptCode());
+					quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+				}
+				compValue = quantity;
+				comp.setValue(compValue);
+				components.add(comp);
+			}
+			
+			// Now search for diastolic component.
+			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+
+			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
+			Root<Observation> from = criteria.from(Observation.class);
+			criteria.select(from).where(
+					builder.equal(from.get("observationConcept").get("id"), DIASTOLIC_CONCEPT_ID),
+					builder.equal(from.get("person").get("id"), this.person.getId()),
+					builder.equal(from.get("date"), this.date),
+					builder.equal(from.get("time"),  this.time)
+					);
+			TypedQuery<Observation> query = entityManager.createQuery(criteria);
+			List<Observation> results = query.getResultList();
+			if (results.size() > 0) {
+				Observation diastolicOb = results.get(0);				
+				comp = new Component();
+				componentCode = new CodeableConceptDt(diastolicOb.observationConcept.getVocabulary().getSystemUri(),
+						diastolicOb.observationConcept.getConceptCode());
+				componentCode.getCodingFirstRep().setDisplay(diastolicOb.observationConcept.getName());
+				comp.setCode(componentCode);
+				
+				compValue = null;
+				if (diastolicOb.valueAsNumber != null) {
+					QuantityDt quantity = new QuantityDt(diastolicOb.valueAsNumber.doubleValue());
+					// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
+					if (diastolicOb.unit != null) {
+						quantity.setUnit(diastolicOb.unit.getConceptCode());
+						quantity.setCode(diastolicOb.unit.getConceptCode());
+						quantity.setSystem(diastolicOb.unit.getVocabulary().getSystemUri());
+					}
+					compValue = quantity;
+					comp.setValue(compValue);
+					components.add(comp);
+				}
+			}
+			
+			if (components.size() > 0) {
+				observation.setComponent(components);
+			}
+		} else {
+			IDatatype value = null;
+			if (this.valueAsNumber != null) {
+				QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
+				if (this.unit != null) {
+					// Unit is defined as a concept code in omop v4, then unit and code are the same in this case				
+					quantity.setUnit(this.unit.getConceptCode());
+					quantity.setCode(this.unit.getConceptCode());
+					quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+				}
+				value = quantity;
+			} else if (this.valueAsString != null) {
+				value = new StringDt(this.valueAsString);
+			} else if (this.valueAsConcept != null) {
+				// vocabulary is a required attribute for concept, then it's expected to not be null
+				CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
+						this.valueAsConcept.getConceptCode());
+				value = valueAsConcept;
+			}
+			observation.setValue(value);
+		}
+
+		if (this.rangeLow != null)
+			observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
+		if (this.rangeHigh != null)
+			observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
+		
+		CodeableConceptDt code = new CodeableConceptDt(systemUriString, codeString);
+		code.getCodingFirstRep().setDisplay(displayString);
 		observation.setCode(code);
+		
 		observation.setStatus(STATUS);
 		// observation.setMethod(new CodeableConceptDt(theSystem, theCode));
 
-		// Smart on FHIR wants reliability. We don't have this in the database.
-		// So, we put "ok".
-		// observation.setReliability(ObservationReliabilityEnum.OK);
+		
+//		// We may have related or component resources within observation.
+//		// If this observation has the relationshipType, it should be specified
+//		// in the observation source field with comma separated values
+//		if (this.sourceValue != null) {
+//			String[] relatedComponentResource = this.sourceValue.split(",");
+//			if (relatedComponentResource.length > 1) {
+//				if (relatedComponentResource[0].equalsIgnoreCase("COMP")) {
+//					// This is has-component. From DSTU2, has-component moved to
+//					// new component tag within observation resource.
+//					List<Component> components = new ArrayList<Component>();
+//					for (int i = 1; i < relatedComponentResource.length; i++) {
+//						String id = relatedComponentResource[i];
+//						// TODO: we need to add components here.
+//						
+//						WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+//						EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+//
+//						CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//						CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
+//						Root<Observation> from = criteria.from(Observation.class);
+//						criteria.select(from).where(builder.equal(from.get("id"), id));
+//						TypedQuery<Observation> query = entityManager.createQuery(criteria);
+//						List<Observation> results = query.getResultList();
+//						
+//						for (Observation ob : results) {
+//							Component comp = new Component();
+//							CodeableConceptDt componentCode = new CodeableConceptDt(ob.observationConcept.getVocabulary().getSystemUri(),
+//									ob.observationConcept.getConceptCode());
+//							componentCode.getCodingFirstRep().setDisplay(ob.observationConcept.getName());
+//							comp.setCode(componentCode);
+//							
+//							IDatatype compValue = null;
+//							if (ob.valueAsNumber != null) {
+//								QuantityDt quantity = new QuantityDt(ob.valueAsNumber.doubleValue());
+//								// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
+//								if (ob.unit != null) {
+//									quantity.setUnit(ob.unit.getConceptCode());
+//									quantity.setCode(ob.unit.getConceptCode());
+//									quantity.setSystem(ob.unit.getVocabulary().getSystemUri());
+//								}
+//								compValue = quantity;
+//								if (ob.rangeLow != null)
+//									comp.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(ob.rangeLow.doubleValue()));
+//								if (ob.rangeHigh != null)
+//									comp.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(ob.rangeHigh.doubleValue()));
+//							} else if (ob.valueAsString != null) {
+//								compValue = new StringDt(ob.valueAsString);
+//							} else if (ob.valueAsConcept != null) {
+//								// vocabulary is a required attribute for concept, then it's expected to not be null
+//								CodeableConceptDt valueAsConcept = new CodeableConceptDt(ob.valueAsConcept.getVocabulary().getSystemUri(), 
+//										ob.valueAsConcept.getConceptCode());
+//								compValue = valueAsConcept;
+//							}
+//							comp.setValue(compValue);
+//
+//							components.add(comp);
+//						}
+//					}
+//					
+//					if (components.size() > 0) {
+//						observation.setComponent(components);
+//					}
+//				} else {
+//					ObservationRelationshipTypeEnum obsRelationshipType = null;
+//					if (relatedComponentResource[0].equalsIgnoreCase("MBR")) {
+//						obsRelationshipType = ObservationRelationshipTypeEnum.HAS_MEMBER;
+//					} else if (relatedComponentResource[0].equalsIgnoreCase("DRIV")) {
+//						obsRelationshipType = ObservationRelationshipTypeEnum.DERIVED_FROM;
+//					} else if (relatedComponentResource[0].equalsIgnoreCase("SEQL")) {
+//						obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;
+//					} else if (relatedComponentResource[0].equalsIgnoreCase("RPLC")) {
+//						obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;
+//					} else if (relatedComponentResource[0].equalsIgnoreCase("QUALF")) {
+//						obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;
+//					} else if (relatedComponentResource[0].equalsIgnoreCase("INTF")) {
+//						obsRelationshipType = ObservationRelationshipTypeEnum.INTERFERED_BY;
+//					}
+//
+//					if (obsRelationshipType != null) {
+//						List<Related> relateds = new ArrayList<Related>();
+//						for (int i = 1; i < relatedComponentResource.length; i++) {
+//							Related related = new Related();
+//							related.setType(obsRelationshipType);
+//							ResourceReferenceDt referencedResDt = new ResourceReferenceDt(
+//									"Observation/" + relatedComponentResource[i]);
+//							related.setTarget(referencedResDt);
+//							relateds.add(related);
+//						}
+//						observation.setRelated(relateds);
+//					}
+//				}
+//			}
+//
+//		}
 
-		IDatatype value = null;
-		if (this.valueAsNumber != null) {
-			QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
-			if (this.unit != null) {
-				// Unit is defined as a concept code in omop v4, then unit and code are the same in this case				
-				quantity.setUnit(this.unit.getConceptCode());
-				quantity.setCode(this.unit.getConceptCode());
-				quantity.setSystem(this.unit.getVocabulary().getSystemUri());
-			}
-			value = quantity;
-			if (this.rangeLow != null)
-				observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
-			if (this.rangeHigh != null)
-				observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
-		} else if (this.valueAsString != null) {
-			value = new StringDt(this.valueAsString);
-		} else if (this.valueAsConcept != null) {
-			// vocabulary is a required attribute for concept, then it's expected to not be null
-			CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
-					this.valueAsConcept.getConceptCode());
-			value = valueAsConcept;
-		}
-		observation.setValue(value);
-
-		// We may have related or component resources within observation.
-		// If this observation has the relationshipType, it should be specified
-		// in the observation source field with comma separated values
-		if (this.sourceValue != null) {
-			String[] relatedComponentResource = this.sourceValue.split(",");
-			if (relatedComponentResource.length > 1) {
-				if (relatedComponentResource[0].equalsIgnoreCase("COMP")) {
-					// This is has-component. From DSTU2, has-component moved to
-					// new component tag within observation resource.
-					List<Component> components = new ArrayList<Component>();
-					for (int i = 1; i < relatedComponentResource.length; i++) {
-						String id = relatedComponentResource[i];
-						// TODO: we need to add components here.
-						
-						WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-						EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
-
-						CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-						CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
-						Root<Observation> from = criteria.from(Observation.class);
-						criteria.select(from).where(builder.equal(from.get("id"), id));
-						TypedQuery<Observation> query = entityManager.createQuery(criteria);
-						List<Observation> results = query.getResultList();
-						
-						for (Observation ob : results) {
-							Component comp = new Component();
-							CodeableConceptDt componentCode = new CodeableConceptDt(ob.observationConcept.getVocabulary().getSystemUri(),
-									ob.observationConcept.getConceptCode());
-							componentCode.getCodingFirstRep().setDisplay(ob.observationConcept.getName());
-							comp.setCode(componentCode);
-							
-							IDatatype compValue = null;
-							if (ob.valueAsNumber != null) {
-								QuantityDt quantity = new QuantityDt(ob.valueAsNumber.doubleValue());
-								// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
-								if (ob.unit != null) {
-									quantity.setUnit(ob.unit.getConceptCode());
-									quantity.setCode(ob.unit.getConceptCode());
-									quantity.setSystem(ob.unit.getVocabulary().getSystemUri());
-								}
-								compValue = quantity;
-								if (ob.rangeLow != null)
-									comp.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(ob.rangeLow.doubleValue()));
-								if (ob.rangeHigh != null)
-									comp.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(ob.rangeHigh.doubleValue()));
-							} else if (ob.valueAsString != null) {
-								compValue = new StringDt(ob.valueAsString);
-							} else if (ob.valueAsConcept != null) {
-								// vocabulary is a required attribute for concept, then it's expected to not be null
-								CodeableConceptDt valueAsConcept = new CodeableConceptDt(ob.valueAsConcept.getVocabulary().getSystemUri(), 
-										ob.valueAsConcept.getConceptCode());
-								compValue = valueAsConcept;
-							}
-							comp.setValue(compValue);
-
-							components.add(comp);
-						}
-					}
-					
-					if (components.size() > 0) {
-						observation.setComponent(components);
-					}
+		if (this.date != null) {
+			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+			String dateString = fmt.format(this.date);
+			fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date myDate = null;
+			try {
+				if (this.time != null && this.time.isEmpty() == false) {
+					myDate = fmt.parse(dateString+" "+this.time);
 				} else {
-					ObservationRelationshipTypeEnum obsRelationshipType = null;
-					if (relatedComponentResource[0].equalsIgnoreCase("MBR")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.HAS_MEMBER;
-					} else if (relatedComponentResource[0].equalsIgnoreCase("DRIV")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.DERIVED_FROM;
-					} else if (relatedComponentResource[0].equalsIgnoreCase("SEQL")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;
-					} else if (relatedComponentResource[0].equalsIgnoreCase("RPLC")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;
-					} else if (relatedComponentResource[0].equalsIgnoreCase("QUALF")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;
-					} else if (relatedComponentResource[0].equalsIgnoreCase("INTF")) {
-						obsRelationshipType = ObservationRelationshipTypeEnum.INTERFERED_BY;
-					}
-
-					if (obsRelationshipType != null) {
-						List<Related> relateds = new ArrayList<Related>();
-						for (int i = 1; i < relatedComponentResource.length; i++) {
-							Related related = new Related();
-							related.setType(obsRelationshipType);
-							ResourceReferenceDt referencedResDt = new ResourceReferenceDt(
-									"Observation/" + relatedComponentResource[i]);
-							related.setTarget(referencedResDt);
-							relateds.add(related);
-						}
-						observation.setRelated(relateds);
-					}
+					myDate = this.date;
 				}
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-
+			
+			if (myDate != null) {
+				DateTimeDt appliesDate = new DateTimeDt(myDate);
+				observation.setEffective(appliesDate);
+			}
 		}
-
-		if (// this.date != null &&
-		this.time != null) { // WARNING notice that the resource field
-								// 'appliesDate' relies only on the entity field
-								// 'time'
-			DateTimeDt appliesDate = new DateTimeDt(this.time);
-			observation.setEffective(appliesDate);
+//		if (// this.date != null &&
+//		this.time != null) { // WARNING notice that the resource field
+//								// 'appliesDate' relies only on the entity field
+//								// 'time'
+//			DateTimeDt appliesDate = new DateTimeDt(this.time);
+//			observation.setEffective(appliesDate);
+//		}
+		if (this.person != null) {
+			ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
+			personRef.setDisplay(this.person.getNameAsSingleString());
+			observation.setSubject(personRef);
 		}
-		if (this.person != null)
-			observation.setSubject(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
 		if (this.visitOccurrence != null)
-			observation.getEncounter().setReference(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId()));
+			observation.getEncounter().setReference(new IdDt (VisitOccurrence.RES_TYPE, this.visitOccurrence.getId()));
 		return observation;
 	}
 

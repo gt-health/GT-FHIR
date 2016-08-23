@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
@@ -18,6 +19,10 @@ import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -31,10 +36,11 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 //})
 public class CareSite extends BaseResourceEntity{
 	
-	public static final String RES_TYPE = "Location";
+	public static final String RES_TYPE = "Organization";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="caresite_seq_gen")
+	@SequenceGenerator(name="caresite_seq_gen", sequenceName="caresite_id_seq")
 	@Column(name="care_site_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
@@ -43,14 +49,13 @@ public class CareSite extends BaseResourceEntity{
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
-	@JoinColumn(name="organization_id")
-	private Organization organization;
-	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="place_of_service_concept_id")
 	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 	private Concept placeOfServiceConcept;
+	
+	@Column(name="care_site_name")
+	private String careSiteName;
 	
 	@Column(name="care_site_source_value")
 	private String careSiteSourceValue;
@@ -62,15 +67,15 @@ public class CareSite extends BaseResourceEntity{
 		super();
 	}
 	
-	public CareSite(Long id, Location location, Organization organization, 
-			Concept placeOfServiceConcept, String careSiteSourceValue) {
+	public CareSite(Long id, Location location, Concept placeOfServiceConcept, String careSiteName, String careSiteSourceValue, String placeOfServiceSourceValue) {
 		super();
 		
 		this.id = id;
 		this.location = location;
-		this.organization = organization;
 		this.placeOfServiceConcept = placeOfServiceConcept;
+		this.careSiteName = careSiteName;
 		this.careSiteSourceValue = careSiteSourceValue;
+		this.placeOfServiceSourceValue = placeOfServiceSourceValue;
 	}
 	
 	public Long getId() {
@@ -89,20 +94,20 @@ public class CareSite extends BaseResourceEntity{
 		this.location = location;
 	}
 	
-	public Organization getOrganization() {
-		return organization;
-	}
-	
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
-	}
-	
 	public Concept getPlaceOfServiceConcept() {
 		return placeOfServiceConcept;
 	}
 	
 	public void setPlaceOfServiceConcept(Concept placeOfServiceConcept) {
 		this.placeOfServiceConcept = placeOfServiceConcept;
+	}
+	
+	public String getCareSiteName() {
+		return careSiteName;
+	}
+	
+	public void setCareSiteName(String careSiteName) {
+		this.careSiteName = careSiteName;
 	}
 	
 	public String getCareSiteSourceValue() {
@@ -145,8 +150,23 @@ public class CareSite extends BaseResourceEntity{
 
 	@Override
 	public IResource getRelatedResource() {
-		// TODO Auto-generated method stub
-		return null;
+		Organization locationResource = new Organization();
+		locationResource.setId(this.getIdDt());
+		
+		if (this.careSiteName != null && this.careSiteName != "") {
+			locationResource.setName(this.careSiteName);			
+		}
+		
+		if (this.placeOfServiceConcept != null) {
+			String codeString = this.placeOfServiceConcept.getConceptCode();
+			String systemUriString = this.placeOfServiceConcept.getVocabulary().getVocabularyReference();
+			String displayString = this.placeOfServiceConcept.getName();
+			
+			CodeableConceptDt typeCodeableConcept = new CodeableConceptDt(systemUriString, codeString);
+			typeCodeableConcept.getCodingFirstRep().setDisplay(displayString);
+			locationResource.setType(typeCodeableConcept);
+		}
+		return locationResource;
 	}
 
 	@Override

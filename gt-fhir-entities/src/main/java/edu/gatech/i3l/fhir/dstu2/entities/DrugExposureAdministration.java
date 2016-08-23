@@ -160,7 +160,7 @@ public final class DrugExposureAdministration extends DrugExposure {
 	public IResource getRelatedResource() {
 		MedicationAdministration resource = new MedicationAdministration();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
 
 		// Adding medication to Contained.
 		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
@@ -171,43 +171,60 @@ public final class DrugExposureAdministration extends DrugExposure {
 		CodeableConceptDt codeDt = new CodeableConceptDt();
 		codeDt.setCoding(codingList);
 
-        Medication medResource = new Medication();
-        // No ID set
-        medResource.setCode(codeDt);
-
-        // Medication reference. This should point to the contained resource.
-        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
-        medRefDt.setDisplay(this.getMedication().getName());
-        // Resource reference set, but no ID
-        medRefDt.setResource(medResource);
-        
-        resource.setMedication(medRefDt);
+		resource.setMedication(codeDt);
+		
+//        Medication medResource = new Medication();
+//        // No ID set
+//        medResource.setCode(codeDt);
+//
+//        // Medication reference. This should point to the contained resource.
+//        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
+//        medRefDt.setDisplay(this.getMedication().getName());
+//        // Resource reference set, but no ID
+//        medRefDt.setResource(medResource);
+//        
+//        resource.setMedication(medRefDt);
         // End of contained medication.
 
-		DrugExposureComplement f_drug = this.getComplement();
-		if (f_drug != null) {
-			Dosage dosage = new Dosage();
-			SimpleQuantityDt dose = new SimpleQuantityDt();
-			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
-				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
-				dose.setValue(doseValue);
-				dose.setUnit(this.getComplement().getUnit());
-				dosage.setQuantity(dose);
-				resource.setDosage(dosage);
-			} 
-		}
+        Double doseValue = this.getEffectiveDrugDose();
+        if (doseValue >= 0.0)  {
+        	Dosage dosage = new Dosage();
+        	SimpleQuantityDt dose = new SimpleQuantityDt();
+        	dose.setValue(doseValue);
+        	Concept myDoseUnitConcept = this.getDoseUnitConcept();
+        	if (myDoseUnitConcept != null) {
+            	dose.setUnit(myDoseUnitConcept.getConceptCode());
+        	}
+        	dosage.setQuantity(dose);
+        	resource.setDosage(dosage);
+        }
+//    	DrugExposureComplement f_drug = this.getComplement();
+//		if (f_drug != null) {
+//			Dosage dosage = new Dosage();
+//			SimpleQuantityDt dose = new SimpleQuantityDt();
+//			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
+//				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
+//				dose.setValue(doseValue);
+//				dose.setUnit(this.getComplement().getUnit());
+//				dosage.setQuantity(dose);
+//				resource.setDosage(dosage);
+//			} 
+//		}
 
 		
-		Calendar c = Calendar.getInstance();
-		c.setTime(this.startDate);
-		PeriodDt period = new PeriodDt();
-		period.setStart(new DateTimeDt(c.getTime()));
+//		Calendar c = Calendar.getInstance();
+//		c.setTime(this.startDate);
 		if (this.endDate != null) {
-			c.setTime(this.endDate);
-			period.setEnd(new DateTimeDt(c.getTime()));
+//			c.setTime(this.endDate);
+			PeriodDt period = new PeriodDt();
+//			period.setStart(new DateTimeDt(c.getTime()));
+//			period.setEnd(new DateTimeDt(c.getTime()));
+			period.setStart(new DateTimeDt(this.startDate));
+			period.setEnd(new DateTimeDt(this.endDate));
+			resource.setEffectiveTime(period);
+		} else {
+			resource.setEffectiveTime(new DateTimeDt(this.startDate));
 		}
-
-		resource.setEffectiveTime(period);
 
 		return resource;
 	}

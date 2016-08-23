@@ -24,6 +24,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -44,15 +45,19 @@ public final class MedicationConcept extends BaseResourceEntity{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-	@Column(name="concept_level", updatable=false)
-	private Integer level;
-	
-	@Column(name="concept_class", updatable=false)
-	private String conceptClass;
+	@ManyToOne
+	@JoinColumn(name="domain_id", referencedColumnName="domain_id")
+	private Domain domain;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
+	
+	@Column(name="concept_class_id", updatable=false)
+	private String conceptClassId;
+	
+	@Column(name="standard_concept", updatable=false)
+	private Character standardConcept;
 	
 	@Column(name="concept_code", updatable=false)
 	private String conceptCode;
@@ -82,20 +87,20 @@ public final class MedicationConcept extends BaseResourceEntity{
 		this.name = name;
 	}
 
-	public Integer getLevel() {
-		return level;
+	public Domain getDomainId() {
+		return domain;
 	}
 
-	public void setLevel(Integer level) {
-		this.level = level;
+	public void setDomainId(Domain domain) {
+		this.domain = domain;
 	}
 
-	public String getConceptClass() {
-		return conceptClass;
+	public String getConceptClassId() {
+		return conceptClassId;
 	}
 
-	public void setConceptClass(String conceptClass) {
-		this.conceptClass = conceptClass;
+	public void setConceptClassId(String conceptClassId) {
+		this.conceptClassId = conceptClassId;
 	}
 
 	public Vocabulary getVocabulary() {
@@ -106,6 +111,14 @@ public final class MedicationConcept extends BaseResourceEntity{
 		this.vocabulary = vocabulary;
 	}
 
+	public Character getStandardConcept() {
+		return standardConcept;
+	}
+	
+	public void setStandardConcept(Character standardConcept) {
+		this.standardConcept = standardConcept;
+	}
+	
 	public String getConceptCode() {
 		return conceptCode;
 	}
@@ -140,16 +153,18 @@ public final class MedicationConcept extends BaseResourceEntity{
 
 	@Override
 	public String toString() {
-		//Since this is an omop v.4 based model, all the information below is expected to be not null.
+		//Since this is an omop v.5 based model, all the information below is expected to be not null.
 		return this.getId() + ", "
-						+ this.getName() + ", "
-						+ this.getLevel() + ", "
-						+ this.getConceptClass() + ", "
-						+ this.getVocabulary().getId() + ", "
-						+ this.getConceptCode() + ", "
-						+ this.getValidStartDate() + ", "
-						+ this.getValidEndDate();
+				+ this.getName() + ", "
+				+ this.getDomainId() + ", "
+				+ this.getConceptClassId() + ", "
+				+ this.getStandardConcept() + ", "
+				+ this.getVocabulary().getId() + ", "
+				+ this.getConceptCode() + ", "
+				+ this.getValidStartDate() + ", "
+				+ this.getValidEndDate();
 	}
+
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
@@ -180,9 +195,9 @@ public final class MedicationConcept extends BaseResourceEntity{
 	@Override
 	public IResource getRelatedResource() {
 		Medication resource = new Medication();
-		resource.setId(this.getIdDt());
+		resource.setId(new IdDt(this.getId()));
 		CodeableConceptDt code = new CodeableConceptDt(this.getVocabulary().getSystemUri(), this.getConceptCode());
-		code.getCodingFirstRep().setDisplay(super.toString());
+		code.getCodingFirstRep().setDisplay(this.getName());
 		resource.setCode(code); 
 		NarrativeDt narrative = new NarrativeDt();
 		narrative.setDiv(this.toString());

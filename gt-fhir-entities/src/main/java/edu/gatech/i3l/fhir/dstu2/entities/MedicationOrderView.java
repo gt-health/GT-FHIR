@@ -35,6 +35,7 @@ import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
+import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DispenseRequest;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
@@ -48,103 +49,109 @@ import edu.gatech.i3l.omop.mapping.StaticVariables;
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionWritten")
-public final class DrugExposureOrder extends DrugExposure {
-	
-	public static final String RES_TYPE = "MedicationPrescription";
-	
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="person_id", nullable=false)
+public final class MedicationOrderView extends DrugExposure {
+
+	public static final String RES_TYPE = "MedicationOrder";
+
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
-	
+	private PersonComplement person;
+
 	/**
-	 * For this entity, drug type (name of the concept) is Prescription Written; it is declared with id 38000177 and vocabulary_id 36,
-	 * in an Omop v4.0 compliant database, but this implementation is database independent, since we use {@link OmopConceptMapping} to 
-	 * gather the information in the database.
+	 * For this entity, drug type (name of the concept) is Prescription Written;
+	 * it is declared with id 38000177 and vocabulary_id 36, in an Omop v4.0
+	 * compliant database, but this implementation is database independent,
+	 * since we use {@link OmopConceptMapping} to gather the information in the
+	 * database.
 	 */
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_type_concept_id",nullable=false)
+	@ManyToOne(cascade = { CascadeType.MERGE })
+	@JoinColumn(name = "drug_type_concept_id", nullable = false)
 	@NotNull
 	private Concept drugExposureType;
-	
+
 	/**
 	 * Reflects the date the prescription was written.
+	 * 
 	 * @fhir dateWritten
 	 */
-	@Column(name="drug_exposure_start_date", nullable=false)
+	@Column(name = "drug_exposure_start_date", nullable = false)
 	@NotNull
 	private Date startDate;
-	
-	@Column(name="drug_exposure_end_date", nullable=true)
+
+	@Column(name = "drug_exposure_end_date", nullable = true)
 	private Date endDate;
 
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="prescribing_provider_id")
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@JoinColumn(name = "provider_id")
 	private Provider prescribingProvider;
-	
+
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name="visit_occurrence_id")
-	private VisitOccurrenceComplement visitOccurrence;
-	
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@JoinColumn(name = "visit_occurrence_id")
+	private VisitOccurrence visitOccurrence;
+
 	/**
-	 * @notice  Note that this is not a direct reference to a specific condition record, {@link ConditionOccurrence}, in the condition table, but rather a 
-	 * condition concept in the vocabulary.
+	 * @notice Note that this is not a direct reference to a specific condition
+	 *         record, {@link ConditionOccurrence}, in the condition table, but
+	 *         rather a condition concept in the vocabulary.
 	 * @fhir reason
 	 */
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="relevant_condition_concept_id")
-	private Concept relevantCondition; //TODO check other cases where a Concept can be taken as COndition
-	
+//	@ManyToOne(cascade = { CascadeType.MERGE })
+//	@JoinColumn(name = "relevant_condition_concept_id")
+//	private Concept relevantCondition; // TODO check other cases where a Concept
+										// can be taken as COndition
+
 	/*
 	 *****************************
 	 * ATTRIBUTES FOR DISPENSE
 	 *****************************/
 	/**
-	 * RxNorm.
-	 * Generally in concept class 'Clinical Drug'.
+	 * RxNorm. Generally in concept class 'Clinical Drug'.
 	 */
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_concept_id", nullable=false)
+	@ManyToOne(cascade = { CascadeType.MERGE })
+	@JoinColumn(name = "drug_concept_id", nullable = false)
 	@NotNull
 	private Concept medication;
-	
+
 	/**
 	 * @fhir quantity
 	 */
-	@Column(name="quantity")
+	@Column(name = "quantity")
 	private BigDecimal quantity;
-	
+
 	/**
-	 * The period of validity of the prescription, in days, counting from the initial date of this prescription.
+	 * The period of validity of the prescription, in days, counting from the
+	 * initial date of this prescription.
+	 * 
 	 * @fhir validityPeriod
 	 */
-	@Column(name="days_supply")
+	@Column(name = "days_supply")
 	private Integer daysSupply;
-	
+
 	/**
-	 * @omop The number of refills after the initial prescription. The initial prescription is not counted, values start with 0.
+	 * @omop The number of refills after the initial prescription. The initial
+	 *       prescription is not counted, values start with 0.
 	 * @fhir numberOfRepeatsAllowed
 	 */
-	@Column(name="refills")
+	@Column(name = "refills")
 	@Min(0L)
 	private Integer refills;
-	
-	/*
-	 * ********************************
-	 * END ATTRIBUTES FOR DISPENSE
-	 * ********************************/
 
-	public Person getPerson() {
+	/*
+	 * ******************************** END ATTRIBUTES FOR DISPENSE
+	 ********************************/
+
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -163,7 +170,7 @@ public final class DrugExposureOrder extends DrugExposure {
 	public void setDrugExposureType(Concept drugExposureType) {
 		this.drugExposureType = drugExposureType;
 	}
-	
+
 	public BigDecimal getQuantity() {
 		return quantity;
 	}
@@ -196,22 +203,22 @@ public final class DrugExposureOrder extends DrugExposure {
 		this.prescribingProvider = prescribingProvider;
 	}
 
-	public VisitOccurrenceComplement getVisitOccurrence() {
+	public VisitOccurrence getVisitOccurrence() {
 		return visitOccurrence;
 	}
 
-	public void setVisitOccurrence(VisitOccurrenceComplement visitOccurrence) {
+	public void setVisitOccurrence(VisitOccurrence visitOccurrence) {
 		this.visitOccurrence = visitOccurrence;
 	}
 
-	public Concept getRelevantCondition() {
-		return relevantCondition;
-	}
-
-	public void setRelevantCondition(Concept relevantCondition) {
-		this.relevantCondition = relevantCondition;
-	}
-
+//	public Concept getRelevantCondition() {
+//		return relevantCondition;
+//	}
+//
+//	public void setRelevantCondition(Concept relevantCondition) {
+//		this.relevantCondition = relevantCondition;
+//	}
+//
 	public Integer getDaysSupply() {
 		return daysSupply;
 	}
@@ -258,49 +265,55 @@ public final class DrugExposureOrder extends DrugExposure {
 		}
 		return theSearchParam;
 	}
-   
-	        
+
 	@Override
-	public IResource getRelatedResource() {  
+	public IResource getRelatedResource() {
 		MedicationOrder resource = new MedicationOrder();
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
-		/*  Begin Setting Dispense */
-//		ResourceReferenceDt medicationRef = new ResourceReferenceDt(new IdDt("Medication", this.medication.getId()));
-		
+		/* Begin Setting Dispense */
+		// ResourceReferenceDt medicationRef = new ResourceReferenceDt(new
+		// IdDt("Medication", this.medication.getId()));
+
 		// Adding medication to Contained.
-		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(),
+				this.getMedication().getConceptCode());
 		medCoding.setDisplay(this.getMedication().getName());
-		
+
 		List<CodingDt> codingList = new ArrayList<CodingDt>();
 		codingList.add(medCoding);
 		CodeableConceptDt codeDt = new CodeableConceptDt();
 		codeDt.setCoding(codingList);
 
-        Medication medResource = new Medication();
-        // No ID set
-        medResource.setCode(codeDt);
+		resource.setMedication(codeDt);
+		
+//		
+//		Medication medResource = new Medication();
+//		// No ID set
+//		medResource.setCode(codeDt);
+//
+//		// Medication reference. This should point to the contained resource.
+//		ResourceReferenceDt medRefDt = new ResourceReferenceDt();
+//		medRefDt.setDisplay(this.getMedication().getName());
+//		// Resource reference set, but no ID
+//		medRefDt.setResource(medResource);
+//
+//		resource.setMedication(medRefDt);
+		// End of contained medication.
 
-        // Medication reference. This should point to the contained resource.
-        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
-        medRefDt.setDisplay(this.getMedication().getName());
-        // Resource reference set, but no ID
-        medRefDt.setResource(medResource);
-        
-        resource.setMedication(medRefDt);
-        // End of contained medication.
-		
-//		resource.setMedication(medicationRef);
+		// resource.setMedication(medicationRef);
 		DispenseRequest dispense = new DispenseRequest();
-//		dispense.setMedication(medicationRef);
-		dispense.setMedication(medRefDt);
+		dispense.setMedication(codeDt);
 		
-		if(this.refills != null)
+		// dispense.setMedication(medicationRef);
+//		dispense.setMedication(medRefDt);
+
+		if (this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
-		if(this.quantity != null) {
+		if (this.quantity != null) {
 			dispense.setQuantity(new SimpleQuantityDt(this.quantity.doubleValue()));
 		}
-		//setting validity
+		// setting validity
 		Calendar c = Calendar.getInstance();
 		c.setTime(this.startDate);
 		PeriodDt period = new PeriodDt();
@@ -309,36 +322,61 @@ public final class DrugExposureOrder extends DrugExposure {
 			c.setTime(this.endDate);
 			period.setEnd(new DateTimeDt(c.getTime()));
 		}
-		if(this.daysSupply != null){
+		if (this.daysSupply != null) {
 			c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
 			period.setEnd(new DateTimeDt(c.getTime()));
 		}
 		dispense.setValidityPeriod(period);
-		
+
 		resource.setDispenseRequest(dispense);
 		/* End Setting Dispense */
 		if (this.visitOccurrence != null) {
-			resource.setEncounter(new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.visitOccurrence.getId())));
+			resource.setEncounter(
+					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));
 		}
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
-		if(this.relevantCondition != null)
-			//FIXME the reference above doesn't corresponde to a ResourceEntity; it should be a reference to Resource Condition
-			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
-		if(this.prescribingProvider != null)
-			resource.setPrescriber(new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
+		ResourceReferenceDt patientRef = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		patientRef.setDisplay(this.person.getNameAsSingleString());
+		resource.setPatient(patientRef);
 		
-		DrugExposureComplement f_drug = this.getComplement();
-		if (f_drug != null) {
-			DosageInstruction dosage = new DosageInstruction();
-//			QuantityDt dose = new QuantityDt();
-			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
-				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
-				SimpleQuantityDt dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", this.getComplement().getUnit());
-				dosage.setDose(dose);
-				resource.addDosageInstruction(dosage);
-			} 
+//		if (this.relevantCondition != null)
+//			// FIXME the reference above doesn't corresponde to a
+//			// ResourceEntity; it should be a reference to Resource Condition
+//			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
+		if (this.prescribingProvider != null) {
+			ResourceReferenceDt prescriberRef = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId()));
+			prescriberRef.setDisplay(this.prescribingProvider.getProviderName());
+			resource.setPrescriber(prescriberRef);
 		}
-		
+
+        Double doseValue = this.getEffectiveDrugDose();
+        if (doseValue >= 0.0)  {
+        	DosageInstruction dosage = new DosageInstruction();
+        	Concept myUnitConcept = this.getDoseUnitConcept();
+        	SimpleQuantityDt dose;
+        	if (myUnitConcept != null) {
+        		dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", myUnitConcept.getConceptCode());
+        	} else {
+        		dose = new SimpleQuantityDt(doseValue);
+        	}
+			dosage.setDose(dose);
+			resource.addDosageInstruction(dosage);
+        }
+
+//		DrugExposureComplement f_drug = this.getComplement();
+//		if (f_drug != null) {
+//			DosageInstruction dosage = new DosageInstruction();
+//			// QuantityDt dose = new QuantityDt();
+//			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
+//				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not
+//																		// throw
+//																		// NumberFormatException
+//				SimpleQuantityDt dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org",
+//						this.getComplement().getUnit());
+//				dosage.setDose(dose);
+//				resource.addDosageInstruction(dosage);
+//			}
+//		}
+
 		return resource;
 	}
 
@@ -352,16 +390,30 @@ public final class DrugExposureOrder extends DrugExposure {
 		this.startDate = medicationOrder.getDateWritten();
 		/* Set VisitOccurrence */
 		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
-		if(encounterRef != null){
-			this.visitOccurrence = new VisitOccurrenceComplement();
+		if (encounterRef != null) {
+			this.visitOccurrence = new VisitOccurrence();
 			this.visitOccurrence.setId(encounterRef);
 		}
 		/* Set Medication */
 		if (medicationOrder.getMedication() instanceof CodeableConcept) {
-			// TODO: this is for contained medication. We need to implement this when
-			// medication order resource contains the medication in the contained. 
-			System.out.println("TODO: We must implement contained medication in MedicationOrder");
-		} if (medicationOrder.getMedication() instanceof Reference) {
+			CodeableConceptDt codeDt = (CodeableConceptDt) medicationOrder.getMedication();
+			List<CodingDt> codingList = codeDt.getCoding();
+			if (codingList.size() > 0) {
+				CodingDt medCoding = codingList.get(0);
+				this.medication = new Concept();
+				String systemUri = medCoding.getSystem();
+				String code = medCoding.getCode();
+
+				Concept medication = new Concept();
+				medication.setConceptCode(code);
+				
+				Vocabulary voc = new Vocabulary();
+				voc.setIdNameBySystemUri(systemUri);
+				medication.setVocabulary(voc);
+				
+				this.setMedication(medication);
+			}
+		} else if (medicationOrder.getMedication() instanceof Reference) {
 			Reference medicationRef = (Reference) medicationOrder.getMedication();
 			this.medication = new Concept();
 			String medId = medicationRef.getId();
@@ -369,15 +421,15 @@ public final class DrugExposureOrder extends DrugExposure {
 				this.medication.setId(Long.valueOf(medId));
 			}
 		}
-		
+
 		/* Set patient */
 		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
-		if(patientRef != null){
-			this.person = new Person();
+		if (patientRef != null) {
+			this.person = new PersonComplement();
 			this.person.setId(patientRef);
 		}
 		// OMOP can handle only one dosage.
-		DrugExposureComplement f_drug = new DrugExposureComplement();
+//		DrugExposureComplement f_drug = new DrugExposureComplement();
 
 		/* dosageInstruction */
 		DosageInstruction dosageInstruction = medicationOrder.getDosageInstructionFirstRep();
@@ -385,11 +437,21 @@ public final class DrugExposureOrder extends DrugExposure {
 			// This is doseRange
 		} else if (dosageInstruction.getDose() instanceof SimpleQuantityDt) {
 			SimpleQuantityDt doseQty = (SimpleQuantityDt) dosageInstruction.getDose();
-			f_drug.setDose(doseQty.getValue().toString());
-			f_drug.setUnit(doseQty.getUnit());
-		}
+			this.setEffectiveDrugDose(doseQty.getValue().doubleValue());
+			this.setDoseUnitSourceValue(doseQty.getUnit());
+
+			Long unitConceptId = OmopConceptMapping.getInstance().get(doseQty.getUnit());
+			Concept myUnitConcept;
+			if (unitConceptId > 0) {
+				myUnitConcept = new Concept(unitConceptId);
+				this.setDoseUnitConcept(myUnitConcept);
+			}
 			
-		this.setComplement(f_drug);
+//			f_drug.setDose(doseQty.getValue().toString());
+//			f_drug.setUnit(doseQty.getUnit());
+		}
+
+//		this.setComplement(f_drug);
 
 		/* dispense */
 		DispenseRequest dispenseRequest = medicationOrder.getDispenseRequest();
@@ -400,14 +462,14 @@ public final class DrugExposureOrder extends DrugExposure {
 			} else {
 				this.setRefills(0);
 			}
-			
+
 			SimpleQuantityDt qty = dispenseRequest.getQuantity();
 			if (qty != null) {
 				this.setQuantity(qty.getValue());
 			} else {
 				this.setQuantity(BigDecimal.ZERO);
 			}
-			
+
 			if (this.startDate == null) {
 				PeriodDt validPeriod = dispenseRequest.getValidityPeriod();
 				if (validPeriod != null) {
@@ -415,9 +477,8 @@ public final class DrugExposureOrder extends DrugExposure {
 				}
 			}
 		}
-			
+
 		return this;
 	}
 
-	
 }

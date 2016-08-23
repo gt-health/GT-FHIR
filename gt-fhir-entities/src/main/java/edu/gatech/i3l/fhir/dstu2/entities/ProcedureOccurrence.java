@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_PATIENT;
-import static ca.uhn.fhir.model.dstu.resource.Procedure.SP_SUBJECT;
+import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_SUBJECT;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -49,14 +49,13 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "procedure_concept_id", nullable = false)
-	@NotNull
+	@ManyToOne(cascade = CascadeType.MERGE)
+	@JoinColumn(name = "procedure_concept_id")
 	private Concept procedureConcept;
 
 	@Column(name = "procedure_date", nullable = false)
@@ -65,42 +64,54 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	private Date date;
 
 	@ManyToOne(cascade = { CascadeType.MERGE })
-	@JoinColumn(name = "procedure_type_concept_id", nullable = false)
-	@NotNull
+	@JoinColumn(name = "procedure_type_concept_id")
 	private Concept procedureTypeConcept;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "associated_provider_id")
+	@ManyToOne
+	@JoinColumn(name = "modifier_concept_id")
+	private Concept modifierConcept;
+	
+	@Column(name="quantity")
+	private Long quantity;
+	
+	@ManyToOne   // (cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@JoinColumn(name = "provider_id")
 	private Provider provider;
 
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "relevant_condition_concept_id")
-	private Concept relevantConditionConcept;
-
 	@Column(name = "procedure_source_value")
 	private String procedureSourceValue;
+
+	@ManyToOne
+	@JoinColumn(name = "procedure_source_concept_id")
+	private Concept procedureSourceConcept;
+
+	@Column(name = "qualifier_source_value")
+	private String qualifierSourceValue;
 
 	public ProcedureOccurrence() {
 		super();
 	}
 
-	public ProcedureOccurrence(Long id, Person person, Concept procedureConcept, Date date, Concept procedureTypeConcept,
-			Provider provider, VisitOccurrence visitOccurrence, Concept relevantConditionConcept,
-			String procedureSourceValue) {
+	public ProcedureOccurrence(Long id, PersonComplement person, Concept procedureConcept, Date date, Concept procedureTypeConcept,
+			Concept modifierConcept, Long quantity, Provider provider, VisitOccurrence visitOccurrence, 
+			String procedureSourceValue, Concept procedureSourceConcept, String qualifierSourceValue) {
 		super();
 		this.id = id;
 		this.person = person;
 		this.procedureConcept = procedureConcept;
 		this.date = date;
 		this.procedureTypeConcept = procedureTypeConcept;
+		this.modifierConcept = modifierConcept;
+		this.quantity = quantity;
 		this.provider = provider;
 		this.visitOccurrence = visitOccurrence;
-		this.relevantConditionConcept = relevantConditionConcept;
 		this.procedureSourceValue = procedureSourceValue;
+		this.procedureSourceConcept = procedureSourceConcept;
+		this.qualifierSourceValue = qualifierSourceValue;
 	}
 
 	@Override
@@ -112,11 +123,11 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		this.id = id;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -144,6 +155,22 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		this.procedureTypeConcept = procedureTypeConcept;
 	}
 
+	public Concept getModifierConcept() {
+		return modifierConcept;
+	}
+	
+	public void setModifierConcept(Concept modifierConcept) {
+		this.modifierConcept = modifierConcept;
+	}
+	
+	public Long getQuantity() {
+		return quantity;
+	}
+	
+	public void setQuantity(Long quantity) {
+		this.quantity = quantity;
+	}
+	
 	public Provider getProvider() {
 		return provider;
 	}
@@ -160,14 +187,6 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		this.visitOccurrence = visitOccurrence;
 	}
 
-	public Concept getRelevantConditionConcept() {
-		return relevantConditionConcept;
-	}
-
-	public void setRelevantConditionConcept(Concept relevantConditionConcept) {
-		this.relevantConditionConcept = relevantConditionConcept;
-	}
-
 	public String getProcedureSourceValue() {
 		return procedureSourceValue;
 	}
@@ -176,6 +195,23 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		this.procedureSourceValue = procedureSourceValue;
 	}
 
+	public Concept getProcedureSourceConcept() {
+		return procedureSourceConcept;
+	}
+
+	public void setProcedureSourceConcept(Concept procedureSourceConcept) {
+		this.procedureSourceConcept = procedureSourceConcept;
+	}
+
+	public String getQualifierSourceValue() {
+		return qualifierSourceValue;
+	}
+	
+	public void setQualifierSourceValue(String qualifierSourceValue) {
+		this.qualifierSourceValue = qualifierSourceValue;
+	}
+	
+	
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		// TODO Auto-generated method stub
@@ -184,7 +220,6 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 
 	@Override
 	public String getResourceType() {
-		// TODO Auto-generated method stub
 		return RES_TYPE;
 	}
 
@@ -214,7 +249,18 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		procedure.setId(this.getIdDt());
 		
 		// Set patient 
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(this.person.getResourceType(), this.person.getId()));
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(person.getResourceType(), person.getId()));
+		String patientName = "";
+		if (!person.getGivenName1().isEmpty()) {
+			patientName = person.getGivenName1();
+		}
+		if (!person.getGivenName2().isEmpty()) {
+			patientName += " "+person.getGivenName2();
+		}
+		if (!person.getFamilyName().isEmpty()) {
+			patientName += " "+person.getFamilyName();
+		}
+		patientReference.setDisplay(patientName);
 		procedure.setSubject(patientReference);
 		
 		//TODO: revisit this. For now just set to in-progress
@@ -232,20 +278,20 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 			CodingDt coding = new CodingDt(theSystem, theCode);
 			coding.setDisplay(procedureConcept.getName());
 			procedureCodeConcept.addCoding(coding);
+			procedure.setCode(procedureCodeConcept);
 		}
 
 		// FHIR does not require the coding. If our System URI is not mappable
-		// from
-		// OMOP database, then coding would be empty. Set Text here. Even text
-		// is not
-		// required in FHIR. But, then no reason to have this condition, I
-		// think...
+		// from OMOP database, then coding would be empty. Set Text here. Even text
+		// is not required in FHIR. But, then no reason to have this condition, I think...
 		String theText = procedureConcept.getName() + ", " + procedureConcept.getVocabulary().getName() + ", "
 				+ procedureConcept.getConceptCode();
-
+//
+//		System.out.println("Procedure:"+theText);
+//
 		procedureCodeConcept.setText(theText);
 
-		procedure.setCode(procedureCodeConcept);
+//		procedure.setCode(procedureCodeConcept);
 
 		//procedure.setType(procedureCodeConcept);
 		

@@ -56,7 +56,7 @@ public class PersonComplement extends Person{
 	private Concept maritalStatus;
 	
 	@Column(name="active")
-	private Boolean active;
+	private short active;
 	
 	public PersonComplement() {
 		super();
@@ -126,11 +126,11 @@ public class PersonComplement extends Person{
 		this.maritalStatus = maritalStatus;
 	}
 	
-	public Boolean getActive() {
+	public short getActive() {
 		return active;
 	}
 	
-	public void setActive(Boolean active) {
+	public void setActive(short active) {
 		this.active = active;
 	}
 	
@@ -140,8 +140,11 @@ public class PersonComplement extends Person{
 		patient.addName().addFamily(this.familyName).addGiven(this.givenName1);
 		if(this.givenName2 != null)
 			patient.getName().get(0).addGiven(this.givenName2);
-		boolean active = this.active != null ? this.active : false;
-		patient.setActive(active);
+//		short active = this.active != null ? this.active : 0;
+		if (this.active == 0)
+			patient.setActive(false);
+		else
+			patient.setActive(true);
 		
 		//MARITAL STATUS
 //		MaritalStatusCodesEnum[] values = MaritalStatusCodesEnum.values();
@@ -184,7 +187,11 @@ public class PersonComplement extends Person{
 				}
 			//}
 			
-			this.active = patient.getActive();
+			if (patient.getActive())
+				this.setActive((short)1);
+			else
+				this.setActive((short)0);
+			
 			//MARITAL STATUS
 //			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(patient.getMaritalStatus().getText(), OmopConceptMapping.MARITAL_STATUS));
 		} else {
@@ -194,5 +201,16 @@ public class PersonComplement extends Person{
 		return this;
 	}
 
+	public String getNameAsSingleString() {
+		String name="";
+		if (!this.givenName1.isEmpty())
+			name = this.givenName1;
+		if (!this.givenName2.isEmpty())
+			name = name+" "+this.givenName2;
+		if (!this.familyName.isEmpty()) 
+			name = name+" "+this.familyName;
+		
+		return name;
+	}
 	
 }

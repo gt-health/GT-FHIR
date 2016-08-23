@@ -40,6 +40,7 @@ import ca.uhn.fhir.rest.param.CompositeParam;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.NumberParam;
+import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.QuantityParam;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
@@ -139,7 +140,7 @@ public class QueryHelper {
 //			if (addPredicateMissingFalseIfPresent(builder, theParamName, from, codePredicates, nextOr)) {//WARNING check his line for correctness
 //				continue;
 //			}
-			IQueryParameterType params = toParameterType(myContext.getResourceDefinition(myResourceType).getSearchParam(theParamName), nextOr.getValueAsQueryToken());
+			IQueryParameterType params = toParameterType(myContext.getResourceDefinition(myResourceType).getSearchParam(theParamName), nextOr.getValueAsQueryToken(myContext));
 			Predicate p = createPredicateDate(builder, from, theParamName, params);
 			codePredicates.add(p);
 		}
@@ -295,7 +296,7 @@ public class QueryHelper {
 			if (params instanceof ReferenceParam) {
 				ReferenceParam ref = (ReferenceParam) params;
 
-				String resourceId = ref.getValueAsQueryToken();
+				String resourceId = ref.getValueAsQueryToken(myContext);
 
 				if (isBlank(ref.getChain())) {
 					if (resourceId.contains("/")) {
@@ -568,7 +569,8 @@ public class QueryHelper {
 				if (value == null) {
 					return thePids;
 				}
-				Predicate p = predicateBuilder.translatePredicateValueNumber(myResourceEntity, builder, from, theParamName, param.getComparator() , value);
+//				Predicate p = predicateBuilder.translatePredicateValueNumber(myResourceEntity, builder, from, theParamName, param.getComparator() , value);
+				Predicate p = predicateBuilder.translatePredicateValueNumber(myResourceEntity, builder, from, theParamName, param.getPrefix() , value);
 				codePredicates.add(p);
 				
 			} else {
@@ -606,7 +608,7 @@ public class QueryHelper {
 
 			String systemValue;
 			String unitsValue;
-			QuantityCompararatorEnum cmpValue;
+			ParamPrefixEnum cmpValue;
 			BigDecimal valueValue;
 			boolean approx = false;
 
@@ -614,15 +616,20 @@ public class QueryHelper {
 				BaseQuantityDt param = (BaseQuantityDt) params;
 				systemValue = param.getSystemElement().getValueAsString();
 				unitsValue = param.getUnitsElement().getValueAsString();
-				cmpValue = QuantityCompararatorEnum.VALUESET_BINDER.fromCodeString(param.getComparatorElement().getValueAsString());
+//				cmpValue = QuantityCompararatorEnum.VALUESET_BINDER.fromCodeString(param.getComparatorElement().getValueAsString());
+				cmpValue = ParamPrefixEnum.forValue(param.getComparatorElement().getValueAsString());
 				valueValue = param.getValueElement().getValue();
 			} else if (params instanceof QuantityParam) {
 				QuantityParam param = (QuantityParam) params;
-				systemValue = param.getSystem().getValueAsString();
+				systemValue = param.getSystem();
+//				systemValue = param.getSystem().getValueAsString();
 				unitsValue = param.getUnits();
-				cmpValue = param.getComparator();
-				valueValue = param.getValue().getValue();
-				approx = param.isApproximate();
+//				cmpValue = param.getComparator();
+				cmpValue = param.getPrefix();
+//				valueValue = param.getValue().getValue();
+				valueValue = param.getValue();
+				approx = (param.getPrefix() == ParamPrefixEnum.APPROXIMATE);
+//				approx = param.isApproximate();
 			} else {
 				throw new IllegalArgumentException("Invalid quantity type: " + params.getClass());
 			}

@@ -5,18 +5,19 @@ import java.sql.Date;
 
 public class Death {
 
-	private Long person;
-//	private Person person;
+//	private Long person;
+	private Person person;
 	private Date deathDate;
 	private Concept deathType;
 	private Concept causeOfDeath;
-	private String causeOfDeathSourceValue;
+	private String causeSourceValue;
+	private Concept causeSourceConcept;
 
-	public Long getPerson() {
+	public Person getPerson() {
 		return person;
 	}
 
-	public void setPerson(Long person) {
+	public void setPerson(Person person) {
 		this.person = person;
 	}
 	
@@ -44,12 +45,20 @@ public class Death {
 		this.causeOfDeath = causeOfDeath;
 	}
 
-	public String getCauseOfDeathSourceValue() {
-		return causeOfDeathSourceValue;
+	public String getCauseSourceValue() {
+		return causeSourceValue;
 	}
 
-	public void setCauseOfDeathSourceValue(String causeOfDeathSourceValue) {
-		this.causeOfDeathSourceValue = causeOfDeathSourceValue;
+	public void setCauseSourceValue(String causeSourceValue) {
+		this.causeSourceValue = causeSourceValue;
+	}
+	
+	public Concept getCauseSourceConcept() {
+		return causeSourceConcept;
+	}
+	
+	public void setCauseSourceConcept(Concept causeSourceConcept) {
+		this.causeSourceConcept = causeSourceConcept;
 	}
 
 }

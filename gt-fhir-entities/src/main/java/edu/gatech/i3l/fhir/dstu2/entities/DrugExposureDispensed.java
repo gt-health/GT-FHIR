@@ -27,6 +27,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
@@ -155,17 +156,35 @@ public final class DrugExposureDispensed extends DrugExposure{
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.MedicationDispense resource = new ca.uhn.fhir.model.dstu2.resource.MedicationDispense();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId())));
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
 		// resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		// we return medication with contained codeable concept instead of reference.
-		CodeableConceptDt medCodeableConcept = new CodeableConceptDt(this.getMedication().getVocabulary().getSystemUri(), 
-				this.getMedication().getConceptCode());
-		//medCodeableConcept.getCodingFirstRep().setDisplay(this.medication.getName());
-		resource.setMedication(medCodeableConcept);
+	
+		// Adding medication to Contained.
+		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+		medCoding.setDisplay(this.getMedication().getName());
+		
+		List<CodingDt> codingList = new ArrayList<CodingDt>();
+		codingList.add(medCoding);
+		CodeableConceptDt codeDt = new CodeableConceptDt();
+		codeDt.setCoding(codingList);
+
+		resource.setMedication(codeDt);
+		
+//		CodeableConceptDt medCodeableConcept = new CodeableConceptDt(this.getMedication().getVocabulary().getSystemUri(), 
+//				this.getMedication().getConceptCode());
+//		//medCodeableConcept.getCodingFirstRep().setDisplay(this.medication.getName());
+//		resource.setMedication(medCodeableConcept);
 		
 		resource.setWhenPrepared(new DateTimeDt(this.startDate));
 		if (this.quantity != null){
-			SimpleQuantityDt quantity = new SimpleQuantityDt(this.quantity.doubleValue(), "http://unitsofmeasure.org", this.getComplement().getUnit());
+			Concept unitConcept = this.getDoseUnitConcept();
+			SimpleQuantityDt quantity;
+			if (unitConcept != null) {
+				quantity = new SimpleQuantityDt(this.quantity.doubleValue(), "http://unitsofmeasure.org", unitConcept.getConceptCode());
+			} else {
+				quantity = new SimpleQuantityDt(this.quantity.doubleValue());
+			}
 			resource.setQuantity(quantity);
 		}
 		if (this.daysSupply != null)

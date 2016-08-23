@@ -31,6 +31,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -60,7 +61,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id", nullable=false)
@@ -90,7 +91,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 * @omopVersion 4.0
 	 */
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="associated_provider_id")
+	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -100,13 +101,17 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_source_value")
 	private String sourceValue; 
 
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="condition_source_concept_id")
+	private Concept sourceConcept;
+	
 	public ConditionOccurrence() {
 		super();
 	}
 
-	public ConditionOccurrence(Long id, Person person, Concept conditionConcept, Date startDate, Date endDate,
+	public ConditionOccurrence(Long id, PersonComplement person, Concept conditionConcept, Date startDate, Date endDate,
 			Concept conditionTypeConcept, String stopReason, Provider provider, VisitOccurrence encounter,
-			String sourceValue) {
+			String sourceValue, Concept sourceConcept) {
 		super();
 
 		this.id = id;
@@ -119,6 +124,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		this.provider = provider;
 		this.encounter = encounter;
 		this.sourceValue = sourceValue;
+		this.sourceConcept = sourceConcept;
 	}
 
 	
@@ -136,11 +142,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return RESOURCE_TYPE;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -207,6 +213,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public void setSourceValue(String sourceValue) {
 		this.sourceValue = sourceValue;
 	}
+	
+	public Concept getSourceConcept() {
+		return sourceConcept;
+	}
+	
+	public void setSourceConcept(Concept sourceConcept) {
+		this.sourceConcept = sourceConcept;
+	}
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
@@ -214,7 +228,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			Condition condition = (Condition) resource;
 			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
 			if(patientRef != null){
-				this.person =  new Person();
+				this.person =  new PersonComplement();
 				this.person.setId(patientRef);
 			}
 
@@ -272,7 +286,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RESOURCE_TYPE, this.person.getId()));
+		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		patientReference.setDisplay(this.person.getNameAsSingleString());
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
@@ -281,7 +296,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// we just create this reference resource manually. When encounter
 			// is implemented, we
 			// will get it from visit_occurrence class.
-			ResourceReferenceDt encounterReference = new ResourceReferenceDt(new IdDt(VisitOccurrence.RESOURCE_TYPE, this.encounter.getId()));
+			ResourceReferenceDt encounterReference = new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.encounter.getId()));
 			condition.setEncounter(encounterReference);
 		}
 
@@ -289,6 +304,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// This can be either Patient or Practitioner.
 		if (provider != null && provider.getId() > 0) {
 			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, provider.getId()));
+			practitionerReference.setDisplay(this.provider.getProviderName());
 			condition.setAsserter(practitionerReference);
 		}
 
@@ -305,14 +321,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		String theSystem;
 		String theCode;
 		String theDisplay = "";
-		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
-			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
-			theCode = this.sourceValue.substring(9);
-		} else {
-			theSystem = conditionConcept.getVocabulary().getSystemUri();
-			theCode = conditionConcept.getConceptCode();
-			theDisplay = conditionConcept.getName();
-		}
+//		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
+//			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
+//			theCode = this.sourceValue.substring(9);
+//		} else {
+		theSystem = conditionConcept.getVocabulary().getSystemUri();
+		theCode = conditionConcept.getConceptCode();
+		theDisplay = conditionConcept.getName();
+//		}
 
 		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
@@ -361,6 +377,9 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			periodDt.setEnd(endDateDt);
 			condition.setOnset(periodDt);
 		}
+
+		// VerficationStutus 
+		condition.setVerificationStatus(ConditionVerificationStatusEnum.CONFIRMED);
 
 		return condition;
 	}

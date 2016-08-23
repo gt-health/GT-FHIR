@@ -16,8 +16,7 @@ import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
 @Transactional(propagation = Propagation.REQUIRED)
-public class MedicationDispenseFhirResourceDao  extends BaseFhirResourceDao<MedicationDispense>{
-	
+public class MedicationDispenseFhirResourceDao extends BaseFhirResourceDao<MedicationDispense> {
 	public MedicationDispenseFhirResourceDao() {
 		super();
 		setResourceEntity(edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed.class);
@@ -27,26 +26,27 @@ public class MedicationDispenseFhirResourceDao  extends BaseFhirResourceDao<Medi
 	@Override
 	public PredicateBuilder getPredicateBuilder() {
 		return new AbstractPredicateBuilder() {
-		
-		private static final String LOINC = "loinc";
-		private static final String SNOMED = "snomed";
-		private static final String ICD_9 = "icd-9";
-		private static final String RXNORM = "rxnorm";
-		private static final String UCUM = "ucum";
-		private static final String ICD_10 = "icd-10";
-			
-		@Override
-		public Predicate translatePredicateTokenSystem(Class<? extends IResourceEntity> entity, String theParamName, String system,
-				From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder) {
-			Predicate predicate = null;
-			if (system == null) {
-				return null;
-			}
-			
-			system = getVocabularyName(system);
-		
-			Path<Object> path = null;
-			switch (theParamName) {
+
+			private static final String LOINC = "loinc";
+			private static final String SNOMED = "snomed";
+			private static final String ICD_9 = "icd-9";
+			private static final String RXNORM = "rxnorm";
+			private static final String UCUM = "ucum";
+			private static final String ICD_10 = "icd-10";
+
+			@Override
+			public Predicate translatePredicateTokenSystem(Class<? extends IResourceEntity> entity, String theParamName,
+					String system, From<? extends IResourceEntity, ? extends IResourceEntity> from,
+					CriteriaBuilder theBuilder) {
+				Predicate predicate = null;
+				if (system == null) {
+					return null;
+				}
+
+				system = getVocabularyName(system);
+
+				Path<Object> path = null;
+				switch (theParamName) {
 				case MedicationDispense.SP_MEDICATION:
 					path = from.get("medication").get("vocabulary").get("name");
 					break;
@@ -54,34 +54,36 @@ public class MedicationDispenseFhirResourceDao  extends BaseFhirResourceDao<Medi
 					break;
 				}
 				if (StringUtils.isNotBlank(system)) {
-					 predicate = theBuilder.like(path.as(String.class), system+"%");
+					predicate = theBuilder.like(path.as(String.class), system + "%");
 				}
-//				else {
-//					return theBuilder.isNull(path); //WARNING originally, if the system is empty, then it would be checked for null systems
-//				}
+				// else {
+				// return theBuilder.isNull(path); //WARNING originally, if the
+				// system is empty, then it would be checked for null systems
+				// }
 				return predicate;
 			}
-			
-		private String getVocabularyName(String system) {
-				if(system.contains(SNOMED)){
+
+			private String getVocabularyName(String system) {
+				if (system.contains(SNOMED)) {
 					return SNOMED;
-				} else if (system.contains(LOINC)){
+				} else if (system.contains(LOINC)) {
 					return LOINC;
-				} else if (system.contains(ICD_10)){
+				} else if (system.contains(ICD_10)) {
 					return ICD_10;
-				} else if (system.contains(ICD_9)){
+				} else if (system.contains(ICD_9)) {
 					return ICD_9;
-				} else if (system.contains(RXNORM)){
+				} else if (system.contains(RXNORM)) {
 					return RXNORM;
-				} else if (system.contains(UCUM)){
+				} else if (system.contains(UCUM)) {
 					return UCUM;
 				}
 				return "";
 			}
 
-		@Override
-		public Predicate translatePredicateTokenCode(Class<? extends IResourceEntity> entity, String theParamName, String code, 
-				From<? extends IResourceEntity, ? extends IResourceEntity> from, CriteriaBuilder theBuilder) {
+			@Override
+			public Predicate translatePredicateTokenCode(Class<? extends IResourceEntity> entity, String theParamName,
+					String code, From<? extends IResourceEntity, ? extends IResourceEntity> from,
+					CriteriaBuilder theBuilder) {
 				Predicate predicate = null;
 				Path<Object> path = null;
 				switch (theParamName) {
@@ -93,10 +95,10 @@ public class MedicationDispenseFhirResourceDao  extends BaseFhirResourceDao<Medi
 				}
 				if (StringUtils.isNotBlank(code)) {
 					predicate = theBuilder.equal(path, code);
-				} 
-//				else {
-//					return theBuilder.isNull(path);
-//				}
+				}
+				// else {
+				// return theBuilder.isNull(path);
+				// }
 				return predicate;
 			}
 

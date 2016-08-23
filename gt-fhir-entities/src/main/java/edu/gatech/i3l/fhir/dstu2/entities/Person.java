@@ -17,6 +17,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -42,13 +43,19 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Inheritance(strategy=InheritanceType.JOINED)
 public class Person extends BaseResourceEntity{
 
-	public static final String RESOURCE_TYPE = "Patient";
+	public static final String RES_TYPE = "Patient";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="persons_seq_gen")
+	@SequenceGenerator(name="persons_seq_gen", sequenceName="person_id_seq")
 	@Column(name="person_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="gender_concept_id", nullable= false)
+	@NotNull
+	private Concept genderConcept;
 	
 	@Column(name="year_of_birth", nullable=false)
 	@NotNull
@@ -60,16 +67,28 @@ public class Person extends BaseResourceEntity{
 	@Column(name="day_of_birth")
 	private Integer dayOfBirth;
 	
+	@Column(name="time_of_birth")
+	private String timeOfBirth;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="race_concept_id")
+	private Concept raceConcept;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="ethnicity_concept_id")
+	private Concept ethnicityConcept;
+	
 	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="location_id")
-	private LocationComplement location;
+	private Location location;
 	
-	/**
-	 * Makes the indirect relationship between the person and the Care Site.
-	 */
 	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
+
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
+	@JoinColumn(name="care_site_id")
+	private CareSite careSite;
 	
 	@Column(name="person_source_value")
 	private String personSourceValue;
@@ -78,26 +97,25 @@ public class Person extends BaseResourceEntity{
 	private String genderSourceValue;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="gender_concept_id", nullable= false)
-	@NotNull
-	private Concept genderConcept;
-	
-	@Column(name="ethnicity_source_value")
-	private String ethnicitySourceValue;
-	
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="ethnicity_concept_id")
-	private Concept ethnicityConcept;
+	@JoinColumn(name="gender_source_concept_id")
+	private Concept genderSourceConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="race_concept_id")
-	private Concept raceConcept;
+	@JoinColumn(name="race_source_concept_id")
+	private Concept raceSourceConcept;
+
+	@Column(name="ethnicity_source_value")
+	private String ethnicitySourceValue;
 	
-	@OneToMany(orphanRemoval=true, mappedBy="person")
-	private Set<ConditionOccurrence> conditions;
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="ethnicity_source_concept_id")
+	private Concept ethnicitySourceConcept;
+
+//	@OneToMany(orphanRemoval=true, mappedBy="person")
+//	private Set<ConditionOccurrence> conditions;
 	
 	//private Death death;
 
@@ -105,25 +123,30 @@ public class Person extends BaseResourceEntity{
 		super();
 	}
 
-	public Person(Long id, Integer yearOfBirth, Integer monthOfBirth,
-			Integer dayOfBirth, LocationComplement location, Provider provider, String personSourceValue,
-			String genderSourceValue, Concept genderConcept,
-			String ethnicitySourceValue, Concept ethnicityConcept,
-			String raceSourceValue, Concept raceConcept) {
+	public Person(Long id, Concept genderConcept, Integer yearOfBirth, Integer monthOfBirth,
+			Integer dayOfBirth, String timeOfBirth, Concept raceConcept, Concept ethnicityConcept, 
+			Location location, Provider provider, CareSite careSite, String personSourceValue,
+			String genderSourceValue, Concept genderSourceConcept, String raceSourceValue,
+			Concept raceSourceConcept, String ethnicitySourceValue, Concept ethnicitySourceConcept) {
 		super();
 		this.id = id;
+		this.genderConcept = genderConcept;
 		this.yearOfBirth = yearOfBirth;
 		this.monthOfBirth = monthOfBirth;
 		this.dayOfBirth = dayOfBirth;
+		this.timeOfBirth = timeOfBirth;
+		this.raceConcept = raceConcept;
+		this.ethnicityConcept = ethnicityConcept;
 		this.location = location;
 		this.provider = provider;
+		this.careSite = careSite;
 		this.personSourceValue = personSourceValue;
 		this.genderSourceValue = genderSourceValue;
-		this.genderConcept = genderConcept;
-		this.ethnicitySourceValue = ethnicitySourceValue;
-		this.ethnicityConcept = ethnicityConcept;
+		this.genderSourceConcept = genderSourceConcept;
 		this.raceSourceValue = raceSourceValue;
-		this.raceConcept = raceConcept;
+		this.raceSourceConcept = raceSourceConcept;
+		this.ethnicitySourceValue = ethnicitySourceValue;
+		this.ethnicitySourceConcept = ethnicitySourceConcept;
 	}
 
 	public Long getId() {
@@ -134,14 +157,22 @@ public class Person extends BaseResourceEntity{
 		this.id = id;
 	}
 
-	public Set<ConditionOccurrence> getConditions() {
-		return conditions;
-	}
-	
-	public void setConditions(Set<ConditionOccurrence> conditions) {
-		this.conditions = conditions;
+	public Concept getGenderConcept() {
+		return genderConcept;
 	}
 
+	public void setGenderConcept(Concept genderConcept) {
+		this.genderConcept = genderConcept;
+	}
+
+//	public Set<ConditionOccurrence> getConditions() {
+//		return conditions;
+//	}
+//	
+//	public void setConditions(Set<ConditionOccurrence> conditions) {
+//		this.conditions = conditions;
+//	}
+//
 	public Integer getYearOfBirth() {
 		return yearOfBirth;
 	}
@@ -165,12 +196,36 @@ public class Person extends BaseResourceEntity{
 	public void setDayOfBirth(Integer dayOfBirth) {
 		this.dayOfBirth = dayOfBirth;
 	}
+	
+	public String getTimeOfBirth() {
+		return timeOfBirth;
+	}
+	
+	public void setTimeOfBirth(String timeOfBirth) {
+		this.timeOfBirth = timeOfBirth;
+	}
 
-	public LocationComplement getLocation() {
+	public Concept getRaceConcept() {
+		return raceConcept;
+	}
+
+	public void setRaceConcept(Concept raceConcept) {
+		this.raceConcept = raceConcept;
+	}
+	
+	public Concept getEthnicityConcept() {
+		return ethnicityConcept;
+	}
+
+	public void setEthnicityConcept(Concept ethnicityConcept) {
+		this.ethnicityConcept = ethnicityConcept;
+	}
+
+	public Location getLocation() {
 		return location;
 	}
 
-	public void setLocation(LocationComplement location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 
@@ -182,6 +237,14 @@ public class Person extends BaseResourceEntity{
 		this.provider = provider;
 	}
 
+	public CareSite getCareSite() {
+		return careSite;
+	}
+	
+	public void setCareSite(CareSite careSite) {
+		this.careSite = careSite;
+	}
+	
 	public String getPersonSourceValue() {
 		return personSourceValue;
 	}
@@ -197,29 +260,13 @@ public class Person extends BaseResourceEntity{
 	public void setGenderSourceValue(String genderSourceValue) {
 		this.genderSourceValue = genderSourceValue;
 	}
-
-	public Concept getGenderConcept() {
-		return genderConcept;
+	
+	public Concept getGenderSourceConcept() {
+		return genderSourceConcept;
 	}
-
-	public void setGenderConcept(Concept genderConcept) {
-		this.genderConcept = genderConcept;
-	}
-
-	public String getEthnicitySourceValue() {
-		return ethnicitySourceValue;
-	}
-
-	public void setEthnicitySourceValue(String ethnicitySourceValue) {
-		this.ethnicitySourceValue = ethnicitySourceValue;
-	}
-
-	public Concept getEthnicityConcept() {
-		return ethnicityConcept;
-	}
-
-	public void setEthnicityConcept(Concept ethnicityConcept) {
-		this.ethnicityConcept = ethnicityConcept;
+	
+	public void setGenderSourceConcept(Concept genderSourceConcept) {
+		this.genderSourceConcept = genderSourceConcept;
 	}
 
 	public String getRaceSourceValue() {
@@ -230,12 +277,28 @@ public class Person extends BaseResourceEntity{
 		this.raceSourceValue = raceSourceValue;
 	}
 
-	public Concept getRaceConcept() {
-		return raceConcept;
+	public Concept getRaceSourceConcept() {
+		return raceSourceConcept;
+	}
+	
+	public void setRaceSourceConcept(Concept raceSourceConcept) {
+		this.raceSourceConcept = raceSourceConcept;
+	}
+	
+	public String getEthnicitySourceValue() {
+		return ethnicitySourceValue;
 	}
 
-	public void setRaceConcept(Concept raceConcept) {
-		this.raceConcept = raceConcept;
+	public void setEthnicitySourceValue(String ethnicitySourceValue) {
+		this.ethnicitySourceValue = ethnicitySourceValue;
+	}
+
+	public Concept getEthnicitySourceConcept() {
+		return ethnicitySourceConcept;
+	}
+	
+	public void setEthnicitySourceConcept(Concept ethnicitySourceConcept) {
+		this.ethnicitySourceConcept = ethnicitySourceConcept;
 	}
 	
 //	public Death getDeath() {
@@ -260,9 +323,9 @@ public class Person extends BaseResourceEntity{
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
 		if(this.location != null){
-			PeriodDt period = new PeriodDt();
-			period.setStart(new DateTimeDt(this.location.getStartDate()));
-			period.setEnd(new DateTimeDt(this.location.getEndDate()));
+//			PeriodDt period = new PeriodDt();
+//			period.setStart(new DateTimeDt(this.location.getStartDate()));
+//			period.setEnd(new DateTimeDt(this.location.getEndDate()));
 			patient.addAddress()
 				.setUse(AddressUseEnum.HOME)
 				.addLine(this.location.getAddress1())
@@ -270,8 +333,8 @@ public class Person extends BaseResourceEntity{
 				.setCity(this.location.getCity())
 				.setPostalCode(this.location.getZipCode())
 				.setState(this.location.getState())
-				.setCountry(this.location.getCountry())
-				.setPeriod(period);
+				.setCountry(this.location.getCountry());
+//				.setPeriod(period);
 		}
 		
 		if(this.genderConcept != null){
@@ -292,7 +355,7 @@ public class Person extends BaseResourceEntity{
 
 	@Override
 	public String getResourceType() {
-		return RESOURCE_TYPE;
+		return RES_TYPE;
 	}
 
 	@Override
@@ -320,14 +383,14 @@ public class Person extends BaseResourceEntity{
 			this.genderConcept = new Concept();
 			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender().substring(0, 1), OmopConceptMapping.GENDER));
 			
-			LocationComplement location;
+			Location location;
 			if(this.location != null){
 				location = this.location;
 			}else {
-				location = new LocationComplement();
+				location = new Location();
 			}
 			AddressDt address = patient.getAddress().get(0);
-			location.setAddressUse(address.getUseElement().getValueAsEnum());
+//			location.setAddressUse(address.getUseElement().getValueAsEnum());
 			location.setAddress1(address.getLine().get(0).getValue());
 			if (address.getLine().size() > 1)// iterator.hasNext or listIterator.hasNext were returning true in all cases
 				location.setAddress2(address.getLine().get(1).getValue());
@@ -335,10 +398,21 @@ public class Person extends BaseResourceEntity{
 			location.setCity(address.getCity());
 			location.setState(address.getState());
 			location.setCountry(address.getCountry());
-			location.setEndDate(address.getPeriod().getEnd());
-			location.setStartDate(address.getPeriod().getStart());
+//			location.setEndDate(address.getPeriod().getEnd());
+//			location.setStartDate(address.getPeriod().getStart());
 			this.location = location;
 		}
+		
+		//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
+		//      But, FHIR Patient does not have race data element
+		Concept race = new Concept();
+		race.setId(8552L);
+		this.setRaceConcept(race);
+		
+		// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
+		Concept ethnicity = new Concept();
+		ethnicity.setId(0L);
+		this.setEthnicityConcept(ethnicity);
 		
 		return this;
 	}

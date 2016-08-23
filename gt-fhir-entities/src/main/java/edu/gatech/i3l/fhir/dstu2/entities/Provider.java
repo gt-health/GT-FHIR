@@ -1,10 +1,16 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,17 +19,34 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.hibernate.envers.Audited;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner.PractitionerRole;
+import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.StringDt;
+import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Table(name="provider")
@@ -34,11 +57,16 @@ public class Provider extends BaseResourceEntity {
 	public static final String RESOURCE_TYPE = "Practitioner";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="provider_seq_gen")
+	@SequenceGenerator(name="provider_seq_gen", sequenceName="provider_id_seq")
+
 	@Column(name="provider_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
+	@Column(name="provider_name")
+	private String providerName;
+
 	@Column(name="npi")
 	private String npi;
 	
@@ -49,29 +77,71 @@ public class Provider extends BaseResourceEntity {
 	@JoinColumn(name="specialty_concept_id")
 	private Concept specialtyConcept;
 	
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	
-	@Column(name="provider_source_value", nullable=false)
+	@Column(name="year_of_birth")
+	private Integer yearOfBirth;
+	
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name="gender_concept_id")
+	private Concept genderConcept;
+
+	@Column(name="provider_source_value")
 	private String providerSourceValue;
 	
 	@Column(name="specialty_source_value")
 	private String specialtySourceValue;
 	
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name="specialty_source_concept_id")
+	private Concept specialtySourceConcept;
+
+	@Column(name="gender_source_value")
+	private String genderSourceValue;
+	
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name="gender_source_concept_id")
+	private Concept genderSourceConcept;
+
 	public Provider() {
 		super();
 	}
 	
-	public Provider(Long id, String npi, String dea, Concept specialtyConcept, CareSite careSite,
-			String providerSourceValue, String specialtySourceValue) {
+	public Provider(Long id, String providerName, String npi, String dea, Concept specialtyConcept, 
+			CareSite careSite, Integer yearOfBirth, Concept genderConcept, String providerSourceValue, 
+			String specialtySourceValue, Concept specialtySourceConcept, String genderSourceValue,
+			Concept genderSourceConcept) {
 		this.id = id;
+		this.providerName = providerName;
 		this.npi = npi;
 		this.dea = dea;
 		this.specialtyConcept = specialtyConcept;
 		this.careSite = careSite;
+		this.yearOfBirth = yearOfBirth;
+		this.genderConcept = genderConcept;
 		this.providerSourceValue = providerSourceValue;
 		this.specialtySourceValue = specialtySourceValue;
+		this.specialtySourceConcept = specialtySourceConcept;
+		this.genderSourceValue = genderSourceValue;
+		this.genderSourceConcept = genderSourceConcept;
+	}
+	@Override
+	public Long getId() {
+		return id;
+	}
+	
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getProviderName() {
+		return providerName;
+	}
+	
+	public void setProviderName(String providerName) {
+		this.providerName = providerName;
 	}
 	
 	public String getNpi() {
@@ -106,6 +176,14 @@ public class Provider extends BaseResourceEntity {
 		this.careSite = careSite;
 	}
 	
+	public Integer getYearOfBirth() {
+		return yearOfBirth;
+	}
+	
+	public void setYearOfBirth(Integer yearOfBirth) {
+		this.yearOfBirth = yearOfBirth;
+	}
+	
 	public String getProviderSourceValue() {
 		return providerSourceValue;
 	}
@@ -125,19 +203,96 @@ public class Provider extends BaseResourceEntity {
 	@Override
 	public Practitioner getRelatedResource() {
 		Practitioner practitioner = new Practitioner();
+		practitioner.setId(this.getIdDt());
+		HumanNameDt humanName = new HumanNameDt();
+		String[] names = this.getProviderName().trim().split(",");
+		List<StringDt> familyNames = new ArrayList<StringDt>();
+		List<StringDt> givenNames = new ArrayList<StringDt>();
+		List<StringDt> suffixes = new ArrayList<StringDt>();
+		if (names.length > 1) {
+			if (names.length > 2) {
+				familyNames.add(new StringDt(names[0].trim()));
+				suffixes.add(new StringDt(names[names.length-1].trim()));
+				
+				for (int i=1; i < names.length-1; i++) {
+					String[] subnames = names[i].trim().split(" ");
+					for (int j=0; j < subnames.length; j++) {
+						givenNames.add(new StringDt(subnames[j].trim()));
+					}
+				}
+			} else {
+				suffixes.add(new StringDt(names[1].trim()));
+				String[] subnames = names[0].trim().split(" ");
+				familyNames.add(new StringDt(subnames[subnames.length-1]));
+				for (int i=0; i < subnames.length-1; i++) {
+					givenNames.add(new StringDt(subnames[i].trim()));
+				}
+			}
+		} else {
+			names = this.getProviderName().trim().split(" ");
+			if (names.length > 0) {
+				familyNames.add(new StringDt(names[names.length-1].trim()));
+				for (int i=0; i < names.length-1; i++) {
+					givenNames.add(new StringDt(names[i].trim()));
+				}
+			} else {
+				familyNames.add(new StringDt(this.getProviderName().trim()));
+			}
+		}
+		humanName.setFamily(familyNames);
+		humanName.setGiven(givenNames);
+		humanName.setSuffix(suffixes);
 		
-		// TODO set parameters
+		practitioner.setName(humanName);
 		
-		return practitioner;
-	}
+		PractitionerRole practitionerRole = new PractitionerRole();
+		
+		if (careSite != null) {
+			ResourceReferenceDt organizationResource = new ResourceReferenceDt(careSite.getIdDt());
+//			List<ResourceReferenceDt> listResourceRef = new ArrayList<ResourceReferenceDt>();
+//			listResourceRef.add(organizationResource);
+			organizationResource.setDisplay(careSite.getCareSiteName());
+			practitionerRole.setManagingOrganization(organizationResource);
+		}
+		
+		if (specialtyConcept != null &&
+				specialtyConcept.getId() > 0L) {
+			String systemUriString = specialtyConcept.getVocabulary().getVocabularyReference();
+			String displayString = specialtyConcept.getName();
+			String codeString = specialtyConcept.getConceptCode();
+			
+			CodeableConceptDt specialtyCode = new CodeableConceptDt(systemUriString, codeString);
+			specialtyCode.getCodingFirstRep().setDisplay(displayString);
+			
+			List<CodeableConceptDt> listSpecialtyCode = new ArrayList<CodeableConceptDt>();
+			listSpecialtyCode.add(specialtyCode);
+			practitionerRole.setSpecialty(listSpecialtyCode);
+		}
+		
+		List<PractitionerRole> listPracRole = new ArrayList<PractitionerRole>();
+		listPracRole.add(practitionerRole);
+		
+		practitioner.setPractitionerRole(listPracRole);
+		
+		if (this.genderConcept != null){
+			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
+			String gName = this.genderConcept.getName(); 
+			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
+			for (int i = 0; i < values.length; i++) {
+				if(gName.equalsIgnoreCase(values[i].getCode())){
+					admGender = values[i];
+					break;
+				}
+			}
+			practitioner.setGender(admGender);
+		}
 
-	@Override
-	public Long getId() {
-		return id;
-	}
-	
-	public void setId(Long id) {
-		this.id = id;
+		if (this.yearOfBirth != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.set(Calendar.YEAR, this.yearOfBirth);
+			practitioner.setBirthDate(new DateDt(cal.getTime()));
+		}
+		return practitioner;
 	}
 
 	@Override
@@ -158,8 +313,83 @@ public class Provider extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		// TODO Auto-generated method stub
-		return null;
+		Practitioner practitioner = (Practitioner) resource;
+		
+		HumanNameDt humanName = practitioner.getName();
+		String familyName = humanName.getFamilyAsSingleString().replace(" ", "_");
+		String givenName = humanName.getGivenAsSingleString();
+		String suffixName = humanName.getSuffixAsSingleString();
+		
+		String omopName = givenName+" "+familyName+", "+suffixName;
+		this.setProviderName(omopName);
+		
+		this.genderConcept = new Concept();
+		this.genderConcept.setId(OmopConceptMapping.getInstance().get(practitioner.getGender().substring(0, 1), OmopConceptMapping.GENDER));
+
+		Date birthDate = practitioner.getBirthDate();
+		if (birthDate != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(birthDate);
+			int year = cal.get(Calendar.YEAR);
+			this.setYearOfBirth(year);
+		}
+		
+		PractitionerRole role = practitioner.getPractitionerRoleFirstRep();
+		if (role != null) {
+			// Search this organization from care_site table.
+			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+
+			ResourceReferenceDt org = role.getManagingOrganization();
+			if (org != null) {
+				StringDt orgDisplay = org.getDisplay();
+				if (orgDisplay != null) {
+					CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+					CriteriaQuery<CareSite> criteria = builder.createQuery(CareSite.class);
+					Root<CareSite> from = criteria.from(CareSite.class);
+					criteria.select(from).where(
+						builder.equal(from.get("careSiteName"),  orgDisplay.getValueAsString())
+					);
+					TypedQuery<CareSite> query = entityManager.createQuery(criteria);
+					List<CareSite> results = query.getResultList();
+					CareSite careSite = null;
+					if (results.size() > 0) {
+						careSite = results.get(0);
+					} else {
+						careSite = new CareSite();
+						careSite.setCareSiteName(orgDisplay.getValueAsString());
+					}					
+					this.setCareSite(careSite);
+				}
+			}
+			
+			CodeableConceptDt specialty = role.getSpecialtyFirstRep();
+			if (specialty != null) {
+				CodingDt specialtyCode = specialty.getCodingFirstRep();
+				String specialtyDisplay = specialtyCode.getDisplay();
+				if (specialtyDisplay != null && !specialtyDisplay.isEmpty()) {
+					CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+					CriteriaQuery<Concept> criteria = builder.createQuery(Concept.class);
+					Root<Concept> from = criteria.from(Concept.class);
+					criteria.select(from).where(
+						builder.equal(from.get("conceptClassId"), OmopConceptMapping.SPECIALTY),
+						builder.equal(from.get("name"), specialtyDisplay)
+					);
+					TypedQuery<Concept> query = entityManager.createQuery(criteria);
+					List<Concept> results = query.getResultList();
+					Concept specialtyConcept = null;
+					if (results.size() > 0) {
+						specialtyConcept = results.get(0);						this.setSpecialtyConcept(specialtyConcept);
+					} else {
+						specialtyConcept = new Concept();
+						specialtyConcept.setId(0L);
+					}
+					this.setSpecialtyConcept(specialtyConcept);
+				}
+			}
+		}
+		
+		return this;
 	}
 
 	@Override
