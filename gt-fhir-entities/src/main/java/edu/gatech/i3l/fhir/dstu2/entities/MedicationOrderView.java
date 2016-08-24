@@ -386,25 +386,28 @@ public final class MedicationOrderView extends DrugExposure {
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
+		
 		/* Set start date of prescription */
 		this.startDate = medicationOrder.getDateWritten();
+		
 		/* Set VisitOccurrence */
 		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
 		if (encounterRef != null) {
 			this.visitOccurrence = new VisitOccurrence();
 			this.visitOccurrence.setId(encounterRef);
 		}
+		
 		/* Set Medication */
 		if (medicationOrder.getMedication() instanceof CodeableConcept) {
+			System.out.println("AM I HERE???");
 			CodeableConceptDt codeDt = (CodeableConceptDt) medicationOrder.getMedication();
-			List<CodingDt> codingList = codeDt.getCoding();
-			if (codingList.size() > 0) {
-				CodingDt medCoding = codingList.get(0);
-				this.medication = new Concept();
+			CodingDt medCoding = codeDt.getCodingFirstRep();
+			Concept medication = new Concept();
+			if (medCoding != null) {
+//				this.medication = new Concept();
 				String systemUri = medCoding.getSystem();
 				String code = medCoding.getCode();
 
-				Concept medication = new Concept();
 				medication.setConceptCode(code);
 				
 				Vocabulary voc = new Vocabulary();
@@ -412,14 +415,17 @@ public final class MedicationOrderView extends DrugExposure {
 				medication.setVocabulary(voc);
 				
 				this.setMedication(medication);
+			} else {
+				this.setMedication(medication);
 			}
 		} else if (medicationOrder.getMedication() instanceof Reference) {
 			Reference medicationRef = (Reference) medicationOrder.getMedication();
-			this.medication = new Concept();
+			medication = new Concept();
 			String medId = medicationRef.getId();
 			if (Pattern.matches(StaticVariables.fpRegex, medId)) {
-				this.medication.setId(Long.valueOf(medId));
+				medication.setId(Long.valueOf(medId));
 			}
+			this.setMedication(medication);
 		}
 
 		/* Set patient */
