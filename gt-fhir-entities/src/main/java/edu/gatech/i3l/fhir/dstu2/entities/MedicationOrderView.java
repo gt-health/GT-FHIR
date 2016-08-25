@@ -85,14 +85,14 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "provider_id")
 	private Provider prescribingProvider;
 
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
@@ -398,35 +398,24 @@ public final class MedicationOrderView extends DrugExposure {
 		}
 		
 		/* Set Medication */
-		if (medicationOrder.getMedication() instanceof CodeableConcept) {
-			System.out.println("AM I HERE???");
+		Concept medication = new Concept();
+		if (medicationOrder.getMedication() instanceof CodeableConceptDt) {
 			CodeableConceptDt codeDt = (CodeableConceptDt) medicationOrder.getMedication();
 			CodingDt medCoding = codeDt.getCodingFirstRep();
-			Concept medication = new Concept();
 			if (medCoding != null) {
 //				this.medication = new Concept();
-				String systemUri = medCoding.getSystem();
+//				String systemUri = medCoding.getSystem();
 				String code = medCoding.getCode();
-
-				medication.setConceptCode(code);
-				
-				Vocabulary voc = new Vocabulary();
-				voc.setIdNameBySystemUri(systemUri);
-				medication.setVocabulary(voc);
-				
-				this.setMedication(medication);
-			} else {
-				this.setMedication(medication);
+				medication.setId(OmopConceptMapping.getInstance().get(code));
 			}
-		} else if (medicationOrder.getMedication() instanceof Reference) {
+		} else if (medicationOrder.getMedication() instanceof ResourceReferenceDt) {
 			Reference medicationRef = (Reference) medicationOrder.getMedication();
-			medication = new Concept();
 			String medId = medicationRef.getId();
 			if (Pattern.matches(StaticVariables.fpRegex, medId)) {
 				medication.setId(Long.valueOf(medId));
 			}
-			this.setMedication(medication);
 		}
+		this.setMedication(medication);
 
 		/* Set patient */
 		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
@@ -484,6 +473,12 @@ public final class MedicationOrderView extends DrugExposure {
 			}
 		}
 
+	 	Long prescriberID = medicationOrder.getPrescriber().getReference().getIdPartAsLong();
+		if (prescriberID != null) {
+			this.prescribingProvider = new Provider();
+			this.prescribingProvider.setId(prescriberID);
+		}
+		
 		return this;
 	}
 

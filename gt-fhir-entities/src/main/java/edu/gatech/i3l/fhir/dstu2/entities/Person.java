@@ -332,8 +332,7 @@ public class Person extends BaseResourceEntity{
 				.addLine(this.location.getAddress2())//WARNING check if mapping for lines are correct
 				.setCity(this.location.getCity())
 				.setPostalCode(this.location.getZipCode())
-				.setState(this.location.getState())
-				.setCountry(this.location.getCountry());
+				.setState(this.location.getState());
 //				.setPeriod(period);
 		}
 		
@@ -397,7 +396,6 @@ public class Person extends BaseResourceEntity{
 			location.setZipCode(address.getPostalCode());
 			location.setCity(address.getCity());
 			location.setState(address.getState());
-			location.setCountry(address.getCountry());
 //			location.setEndDate(address.getPeriod().getEnd());
 //			location.setStartDate(address.getPeriod().getStart());
 			this.location = location;
