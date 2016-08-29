@@ -97,7 +97,6 @@ public class VisitOccurrence extends BaseResourceEntity {
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="care_site_id")
-	@NotNull
 	private CareSite careSite; //FIXME field names should reflect fhir names, for validation purposes.
 	
 	@Column(name="visit_source_value")
@@ -358,12 +357,20 @@ public class VisitOccurrence extends BaseResourceEntity {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 		try {
 			// For start Date
-			String dateTimeString = dateOnlyFormat.format(startDate)+" "+startTime;
+			String timeString = "00:00:00";
+			if (startTime != null && !startTime.isEmpty()) {
+				timeString = startTime;
+			}
+			String dateTimeString = dateOnlyFormat.format(startDate)+" "+timeString;
 			Date DateTime = dateFormat.parse(dateTimeString);
 			visitPeriod.setStartWithSecondsPrecision(DateTime);
 
 			// For end Date
-			dateTimeString = dateOnlyFormat.format(endDate)+" "+endTime;
+			timeString = "00:00:00";
+			if (endTime != null && !endTime.isEmpty()) {
+				timeString = endTime;
+			}
+			dateTimeString = dateOnlyFormat.format(endDate)+" "+timeString;
 			DateTime = dateFormat.parse(dateTimeString);
 			visitPeriod.setEndWithSecondsPrecision(DateTime);
 			

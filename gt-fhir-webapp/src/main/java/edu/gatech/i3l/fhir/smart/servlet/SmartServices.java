@@ -80,8 +80,13 @@ public class SmartServices extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String launchId = request.getPathInfo().substring(1);
+		String launchId = new String(request.getPathInfo().substring(1));
 
+		if (launchId == null || launchId.isEmpty()) {
+			System.out.println("LaunchID is invalid");
+			return;
+		}
+		
 		System.out.println("Get LaunchID = "+launchId);
 
 		Authorization smartAuth = new Authorization(url, client_id, client_secret);
