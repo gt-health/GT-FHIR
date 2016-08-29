@@ -349,7 +349,7 @@ public final class MedicationOrderView extends DrugExposure {
 		}
 
         Double doseValue = this.getEffectiveDrugDose();
-        if (doseValue >= 0.0)  {
+        if (doseValue != null && doseValue >= 0.0)  {
         	DosageInstruction dosage = new DosageInstruction();
         	Concept myUnitConcept = this.getDoseUnitConcept();
         	SimpleQuantityDt dose;
