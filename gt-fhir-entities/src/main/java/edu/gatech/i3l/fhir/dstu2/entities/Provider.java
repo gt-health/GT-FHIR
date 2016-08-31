@@ -84,7 +84,7 @@ public class Provider extends BaseResourceEntity {
 	@Column(name="year_of_birth")
 	private Integer yearOfBirth;
 	
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="gender_concept_id")
 	private Concept genderConcept;
 
@@ -204,47 +204,48 @@ public class Provider extends BaseResourceEntity {
 	public Practitioner getRelatedResource() {
 		Practitioner practitioner = new Practitioner();
 		practitioner.setId(this.getIdDt());
-		HumanNameDt humanName = new HumanNameDt();
-		String[] names = this.getProviderName().trim().split(",");
-		List<StringDt> familyNames = new ArrayList<StringDt>();
-		List<StringDt> givenNames = new ArrayList<StringDt>();
-		List<StringDt> suffixes = new ArrayList<StringDt>();
-		if (names.length > 1) {
-			if (names.length > 2) {
-				familyNames.add(new StringDt(names[0].trim()));
-				suffixes.add(new StringDt(names[names.length-1].trim()));
-				
-				for (int i=1; i < names.length-1; i++) {
-					String[] subnames = names[i].trim().split(" ");
-					for (int j=0; j < subnames.length; j++) {
-						givenNames.add(new StringDt(subnames[j].trim()));
+		if (this.getProviderName() != null) {
+			HumanNameDt humanName = new HumanNameDt();
+			String[] names = this.getProviderName().trim().split(",");
+			List<StringDt> familyNames = new ArrayList<StringDt>();
+			List<StringDt> givenNames = new ArrayList<StringDt>();
+			List<StringDt> suffixes = new ArrayList<StringDt>();
+			if (names.length > 1) {
+				if (names.length > 2) {
+					familyNames.add(new StringDt(names[0].trim()));
+					suffixes.add(new StringDt(names[names.length-1].trim()));
+					
+					for (int i=1; i < names.length-1; i++) {
+						String[] subnames = names[i].trim().split(" ");
+						for (int j=0; j < subnames.length; j++) {
+							givenNames.add(new StringDt(subnames[j].trim()));
+						}
+					}
+				} else {
+					suffixes.add(new StringDt(names[1].trim()));
+					String[] subnames = names[0].trim().split(" ");
+					familyNames.add(new StringDt(subnames[subnames.length-1]));
+					for (int i=0; i < subnames.length-1; i++) {
+						givenNames.add(new StringDt(subnames[i].trim()));
 					}
 				}
 			} else {
-				suffixes.add(new StringDt(names[1].trim()));
-				String[] subnames = names[0].trim().split(" ");
-				familyNames.add(new StringDt(subnames[subnames.length-1]));
-				for (int i=0; i < subnames.length-1; i++) {
-					givenNames.add(new StringDt(subnames[i].trim()));
+				names = this.getProviderName().trim().split(" ");
+				if (names.length > 0) {
+					familyNames.add(new StringDt(names[names.length-1].trim()));
+					for (int i=0; i < names.length-1; i++) {
+						givenNames.add(new StringDt(names[i].trim()));
+					}
+				} else {
+					familyNames.add(new StringDt(this.getProviderName().trim()));
 				}
 			}
-		} else {
-			names = this.getProviderName().trim().split(" ");
-			if (names.length > 0) {
-				familyNames.add(new StringDt(names[names.length-1].trim()));
-				for (int i=0; i < names.length-1; i++) {
-					givenNames.add(new StringDt(names[i].trim()));
-				}
-			} else {
-				familyNames.add(new StringDt(this.getProviderName().trim()));
-			}
+			humanName.setFamily(familyNames);
+			humanName.setGiven(givenNames);
+			humanName.setSuffix(suffixes);
+			
+			practitioner.setName(humanName);
 		}
-		humanName.setFamily(familyNames);
-		humanName.setGiven(givenNames);
-		humanName.setSuffix(suffixes);
-		
-		practitioner.setName(humanName);
-		
 		PractitionerRole practitionerRole = new PractitionerRole();
 		
 		if (careSite != null) {

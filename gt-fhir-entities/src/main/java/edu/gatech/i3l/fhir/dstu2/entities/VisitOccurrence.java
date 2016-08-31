@@ -25,6 +25,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -53,6 +55,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Table(name="visit_occurrence")
 @Inheritance(strategy=InheritanceType.JOINED)
 @Audited
+@NamedQueries(value = { @NamedQuery( name = "findVisitBySourceValue", query = "select id from VisitOccurrence v where v.visitSourceValue like :source")})
 public class VisitOccurrence extends BaseResourceEntity {
 	
 	public static final String RES_TYPE = "Encounter";
@@ -64,9 +67,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="person_id", nullable=false)
-	@NotNull
 	private PersonComplement person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
@@ -91,7 +93,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@JoinColumn(name="visit_type_concept_id")
 	private Concept visitTypeConcept;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
@@ -247,18 +249,46 @@ public class VisitOccurrence extends BaseResourceEntity {
 		Encounter encounter = (Encounter) resource;
 		
 		this.id = encounter.getId().getIdPartAsLong();
-		Long patientRef = encounter.getPatient().getReference().getIdPartAsLong();
-		if(patientRef != null){
-			this.person = new PersonComplement();
-			this.person.setId(patientRef);
+		
+		ResourceReferenceDt patientReference = (ResourceReferenceDt) encounter.getPatient();
+		if (patientReference != null) {
+			Long patientRef = patientReference.getReference().getIdPartAsLong();
+			if(patientRef != null){
+				// We have person reference. We have to make sure if this patient exists.
+				PersonComplement patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, patientRef);
+				if (patientClass != null) {
+					this.setPerson(patientClass);
+				} else {
+					// Before we need to create one, let's see if we have received this before.
+					patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
+					if (patientClass == null) {
+						this.person = new PersonComplement();
+						this.person.setPersonSourceValue(patientRef.toString());
+						if (patientReference.getDisplay() != null)
+							this.person.setNameFromString(patientReference.getDisplay().getValueAsString());
+					} else {
+						this.setPerson(patientClass);
+					}
+				}
+			}
 		}
 		/* Set Period */
-		this.startDate = encounter.getPeriod().getStart();
 		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
-		this.startTime = fmt.format(this.startDate);
+		Date tempDate = encounter.getPeriod().getStart();
+		if (tempDate != null) { 
+			this.startDate = tempDate;
+			this.startTime = fmt.format(this.startDate);
+		} else {
+			this.startDate = new Date(0);
+		}
 		
-		this.endDate = encounter.getPeriod().getEnd();
-		this.endTime = fmt.format(this.endDate);
+		tempDate = encounter.getPeriod().getEnd();
+		if (tempDate != null) {
+			this.endDate = tempDate; 
+			this.endTime = fmt.format(this.endDate);
+		} else {
+			this.endDate = new Date(0);
+		}
 		
 		/* Set Class 
 		 * - IP: Inpatient Visit
@@ -297,18 +327,33 @@ public class VisitOccurrence extends BaseResourceEntity {
 			ResourceReferenceDt individualRef = participant.getIndividual();
 			if (individualRef != null) {
 				Long provider_id = individualRef.getReference().getIdPartAsLong();
-				Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, provider_id);
-				if (provider != null) {
-					this.setProvider(provider);
-				}
+				if (provider_id != null) {
+					Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, provider_id);
+					if (provider != null) {
+						this.setProvider(provider);
+					} else {
+						// See if we have received this earlier.
+						provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", provider_id.toString());
+						if (provider == null) {
+							this.provider = new Provider();
+							this.provider.setProviderName(individualRef.getDisplay().getValueAsString());
+							this.provider.setProviderSourceValue(provider_id.toString());
+						} else {
+							this.setProvider(provider);
+						}
+					}
+				} 
 			}			
 		}
 		
 		Long careSiteRef = encounter.getServiceProvider().getReference().getIdPartAsLong();
-		if (careSiteRef > 0L) {
+		if (careSiteRef != null && careSiteRef > 0L) {
 			CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, careSiteRef);
 			if (careSite != null) {
 				this.setCareSite(careSite);
+			} else {
+				// TODO: We have care site info. But, couldn't find it from our database.
+				// We may want to create one and link it to this encounter.
 			}
 		}
 		

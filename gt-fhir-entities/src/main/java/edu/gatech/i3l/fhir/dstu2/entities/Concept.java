@@ -35,7 +35,7 @@ public class Concept{
 	private String name;
 	
 	@ManyToOne
-	@JoinColumn(name="domain_id", referencedColumnName="domain_id")
+	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
 	private Domain domain;
 	
 	@Column(name="concept_class_id", updatable=false)

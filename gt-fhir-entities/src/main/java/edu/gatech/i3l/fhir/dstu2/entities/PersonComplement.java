@@ -309,4 +309,27 @@ public class PersonComplement extends Person{
 		return name;
 	}
 	
+	public void setNameFromString(String fullName) {
+		if (fullName == null || fullName.isEmpty()) return;
+		String[] names = fullName.trim().split(",", 2);
+		if (names.length > 1) {
+			this.setFamilyName(names[0]);
+			String[] subNames = names[1].trim().split(" ", 2);
+			if (subNames.length > 1) {
+				this.setGivenName1(subNames[0]);
+				this.setGivenName2(subNames[1]);
+			} else {
+				this.setGivenName1(subNames[0]);
+			}
+		} else {
+			String[] subNames = names[0].trim().split(" ", 2);
+			if (subNames.length > 1) {
+				this.setGivenName1(subNames[0]);
+				this.setFamilyName(subNames[1]);
+			} else {
+				this.setFamilyName(subNames[0]);
+			}
+		}
+	}
+	
 }

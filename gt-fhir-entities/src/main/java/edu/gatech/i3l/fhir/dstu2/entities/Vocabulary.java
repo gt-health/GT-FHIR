@@ -30,7 +30,7 @@ public class Vocabulary {
 	@Column(name="vocabulary_name", updatable=false)
 	private String name;
 	
-	@Column(name="vocabulary_reference")
+	@Column(name="vocabulary_reference", updatable=false)
 	private String vocabularyReference;
 	
 	

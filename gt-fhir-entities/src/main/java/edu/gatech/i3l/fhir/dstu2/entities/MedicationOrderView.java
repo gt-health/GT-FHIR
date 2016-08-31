@@ -15,15 +15,22 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 import org.hl7.fhir.instance.model.CodeableConcept;
 import org.hl7.fhir.instance.model.Reference;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
@@ -41,6 +48,7 @@ import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
@@ -85,14 +93,14 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "provider_id")
 	private Provider prescribingProvider;
 
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
@@ -390,11 +398,40 @@ public final class MedicationOrderView extends DrugExposure {
 		/* Set start date of prescription */
 		this.startDate = medicationOrder.getDateWritten();
 		
+		/* Set patient */
+		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
+		if (patientRef != null) {
+			this.person = new PersonComplement();
+			this.person.setId(patientRef);
+		}
+
 		/* Set VisitOccurrence */
 		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
+
+		WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+		EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
 		if (encounterRef != null) {
+			// See if this exists.
+			// Now search for diastolic component.
+			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<VisitOccurrence> criteria = builder.createQuery(VisitOccurrence.class);
+			Root<VisitOccurrence> from = criteria.from(VisitOccurrence.class);
+			criteria.select(from).where(
+					builder.equal(from.get("id"), encounterRef)
+					);
+			TypedQuery<VisitOccurrence> query = entityManager.createQuery(criteria);
+			List<VisitOccurrence> results = query.getResultList();
 			this.visitOccurrence = new VisitOccurrence();
-			this.visitOccurrence.setId(encounterRef);
+			if (results.size() > 0) {
+				this.visitOccurrence.setId(encounterRef);
+			} else {
+				this.visitOccurrence.setStartDate(startDate);
+				this.visitOccurrence.setEndDate(startDate);
+				this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
+				PersonComplement visitPerson = new PersonComplement();
+				visitPerson.setId(patientRef);
+				this.visitOccurrence.setPerson(visitPerson);
+			}
 		}
 		
 		/* Set Medication */
@@ -417,12 +454,6 @@ public final class MedicationOrderView extends DrugExposure {
 		}
 		this.setMedication(medication);
 
-		/* Set patient */
-		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
-		if (patientRef != null) {
-			this.person = new PersonComplement();
-			this.person.setId(patientRef);
-		}
 		// OMOP can handle only one dosage.
 //		DrugExposureComplement f_drug = new DrugExposureComplement();
 
@@ -435,13 +466,23 @@ public final class MedicationOrderView extends DrugExposure {
 			this.setEffectiveDrugDose(doseQty.getValue().doubleValue());
 			this.setDoseUnitSourceValue(doseQty.getUnit());
 
-			Long unitConceptId = OmopConceptMapping.getInstance().get(doseQty.getUnit());
-			Concept myUnitConcept;
-			if (unitConceptId > 0) {
-				myUnitConcept = new Concept(unitConceptId);
-				this.setDoseUnitConcept(myUnitConcept);
+			String doseUnitCode = null;
+			String doseCode = doseQty.getCode();
+			String doseUnit = doseQty.getUnit();
+			if (doseCode != null && !doseCode.isEmpty()) {
+				doseUnitCode = doseCode;
+			} else if (doseUnit != null && !doseUnit.isEmpty()) {
+				doseUnitCode = doseUnit;
 			}
 			
+			if (doseUnitCode != null && !doseUnitCode.isEmpty()) {
+				Long unitConceptId = OmopConceptMapping.getInstance().get(doseUnitCode);
+				Concept myUnitConcept;
+				if (unitConceptId > 0) {
+					myUnitConcept = new Concept(unitConceptId);
+					this.setDoseUnitConcept(myUnitConcept);
+				}
+			} 
 //			f_drug.setDose(doseQty.getValue().toString());
 //			f_drug.setUnit(doseQty.getUnit());
 		}
@@ -475,8 +516,20 @@ public final class MedicationOrderView extends DrugExposure {
 
 	 	Long prescriberID = medicationOrder.getPrescriber().getReference().getIdPartAsLong();
 		if (prescriberID != null) {
+			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Provider> criteria = builder.createQuery(Provider.class);
+			Root<Provider> from = criteria.from(Provider.class);
+			criteria.select(from).where(
+					builder.equal(from.get("id"), prescriberID)
+					);
+			TypedQuery<Provider> query = entityManager.createQuery(criteria);
+			List<Provider> results = query.getResultList();
 			this.prescribingProvider = new Provider();
-			this.prescribingProvider.setId(prescriberID);
+			if (results.size() > 0) {
+				this.prescribingProvider.setId(prescriberID);
+			} else {
+				this.prescribingProvider.setProviderSourceValue(prescriberID.toString());
+			}
 		}
 		
 		return this;

@@ -152,6 +152,35 @@ public class OmopConceptMapping implements Runnable {
 	}
 	
 	public Object loadEntityById(Class<? extends BaseResourceEntity> class1, Long primaryKey){
-		return entityManager.find(class1, primaryKey);
+		return entityManager.find(class1, primaryKey); 
+	}
+	
+	// OK... we need to sort things out. I am piggybacking on this. I think we will need to refactor
+	// the name this class to cover more generic needs of db query.
+	public Object loadEntityBySource(Class<? extends BaseResourceEntity> class_, String tableName, String columnName, String value) {
+		String query = "SELECT t"+" FROM "+tableName+" t WHERE "+columnName+" like :value";
+		System.out.println("hello:"+query);
+		List<? extends BaseResourceEntity> results = entityManager.createQuery(query, class_)
+				.setParameter("value",  value).getResultList();
+		if (results.size() > 0)
+			return results.get(0);
+		else
+			return null;
+//		
+//		
+//		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//		CriteriaQuery<Object[]> criteria = builder.createQuery(Object[].class);
+//		Root<? extends BaseResourceEntity> from = criteria.from(class_);
+//		Path<Long> idPath = from.get("id");
+//		Path<String> codePath = from.get("conceptCode");
+//		criteria.multiselect(codePath, idPath); //TODO unit test, order matters here
+//		Predicate p1 = builder.like(from.get("conceptClassId").as(String.class), conceptClass);
+//		if(vocabularyId != null){
+//			Predicate p2 = builder.like(from.get("vocabulary").get("id").as(String.class), vocabularyId);  
+//			criteria.where(builder.and(p1, p2)); 
+//		} else{
+//			criteria.where(builder.and(p1));
+//		}
+
 	}
 }

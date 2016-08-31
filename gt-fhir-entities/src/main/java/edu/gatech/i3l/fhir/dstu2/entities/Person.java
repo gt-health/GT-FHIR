@@ -52,13 +52,11 @@ public class Person extends BaseResourceEntity{
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="gender_concept_id", nullable= false)
-	@NotNull
 	private Concept genderConcept;
 	
 	@Column(name="year_of_birth", nullable=false)
-	@NotNull
 	private Integer yearOfBirth;
 	
 	@Column(name="month_of_birth")
@@ -121,6 +119,13 @@ public class Person extends BaseResourceEntity{
 
 	public Person() {
 		super();
+		this.genderConcept = new Concept();
+		this.genderConcept.setId(0L);
+		this.raceConcept = new Concept();
+		this.raceConcept.setId(0L);
+		this.setYearOfBirth(0);
+		this.ethnicityConcept = new Concept();
+		this.ethnicityConcept.setId(0L);
 	}
 
 	public Person(Long id, Concept genderConcept, Integer yearOfBirth, Integer monthOfBirth,
