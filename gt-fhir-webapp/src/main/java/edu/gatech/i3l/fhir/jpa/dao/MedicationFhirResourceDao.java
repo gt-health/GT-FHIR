@@ -25,7 +25,9 @@ public class MedicationFhirResourceDao extends BaseFhirResourceDao<Medication> {
 
 			@Override
 			public Predicate addCommonPredicate(CriteriaBuilder builder, From<? extends IResourceEntity, ? extends IResourceEntity> from) {
-				return builder.equal(from.get("vocabulary").get("id"), "RxNorm");//In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8
+				Predicate pred1 = builder.equal(from.get("vocabulary").get("id"), "RxNorm");//In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8
+				Predicate pred2 = builder.equal(from.get("vocabulary").get("id"), "NDC");
+				return builder.or(pred1, pred2);
 			}
 		};
 	}

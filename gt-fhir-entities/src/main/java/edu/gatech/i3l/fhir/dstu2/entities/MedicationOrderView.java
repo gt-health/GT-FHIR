@@ -15,15 +15,22 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 import org.hl7.fhir.instance.model.CodeableConcept;
 import org.hl7.fhir.instance.model.Reference;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
@@ -41,6 +48,7 @@ import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
@@ -56,7 +64,7 @@ public final class MedicationOrderView extends DrugExposure {
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 
 	/**
 	 * For this entity, drug type (name of the concept) is Prescription Written;
@@ -85,14 +93,14 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "provider_id")
 	private Provider prescribingProvider;
 
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
@@ -147,11 +155,11 @@ public final class MedicationOrderView extends DrugExposure {
 	 * ******************************** END ATTRIBUTES FOR DISPENSE
 	 ********************************/
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -334,17 +342,22 @@ public final class MedicationOrderView extends DrugExposure {
 			resource.setEncounter(
 					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));
 		}
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
+		ResourceReferenceDt patientRef = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		patientRef.setDisplay(this.person.getNameAsSingleString());
+		resource.setPatient(patientRef);
+		
 //		if (this.relevantCondition != null)
 //			// FIXME the reference above doesn't corresponde to a
 //			// ResourceEntity; it should be a reference to Resource Condition
 //			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
-		if (this.prescribingProvider != null)
-			resource.setPrescriber(
-					new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId())));
+		if (this.prescribingProvider != null) {
+			ResourceReferenceDt prescriberRef = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId()));
+			prescriberRef.setDisplay(this.prescribingProvider.getProviderName());
+			resource.setPrescriber(prescriberRef);
+		}
 
         Double doseValue = this.getEffectiveDrugDose();
-        if (doseValue >= 0.0)  {
+        if (doseValue != null && doseValue >= 0.0)  {
         	DosageInstruction dosage = new DosageInstruction();
         	Concept myUnitConcept = this.getDoseUnitConcept();
         	SimpleQuantityDt dose;
@@ -381,48 +394,66 @@ public final class MedicationOrderView extends DrugExposure {
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
+		
 		/* Set start date of prescription */
 		this.startDate = medicationOrder.getDateWritten();
-		/* Set VisitOccurrence */
-		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
-		if (encounterRef != null) {
-			this.visitOccurrence = new VisitOccurrence();
-			this.visitOccurrence.setId(encounterRef);
-		}
-		/* Set Medication */
-		if (medicationOrder.getMedication() instanceof CodeableConcept) {
-			CodeableConceptDt codeDt = (CodeableConceptDt) medicationOrder.getMedication();
-			List<CodingDt> codingList = codeDt.getCoding();
-			if (codingList.size() > 0) {
-				CodingDt medCoding = codingList.get(0);
-				this.medication = new Concept();
-				String systemUri = medCoding.getSystem();
-				String code = medCoding.getCode();
-
-				Concept medication = new Concept();
-				medication.setConceptCode(code);
-				
-				Vocabulary voc = new Vocabulary();
-				voc.setIdNameBySystemUri(systemUri);
-				medication.setVocabulary(voc);
-				
-				this.setMedication(medication);
-			}
-		} else if (medicationOrder.getMedication() instanceof Reference) {
-			Reference medicationRef = (Reference) medicationOrder.getMedication();
-			this.medication = new Concept();
-			String medId = medicationRef.getId();
-			if (Pattern.matches(StaticVariables.fpRegex, medId)) {
-				this.medication.setId(Long.valueOf(medId));
-			}
-		}
-
+		
 		/* Set patient */
 		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
 		if (patientRef != null) {
-			this.person = new Person();
+			this.person = new PersonComplement();
 			this.person.setId(patientRef);
 		}
+
+		/* Set VisitOccurrence */
+		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
+
+		WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+		EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+		if (encounterRef != null) {
+			// See if this exists.
+			// Now search for diastolic component.
+			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<VisitOccurrence> criteria = builder.createQuery(VisitOccurrence.class);
+			Root<VisitOccurrence> from = criteria.from(VisitOccurrence.class);
+			criteria.select(from).where(
+					builder.equal(from.get("id"), encounterRef)
+					);
+			TypedQuery<VisitOccurrence> query = entityManager.createQuery(criteria);
+			List<VisitOccurrence> results = query.getResultList();
+			this.visitOccurrence = new VisitOccurrence();
+			if (results.size() > 0) {
+				this.visitOccurrence.setId(encounterRef);
+			} else {
+				this.visitOccurrence.setStartDate(startDate);
+				this.visitOccurrence.setEndDate(startDate);
+				this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
+				PersonComplement visitPerson = new PersonComplement();
+				visitPerson.setId(patientRef);
+				this.visitOccurrence.setPerson(visitPerson);
+			}
+		}
+		
+		/* Set Medication */
+		Concept medication = new Concept();
+		if (medicationOrder.getMedication() instanceof CodeableConceptDt) {
+			CodeableConceptDt codeDt = (CodeableConceptDt) medicationOrder.getMedication();
+			CodingDt medCoding = codeDt.getCodingFirstRep();
+			if (medCoding != null) {
+//				this.medication = new Concept();
+//				String systemUri = medCoding.getSystem();
+				String code = medCoding.getCode();
+				medication.setId(OmopConceptMapping.getInstance().get(code));
+			}
+		} else if (medicationOrder.getMedication() instanceof ResourceReferenceDt) {
+			Reference medicationRef = (Reference) medicationOrder.getMedication();
+			String medId = medicationRef.getId();
+			if (Pattern.matches(StaticVariables.fpRegex, medId)) {
+				medication.setId(Long.valueOf(medId));
+			}
+		}
+		this.setMedication(medication);
+
 		// OMOP can handle only one dosage.
 //		DrugExposureComplement f_drug = new DrugExposureComplement();
 
@@ -435,13 +466,23 @@ public final class MedicationOrderView extends DrugExposure {
 			this.setEffectiveDrugDose(doseQty.getValue().doubleValue());
 			this.setDoseUnitSourceValue(doseQty.getUnit());
 
-			Long unitConceptId = OmopConceptMapping.getInstance().get(doseQty.getUnit());
-			Concept myUnitConcept;
-			if (unitConceptId > 0) {
-				myUnitConcept = new Concept(unitConceptId);
-				this.setDoseUnitConcept(myUnitConcept);
+			String doseUnitCode = null;
+			String doseCode = doseQty.getCode();
+			String doseUnit = doseQty.getUnit();
+			if (doseCode != null && !doseCode.isEmpty()) {
+				doseUnitCode = doseCode;
+			} else if (doseUnit != null && !doseUnit.isEmpty()) {
+				doseUnitCode = doseUnit;
 			}
 			
+			if (doseUnitCode != null && !doseUnitCode.isEmpty()) {
+				Long unitConceptId = OmopConceptMapping.getInstance().get(doseUnitCode);
+				Concept myUnitConcept;
+				if (unitConceptId > 0) {
+					myUnitConcept = new Concept(unitConceptId);
+					this.setDoseUnitConcept(myUnitConcept);
+				}
+			} 
 //			f_drug.setDose(doseQty.getValue().toString());
 //			f_drug.setUnit(doseQty.getUnit());
 		}
@@ -473,6 +514,24 @@ public final class MedicationOrderView extends DrugExposure {
 			}
 		}
 
+	 	Long prescriberID = medicationOrder.getPrescriber().getReference().getIdPartAsLong();
+		if (prescriberID != null) {
+			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Provider> criteria = builder.createQuery(Provider.class);
+			Root<Provider> from = criteria.from(Provider.class);
+			criteria.select(from).where(
+					builder.equal(from.get("id"), prescriberID)
+					);
+			TypedQuery<Provider> query = entityManager.createQuery(criteria);
+			List<Provider> results = query.getResultList();
+			this.prescribingProvider = new Provider();
+			if (results.size() > 0) {
+				this.prescribingProvider.setId(prescriberID);
+			} else {
+				this.prescribingProvider.setProviderSourceValue(prescriberID.toString());
+			}
+		}
+		
 		return this;
 	}
 

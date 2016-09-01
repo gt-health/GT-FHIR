@@ -12,7 +12,6 @@ import org.hibernate.envers.Audited;
 
 @Entity
 @Table(name="domain")
-@Audited
 public class Domain {
 	@Id
 	@Column(name="domain_id")

@@ -17,6 +17,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -31,7 +32,9 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
+import ca.uhn.fhir.model.primitive.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -53,7 +56,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public static final String RESOURCE_TYPE = "Condition";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="condition_occurrence_seq_gen")
+	@SequenceGenerator(name="condition_occurrence_seq_gen", sequenceName="condition_occurrence_id_seq", allocationSize=1)
 	@Column(name="condition_occurrence_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
@@ -61,7 +65,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="condition_concept_id", nullable=false)
@@ -109,7 +113,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		super();
 	}
 
-	public ConditionOccurrence(Long id, Person person, Concept conditionConcept, Date startDate, Date endDate,
+	public ConditionOccurrence(Long id, PersonComplement person, Concept conditionConcept, Date startDate, Date endDate,
 			Concept conditionTypeConcept, String stopReason, Provider provider, VisitOccurrence encounter,
 			String sourceValue, Concept sourceConcept) {
 		super();
@@ -142,11 +146,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		return RESOURCE_TYPE;
 	}
 
-	public Person getPerson() {
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -228,7 +232,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			Condition condition = (Condition) resource;
 			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
 			if(patientRef != null){
-				this.person =  new Person();
+				this.person =  new PersonComplement();
 				this.person.setId(patientRef);
 			}
 
@@ -250,13 +254,20 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 			Long encounterReference = condition.getEncounter().getReference().getIdPartAsLong();
 			this.conditionTypeConcept = new Concept();
-			if (encounterReference == null) {
-				// These concept_id's are defined for Omop 4.0 and have concet_code = "OMOP generated"
-				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
-			} else {
+			if (encounterReference != null) {
 				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
 				this.encounter = new VisitOccurrence();
 				this.encounter.setId(encounterReference);
+			}
+			
+			ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt<ConditionCategoryCodesEnum> condCategory = condition.getCategory();
+			CodingDt condCatCoding = condCategory.getCodingFirstRep();
+			if (condCatCoding != null) {
+				if (condCatCoding.getCode().equalsIgnoreCase(ConditionCategoryCodesEnum.COMPLAINT.getCode())) {
+					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId());
+				} else {
+					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
+				}
 			}
 
 			// this.stopReason = stopReason; NOTE: no FHIR parameter for
@@ -287,6 +298,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		patientReference.setDisplay(this.person.getNameAsSingleString());
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
@@ -303,6 +315,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// This can be either Patient or Practitioner.
 		if (provider != null && provider.getId() > 0) {
 			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, provider.getId()));
+			practitionerReference.setDisplay(this.provider.getProviderName());
 			condition.setAsserter(practitionerReference);
 		}
 
@@ -319,14 +332,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		String theSystem;
 		String theCode;
 		String theDisplay = "";
-		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
-			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
-			theCode = this.sourceValue.substring(9);
-		} else {
-			theSystem = conditionConcept.getVocabulary().getSystemUri();
-			theCode = conditionConcept.getConceptCode();
-			theDisplay = conditionConcept.getName();
-		}
+//		if (this.sourceValue.startsWith("icd-9-cm:") == true) {
+//			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
+//			theCode = this.sourceValue.substring(9);
+//		} else {
+		theSystem = conditionConcept.getVocabulary().getSystemUri();
+		theCode = conditionConcept.getConceptCode();
+		theDisplay = conditionConcept.getName();
+//		}
 
 		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
 		if (theSystem != "") {
@@ -374,6 +387,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			periodDt.setStart(startDateDt);
 			periodDt.setEnd(endDateDt);
 			condition.setOnset(periodDt);
+		}
+		
+		// Category
+		Concept myCat = this.getConditionConcept();
+		if (myCat.getId() == Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId()) {
+			condition.setCategory(ConditionCategoryCodesEnum.COMPLAINT);
+		} else {
+			condition.setCategory(ConditionCategoryCodesEnum.FINDING);
 		}
 
 		// VerficationStutus 

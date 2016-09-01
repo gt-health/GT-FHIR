@@ -37,17 +37,19 @@ public class OmopConceptMapping implements Runnable {
 	 */
 	public static final String UNDEFINED = "Undefined";
 	public static final String GENDER = "Gender";
-	public static final String MARITAL_STATUS = "Marital Status";
-	public static final String DRUG_EXPOSURE_TYPE = "Drug Exposure Type";
+//	public static final String MARITAL_STATUS = "Marital Status";
+	public static final String DRUG_EXPOSURE_TYPE = "Drug Type";
 	public static final String CLINICAL_FINDING = "Clinical finding";
 	public static final String QUALIFIER_VALUE = "Qualifier Value";
 	public static final String PROCEDURE = "Procedure";
 	public static final String OBSERVABLE_ENTITY = "Observable entity";
-	public static final String CONDITION_TYPE = "Condition Occurrence Type";
+	public static final String CONDITION_TYPE = "Condition Type";
 	public static final String LOINC_CODE = "LOINC Code";
+	public static final String SPECIALTY = "Specialty";
 	public static final String UCUM_CODE = "UCUM";
 	public static final String UCUM_CODE_STANDARD = "UCUM Standard";
 	public static final String UCUM_CODE_CUSTOM = "UCUM Custom";
+	public static final String VISIT = "Visit";
 	public static final String PLACE_OF_SERVICE = "Place of Service";
 	
 	
@@ -55,8 +57,8 @@ public class OmopConceptMapping implements Runnable {
 	 * Vocabularies
 	 */
 	private static final String OMOP_4_5 = "OMOP Vocabulary v4.5 20-Oct-2014";
-	private static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
-	private static final String SNOMED_CT = "SNOMED-CT";
+//	private static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
+	private static final String SNOMED_CT = "SNOMED";
 	private static final String LOINC = "LOINC";
 	private static final String OMOP_CONDITION_TYPE = "OMOP Condition Occurrence Type";
 	private static final String UCUM = "UCUM";
@@ -72,15 +74,16 @@ public class OmopConceptMapping implements Runnable {
 	
 	public void loadConcepts(){
 		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-		concepts.put(GENDER, findConceptMap(builder, GENDER, GENDER_VOCABULARY));
+		concepts.put(GENDER, findConceptMap(builder, GENDER, null));
 		concepts.put(DRUG_EXPOSURE_TYPE, findConceptMap(builder, DRUG_EXPOSURE_TYPE, null));
 		concepts.put(CLINICAL_FINDING, findConceptMap(builder, CLINICAL_FINDING, SNOMED_CT)); //TODO test size of the object/map
 		concepts.put(CONDITION_TYPE, findConceptMap(builder, CONDITION_TYPE, OMOP_CONDITION_TYPE));
-		concepts.put(QUALIFIER_VALUE, findConceptMap(builder, QUALIFIER_VALUE, OMOP_4_5));
+		concepts.put(QUALIFIER_VALUE, findConceptMap(builder, QUALIFIER_VALUE, null));
 		concepts.put(LOINC_CODE, findConceptMap(builder, LOINC_CODE, LOINC));
 		concepts.put(UCUM_CODE, findConceptMap(builder, UCUM_CODE, UCUM));
 		concepts.put(UCUM_CODE_STANDARD, findConceptMap(builder, UCUM_CODE, UCUM));
 		concepts.put(UCUM_CODE_CUSTOM, findConceptMap(builder, UCUM_CODE, UCUM));
+		concepts.put(VISIT, findConceptMap(builder, VISIT, null));
 	}
 	
 	public static OmopConceptMapping getInstance(){
@@ -94,15 +97,15 @@ public class OmopConceptMapping implements Runnable {
 	 * @param vocabularyName
 	 * @return A map containing the names(values) of the concepts and their respective id's in the database.
 	 */
-	private Map<String, Long> findConceptMap(CriteriaBuilder builder, String conceptClass, String vocabularyName){
+	private Map<String, Long> findConceptMap(CriteriaBuilder builder, String conceptClass, String vocabularyId){
 		CriteriaQuery<Object[]> criteria = builder.createQuery(Object[].class);
 		Root<Concept> from = criteria.from(Concept.class);
 		Path<Long> idPath = from.get("id");
 		Path<String> codePath = from.get("conceptCode");
 		criteria.multiselect(codePath, idPath); //TODO unit test, order matters here
 		Predicate p1 = builder.like(from.get("conceptClassId").as(String.class), conceptClass);
-		if(vocabularyName != null){
-			Predicate p2 = builder.like(from.get("vocabulary").get("name").as(String.class), vocabularyName);  
+		if(vocabularyId != null){
+			Predicate p2 = builder.like(from.get("vocabulary").get("id").as(String.class), vocabularyId);  
 			criteria.where(builder.and(p1, p2)); 
 		} else{
 			criteria.where(builder.and(p1));
@@ -149,6 +152,35 @@ public class OmopConceptMapping implements Runnable {
 	}
 	
 	public Object loadEntityById(Class<? extends BaseResourceEntity> class1, Long primaryKey){
-		return entityManager.find(class1, primaryKey);
+		return entityManager.find(class1, primaryKey); 
+	}
+	
+	// OK... we need to sort things out. I am piggybacking on this. I think we will need to refactor
+	// the name this class to cover more generic needs of db query.
+	public Object loadEntityBySource(Class<? extends BaseResourceEntity> class_, String tableName, String columnName, String value) {
+		String query = "SELECT t"+" FROM "+tableName+" t WHERE "+columnName+" like :value";
+		System.out.println("hello:"+query);
+		List<? extends BaseResourceEntity> results = entityManager.createQuery(query, class_)
+				.setParameter("value",  value).getResultList();
+		if (results.size() > 0)
+			return results.get(0);
+		else
+			return null;
+//		
+//		
+//		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//		CriteriaQuery<Object[]> criteria = builder.createQuery(Object[].class);
+//		Root<? extends BaseResourceEntity> from = criteria.from(class_);
+//		Path<Long> idPath = from.get("id");
+//		Path<String> codePath = from.get("conceptCode");
+//		criteria.multiselect(codePath, idPath); //TODO unit test, order matters here
+//		Predicate p1 = builder.like(from.get("conceptClassId").as(String.class), conceptClass);
+//		if(vocabularyId != null){
+//			Predicate p2 = builder.like(from.get("vocabulary").get("id").as(String.class), vocabularyId);  
+//			criteria.where(builder.and(p1, p2)); 
+//		} else{
+//			criteria.where(builder.and(p1));
+//		}
+
 	}
 }

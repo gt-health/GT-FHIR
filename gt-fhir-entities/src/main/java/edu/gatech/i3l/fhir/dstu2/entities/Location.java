@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
@@ -26,7 +27,8 @@ public class Location {
 	public static final String DATA_TYPE = "AddressDt";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="location_seq_gen")
+	@SequenceGenerator(name="location_seq_gen", sequenceName="location_id_seq")
 	@Column(name="location_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
@@ -46,9 +48,6 @@ public class Location {
 	@Column(name="zip")
 	private String zipCode;
 	
-	@Column(name="country")
-	private String country;
-	
 	@Column(name="location_source_value")
 	private String locationSourceValue;
 
@@ -57,15 +56,13 @@ public class Location {
 	}
 
 	public Location(String address1, String address2, String city,
-			String state, String zipCode, String country,
-			String locationSourceValue) {
+			String state, String zipCode, String locationSourceValue) {
 		super();
 		this.address1 = address1;
 		this.address2 = address2;
 		this.city = city;
 		this.state = state;
 		this.zipCode = zipCode;
-		this.country = country;
 		this.locationSourceValue = locationSourceValue;
 	}
 
@@ -109,14 +106,6 @@ public class Location {
 		this.zipCode = zipCode;
 	}
 
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
 	public String getLocationSourceValue() {
 		return locationSourceValue;
 	}
@@ -136,9 +125,9 @@ public class Location {
 	public ca.uhn.fhir.model.dstu2.resource.Location getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.Location location =  new ca.uhn.fhir.model.dstu2.resource.Location();
 //		location.setId(this.getIdDt());
-		location.getAddress().addLine(this.getAddress1()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
+		location.getAddress().addLine(this.getAddress1()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState());
 		if(this.getAddress2() != null)
-			location.getAddress().addLine(this.getAddress2()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState()).setCountry(this.getCountry());
+			location.getAddress().addLine(this.getAddress2()).setCity(this.getCity()).setPostalCode(this.getZipCode()).setState(this.getState());
 		return location;
 	}
 

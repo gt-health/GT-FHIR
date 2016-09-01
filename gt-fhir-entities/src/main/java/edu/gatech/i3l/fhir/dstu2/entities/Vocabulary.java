@@ -30,7 +30,7 @@ public class Vocabulary {
 	@Column(name="vocabulary_name", updatable=false)
 	private String name;
 	
-	@Column(name="vocabulary_reference")
+	@Column(name="vocabulary_reference", updatable=false)
 	private String vocabularyReference;
 	
 	
@@ -76,7 +76,7 @@ public class Vocabulary {
 	// FIXME This is FHIR related. We may need to do this in the database. But, for quick
 	// initial implementation, we do this. Later, we may extend vocabulary table.
 	public String getSystemUri() {
-		String uri = "";
+		String uri = this.getVocabularyReference();
 		
 		if (id.equalsIgnoreCase("SNOMED")) uri = "http://snomed.info/sct";
 		else if (id.equalsIgnoreCase("ICD9CM")) uri = "http://hl7.org/fhir/sid/icd-9-cm";
@@ -86,6 +86,7 @@ public class Vocabulary {
 		else if (id.equalsIgnoreCase("LOINC")) uri = "http://loinc.org";
 		else if (id.equalsIgnoreCase("RxNorm")) uri = "http://www.nlm.nih.gov/research/umls/rxnorm";
 		else if (id.equalsIgnoreCase("UCUM")) uri = "http://unitsofmeasure.org";
+		else if (id.equalsIgnoreCase("NDC")) uri = "http://hl7.org/fhir/sid/ndc";
 		
 		return uri;
 	}
@@ -107,6 +108,8 @@ public class Vocabulary {
 			this.id = "RxNorm";			
 		} else if (uri.equalsIgnoreCase("http://unitsofmeasure.org")) {
 			this.id = "UCUM";
+		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/ndc")) {
+			this.id = "NDC";
 		} else {
 			this.id = "Vocabulary";
 		}

@@ -51,6 +51,7 @@ public class OIDCInterceptor extends InterceptorAdapter {
 	private String clientId;
 	private String clientSecret;
 	private String localByPass;
+	private String readOnly;
 
 	public OIDCInterceptor() {
 	}
@@ -61,6 +62,13 @@ public class OIDCInterceptor extends InterceptorAdapter {
 
 		System.out.println("[OAuth] Request from " + theRequest.getRemoteAddr());
 
+		if (readOnly.equalsIgnoreCase("True")) {
+			if (theRequest.getMethod().equalsIgnoreCase("GET"))
+				return true;
+			else
+				return false;
+		}
+		
 		if (enableOAuth.equalsIgnoreCase("False")) {
 			System.out.println("[OAuth] OAuth is disabled. Request from " + theRequest.getRemoteAddr() + "is approved");
 			return true;
@@ -179,4 +187,11 @@ public class OIDCInterceptor extends InterceptorAdapter {
 		this.localByPass = localByPass;
 	}
 
+	public String getReadOnly() {
+		return readOnly;
+	}
+	
+	public void setReadOnly(String readOnly) {
+		this.readOnly = readOnly;
+	}
 }

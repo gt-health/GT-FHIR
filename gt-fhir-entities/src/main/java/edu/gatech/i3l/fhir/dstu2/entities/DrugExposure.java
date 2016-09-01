@@ -14,6 +14,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DiscriminatorFormula;
@@ -35,7 +36,8 @@ import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 //							"WHEN drug_type_concept_id = ANY (SELECT concept.concept_id FROM concept WHERE (concept.concept_id=38000179 OR concept.concept_id=43542356 OR concept.concept_id=43542357 OR concept.concept_id=43542358) AND concept.vocabulary_id='Drug Type') THEN 'DrugAdministration' END")
 public abstract class DrugExposure extends BaseResourceEntity {
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="drug_exposure_seq_gen")
+	@SequenceGenerator(name="drug_exposure_seq_gen", sequenceName="drug_exposure_id_seq", allocationSize=1)
 	@Column(name="drug_exposure_id", updatable= false)
 	@Access(AccessType.PROPERTY)
 	private Long id;

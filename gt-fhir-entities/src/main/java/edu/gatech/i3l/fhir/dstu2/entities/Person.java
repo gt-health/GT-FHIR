@@ -17,6 +17,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -45,18 +46,17 @@ public class Person extends BaseResourceEntity{
 	public static final String RES_TYPE = "Patient";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="person_id_seq")
+	@SequenceGenerator(name="person_id_seq", sequenceName="person_id_seq", allocationSize=1)
 	@Column(name="person_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="gender_concept_id", nullable= false)
-	@NotNull
 	private Concept genderConcept;
 	
 	@Column(name="year_of_birth", nullable=false)
-	@NotNull
 	private Integer yearOfBirth;
 	
 	@Column(name="month_of_birth")
@@ -119,6 +119,13 @@ public class Person extends BaseResourceEntity{
 
 	public Person() {
 		super();
+		this.genderConcept = new Concept();
+		this.genderConcept.setId(0L);
+		this.raceConcept = new Concept();
+		this.raceConcept.setId(0L);
+		this.setYearOfBirth(0);
+		this.ethnicityConcept = new Concept();
+		this.ethnicityConcept.setId(0L);
 	}
 
 	public Person(Long id, Concept genderConcept, Integer yearOfBirth, Integer monthOfBirth,
@@ -330,8 +337,7 @@ public class Person extends BaseResourceEntity{
 				.addLine(this.location.getAddress2())//WARNING check if mapping for lines are correct
 				.setCity(this.location.getCity())
 				.setPostalCode(this.location.getZipCode())
-				.setState(this.location.getState())
-				.setCountry(this.location.getCountry());
+				.setState(this.location.getState());
 //				.setPeriod(period);
 		}
 		
@@ -395,11 +401,21 @@ public class Person extends BaseResourceEntity{
 			location.setZipCode(address.getPostalCode());
 			location.setCity(address.getCity());
 			location.setState(address.getState());
-			location.setCountry(address.getCountry());
 //			location.setEndDate(address.getPeriod().getEnd());
 //			location.setStartDate(address.getPeriod().getStart());
 			this.location = location;
 		}
+		
+		//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
+		//      But, FHIR Patient does not have race data element
+		Concept race = new Concept();
+		race.setId(8552L);
+		this.setRaceConcept(race);
+		
+		// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
+		Concept ethnicity = new Concept();
+		ethnicity.setId(0L);
+		this.setEthnicityConcept(ethnicity);
 		
 		return this;
 	}
