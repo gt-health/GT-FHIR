@@ -1,6 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -32,7 +34,9 @@ import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
@@ -68,11 +72,11 @@ public class Person extends BaseResourceEntity{
 	@Column(name="time_of_birth")
 	private String timeOfBirth;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
@@ -94,21 +98,21 @@ public class Person extends BaseResourceEntity{
 	@Column(name="gender_source_value")
 	private String genderSourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="gender_source_concept_id")
 	private Concept genderSourceConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="race_source_concept_id")
 	private Concept raceSourceConcept;
 
 	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="ethnicity_source_concept_id")
 	private Concept ethnicitySourceConcept;
 
@@ -377,6 +381,32 @@ public class Person extends BaseResourceEntity{
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		if(resource instanceof Patient){
 			Patient patient = (Patient) resource;
+			
+			IdDt myID = patient.getId();
+			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
+				PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
+				if (person != null) {
+					this.setId(myID.getIdPartAsLong());
+				} else {
+					person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", myID.getIdPart());
+					if (person != null) {
+						this.setId(person.getId());
+					} else {
+						this.setPersonSourceValue(myID.getIdPart());
+					}
+				}
+			} else {
+				//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
+				//      But, FHIR Patient does not have race data element
+				Concept race = new Concept();
+				race.setId(8552L);
+				this.setRaceConcept(race);
+				
+				// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
+				Concept ethnicity = new Concept();
+				ethnicity.setId(0L);
+				this.setEthnicityConcept(ethnicity);
+			}
 			Calendar c = Calendar.getInstance();
 			c.setTime(patient.getBirthDate());
 			this.yearOfBirth = c.get(Calendar.YEAR);
@@ -385,7 +415,11 @@ public class Person extends BaseResourceEntity{
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
 			this.genderConcept = new Concept();
-			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender().substring(0, 1), OmopConceptMapping.GENDER));
+			String genderString = patient.getGender();
+			if (genderString != null) 
+				this.genderConcept.setId(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
+			else
+				this.genderConcept.setId(0L);
 			
 			Location location;
 			if(this.location != null){
@@ -393,29 +427,26 @@ public class Person extends BaseResourceEntity{
 			}else {
 				location = new Location();
 			}
-			AddressDt address = patient.getAddress().get(0);
-//			location.setAddressUse(address.getUseElement().getValueAsEnum());
-			location.setAddress1(address.getLine().get(0).getValue());
-			if (address.getLine().size() > 1)// iterator.hasNext or listIterator.hasNext were returning true in all cases
-				location.setAddress2(address.getLine().get(1).getValue());
-			location.setZipCode(address.getPostalCode());
-			location.setCity(address.getCity());
-			location.setState(address.getState());
-//			location.setEndDate(address.getPeriod().getEnd());
-//			location.setStartDate(address.getPeriod().getStart());
-			this.location = location;
+			
+			List<AddressDt> addresses = patient.getAddress();
+			if (addresses != null && addresses.size() > 0) {
+				AddressDt address = addresses.get(0);
+//				location.setAddressUse(address.getUseElement().getValueAsEnum());
+				List<StringDt> addressLines = address.getLine();
+				if (addressLines.size() > 0) {
+					location.setAddress1(addressLines.get(0).getValue());
+					if (address.getLine().size() > 1)// iterator.hasNext or listIterator.hasNext were returning true in all cases
+						location.setAddress2(address.getLine().get(1).getValue());
+					location.setZipCode(address.getPostalCode());
+					location.setCity(address.getCity());
+					location.setState(address.getState());
+		//			location.setEndDate(address.getPeriod().getEnd());
+		//			location.setStartDate(address.getPeriod().getStart());
+					this.location = location;
+				}
+			}
+					
 		}
-		
-		//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
-		//      But, FHIR Patient does not have race data element
-		Concept race = new Concept();
-		race.setId(8552L);
-		this.setRaceConcept(race);
-		
-		// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
-		Concept ethnicity = new Concept();
-		ethnicity.setId(0L);
-		this.setEthnicityConcept(ethnicity);
 		
 		return this;
 	}

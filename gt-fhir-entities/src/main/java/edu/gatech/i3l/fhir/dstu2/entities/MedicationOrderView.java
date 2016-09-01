@@ -61,7 +61,7 @@ public final class MedicationOrderView extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationOrder";
 
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
@@ -391,6 +391,7 @@ public final class MedicationOrderView extends DrugExposure {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationOrder medicationOrder = (MedicationOrder) resource;
+		
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
@@ -401,36 +402,54 @@ public final class MedicationOrderView extends DrugExposure {
 		/* Set patient */
 		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
 		if (patientRef != null) {
-			this.person = new PersonComplement();
-			this.person.setId(patientRef);
+			PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance()
+					.loadEntityById(PersonComplement.class, patientRef);
+			if (person != null) {
+				this.setPerson(person);
+			} else {
+				// See if we have already received this.
+				person = (PersonComplement) OmopConceptMapping.getInstance()
+						.loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
+				if (person != null) {
+					this.setPerson(person);
+				} else {
+					this.person = new PersonComplement();
+					this.person.setPersonSourceValue(patientRef.toString());
+				}
+			}
+		} else {
+			// Patient is not required field. But, OMOP requires it. If we 
+			// no Patient, return null.
+			return null;
 		}
 
 		/* Set VisitOccurrence */
-		Long encounterRef = medicationOrder.getEncounter().getReference().getIdPartAsLong();
-
-		WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-		EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
-		if (encounterRef != null) {
-			// See if this exists.
-			// Now search for diastolic component.
-			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<VisitOccurrence> criteria = builder.createQuery(VisitOccurrence.class);
-			Root<VisitOccurrence> from = criteria.from(VisitOccurrence.class);
-			criteria.select(from).where(
-					builder.equal(from.get("id"), encounterRef)
-					);
-			TypedQuery<VisitOccurrence> query = entityManager.createQuery(criteria);
-			List<VisitOccurrence> results = query.getResultList();
-			this.visitOccurrence = new VisitOccurrence();
-			if (results.size() > 0) {
-				this.visitOccurrence.setId(encounterRef);
-			} else {
-				this.visitOccurrence.setStartDate(startDate);
-				this.visitOccurrence.setEndDate(startDate);
-				this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
-				PersonComplement visitPerson = new PersonComplement();
-				visitPerson.setId(patientRef);
-				this.visitOccurrence.setPerson(visitPerson);
+		ResourceReferenceDt visitResRef = medicationOrder.getEncounter();
+		if (visitResRef != null) {
+			Long encounterRef = visitResRef.getReference().getIdPartAsLong();
+//	
+//			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+//			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+			if (encounterRef != null) {
+				// See if this exists.
+				VisitOccurrence visitOccurrence = 
+						(VisitOccurrence) OmopConceptMapping.getInstance().loadEntityById(VisitOccurrence.class, encounterRef);
+				if (visitOccurrence != null) {
+					this.setVisitOccurrence(visitOccurrence);
+				} else {
+					// Check source column to see if we have received this before.
+					visitOccurrence = (VisitOccurrence) OmopConceptMapping.getInstance()
+							.loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounterRef.toString());
+					if (visitOccurrence != null) {
+						this.setVisitOccurrence(visitOccurrence);
+					} else {
+						this.visitOccurrence = new VisitOccurrence();
+						this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
+						this.visitOccurrence.setStartDate(startDate);
+						this.visitOccurrence.setEndDate(startDate);
+						this.visitOccurrence.setPerson(this.person);
+					}
+				}
 			}
 		}
 		
@@ -513,22 +532,25 @@ public final class MedicationOrderView extends DrugExposure {
 				}
 			}
 		}
-
-	 	Long prescriberID = medicationOrder.getPrescriber().getReference().getIdPartAsLong();
-		if (prescriberID != null) {
-			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<Provider> criteria = builder.createQuery(Provider.class);
-			Root<Provider> from = criteria.from(Provider.class);
-			criteria.select(from).where(
-					builder.equal(from.get("id"), prescriberID)
-					);
-			TypedQuery<Provider> query = entityManager.createQuery(criteria);
-			List<Provider> results = query.getResultList();
-			this.prescribingProvider = new Provider();
-			if (results.size() > 0) {
-				this.prescribingProvider.setId(prescriberID);
-			} else {
-				this.prescribingProvider.setProviderSourceValue(prescriberID.toString());
+		
+		ResourceReferenceDt medOrderRef = medicationOrder.getPrescriber();
+		if (medOrderRef != null) {
+		 	Long prescriberID = medOrderRef.getReference().getIdPartAsLong();
+			if (prescriberID != null) {
+				Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, prescriberID);
+				if (provider != null) {
+					this.setPrescribingProvider(provider);
+				} else {
+					// See the source field and find if we have received this before
+					provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", prescriberID.toString());
+					if (provider != null) {
+						this.setPrescribingProvider(provider);
+					} else {
+						// We don't have provider... Create one.
+						this.prescribingProvider = new Provider();
+						this.prescribingProvider.setProviderSourceValue(prescriberID.toString());
+					}
+				}
 			}
 		}
 		

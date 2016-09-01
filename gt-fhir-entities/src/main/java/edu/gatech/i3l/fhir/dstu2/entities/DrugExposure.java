@@ -49,6 +49,9 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	@JoinColumn(name = "dose_unit_concept_id")
 	private Concept doseUnitConcept;
 	
+	@Column(name = "drug_source_value")
+	private String drugSourceValue;
+	
 	@Column(name = "dose_unit_source_value")
 	private String doseUnitSourceValue;
 	
@@ -79,6 +82,14 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	
 	public void setDoseUnitConcept(Concept doseUnitConcept) {
 		this.doseUnitConcept = doseUnitConcept;
+	}
+	
+	public String getDrugSourceValue() {
+		return drugSourceValue;
+	}
+	
+	public void setDrugSourceValue(String drugSourceValue) {
+		this.drugSourceValue = drugSourceValue;
 	}
 	
 	public String getDoseUnitSourceValue() {

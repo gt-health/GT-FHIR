@@ -179,7 +179,7 @@ public class Concept{
 				+ this.getDomainId() + ", "
 				+ this.getConceptClassId() + ", "
 				+ this.getStandardConcept() + ", "
-				+ this.getVocabulary().getId() + ", "
+				+ this.getVocabulary() + ", "
 				+ this.getConceptCode() + ", "
 				+ this.getValidStartDate() + ", "
 				+ this.getValidEndDate();

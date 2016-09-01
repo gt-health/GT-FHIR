@@ -3,6 +3,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,11 +15,13 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
+import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
@@ -56,9 +59,8 @@ public class PersonComplement extends Person{
 	@Column(name="ssn")
 	private String ssn;
 	
-	@ManyToOne
-	@JoinColumn(name="maritalstatus_concept_id")
-	private Concept maritalStatus;
+	@Column(name="maritalstatus")
+	private String maritalStatus;
 	
 	@Column(name="active")
 	private short active;
@@ -132,11 +134,11 @@ public class PersonComplement extends Person{
 		this.ssn = ssn;
 	}
 
-	public Concept getMaritalStatus() {
+	public String getMaritalStatus() {
 		return maritalStatus;
 	}
 
-	public void setMaritalStatus(Concept maritalStatus) {
+	public void setMaritalStatus(String maritalStatus) {
 		this.maritalStatus = maritalStatus;
 	}
 	
@@ -184,6 +186,10 @@ public class PersonComplement extends Person{
 		else
 			patient.setActive(true);
 
+		if (this.maritalStatus != null && !this.maritalStatus.isEmpty()) {
+			patient.setMaritalStatus(MaritalStatusCodesEnum.valueOf(this.maritalStatus.toUpperCase()));
+		}
+		
 		List<ContactPointDt> contactPoints = new ArrayList<ContactPointDt>();
 		if (this.contactPoint1 != null && !this.contactPoint1.isEmpty()) {
 			String[] contactInfo = this.contactPoint1.split(":");
@@ -263,6 +269,17 @@ public class PersonComplement extends Person{
 				this.setActive((short)1);
 			else
 				this.setActive((short)0);
+			
+			BoundCodeableConceptDt<MaritalStatusCodesEnum> maritalStat = patient.getMaritalStatus();
+			if (maritalStat != null) {
+				Set<MaritalStatusCodesEnum> maritalEnum = maritalStat.getValueAsEnum();
+				if (maritalEnum != null) {
+					for (MaritalStatusCodesEnum myCode : maritalEnum) {
+						this.setMaritalStatus(myCode.name());
+						break;
+					}
+				}
+			}
 			
 			// Get contact information.
 			List<ContactPointDt> contactPoints = patient.getTelecom();
