@@ -61,7 +61,7 @@ public class PersonComplement extends Person{
 	private Concept maritalStatus;
 	
 	@Column(name="active")
-	private short active;
+	private Short active;
 	
 	@Column(name="contact_point1")
 	String contactPoint1;
