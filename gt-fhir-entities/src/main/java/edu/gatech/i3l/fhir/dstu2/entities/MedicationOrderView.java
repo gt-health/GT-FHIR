@@ -19,6 +19,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -57,11 +59,13 @@ import edu.gatech.i3l.omop.mapping.StaticVariables;
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionWritten")
+//@NamedQueries(value = { @NamedQuery( name = "findMedicationOrderBySourceValue", query = "select id from Observation v where v.observationSourceValue like :source")})
+//NOTE: This is a view, not an entity itself. So no named queried created
 public final class MedicationOrderView extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationOrder";
 
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
@@ -391,6 +395,79 @@ public final class MedicationOrderView extends DrugExposure {
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationOrder medicationOrder = (MedicationOrder) resource;
+		//Find or Empty Create a Patient entity
+		ResourceReferenceDt patientReference = (ResourceReferenceDt) medicationOrder.getPatient();
+		if (patientReference != null) {
+			//If we have a patient reference, handle grabbing that patient. Handle source values too
+			Long patientRef = patientReference.getReference().getIdPartAsLong();
+			if(patientRef != null){
+				// We have person reference. We have to make sure if this patient exists.
+				PersonComplement patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, patientRef);
+				if (patientClass != null) {
+					this.setPerson(patientClass);
+				} 
+				else {
+					// Before we need to create one, let's see if we have received this before using the source value.
+					patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
+					if (patientClass == null) {
+						this.person = new PersonComplement();
+						this.person.setPersonSourceValue(patientRef.toString());
+						if (patientReference.getDisplay() != null)
+							this.person.setNameFromString(patientReference.getDisplay().getValueAsString());
+					}
+					else {
+						this.setPerson(patientClass);
+					}
+				}
+			}
+		}
+		//GET or Empty Create a Provider entity.
+		ResourceReferenceDt practitionerReference = (ResourceReferenceDt)medicationOrder.getPrescriber();
+		if(practitionerReference != null){
+			Long practitionerRef = practitionerReference.getReference().getIdPartAsLong();
+			if(practitionerRef != null) {
+				Provider providerClass = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, practitionerRef);
+				if(providerClass != null) {
+					this.setPrescribingProvider(providerClass);
+				}
+				else {
+					providerClass = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", practitionerRef.toString());
+					if(providerClass == null){
+						this.prescribingProvider = new Provider();
+						this.prescribingProvider.setProviderSourceValue(practitionerRef.toString());
+					}
+					else{
+						this.setPrescribingProvider(providerClass);
+					}
+				}
+			}
+		}
+		//Find or Empty Create an encounter entity
+		ResourceReferenceDt encounterReference = (ResourceReferenceDt) medicationOrder.getEncounter();
+		if (encounterReference != null) {
+			//If we have a patient reference, handle grabbing that patient. Handle source values too
+			Long encounterRef = encounterReference.getReference().getIdPartAsLong();
+			if(encounterRef != null){
+				// We have person reference. We have to make sure if this patient exists.
+				VisitOccurrence visitOccurrenceClass = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, encounterRef);
+				if (visitOccurrenceClass != null) {
+					this.setVisitOccurrence(visitOccurrenceClass);
+				} 
+				else {
+					// Before we need to create one, let's see if we have received this before using the source value.
+					visitOccurrenceClass = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounterRef.toString());
+					if (visitOccurrenceClass == null) {
+						this.visitOccurrence = new VisitOccurrence();
+						this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
+						this.visitOccurrence.setPerson(this.person);
+						this.visitOccurrence.setProvider(this.prescribingProvider);
+					}
+					else {
+						this.setVisitOccurrence(visitOccurrenceClass);
+					}
+				}
+			}
+		}
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());

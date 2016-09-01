@@ -253,24 +253,27 @@ public class VisitOccurrence extends BaseResourceEntity {
 		Encounter encounter = (Encounter) resource;
 		
 		this.id = encounter.getId().getIdPartAsLong();
-		
+		//Find or Empty Create a Patient entity
 		ResourceReferenceDt patientReference = (ResourceReferenceDt) encounter.getPatient();
 		if (patientReference != null) {
+			//If we have a patient reference, handle grabbing that patient. Handle source values too
 			Long patientRef = patientReference.getReference().getIdPartAsLong();
 			if(patientRef != null){
 				// We have person reference. We have to make sure if this patient exists.
 				PersonComplement patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, patientRef);
 				if (patientClass != null) {
 					this.setPerson(patientClass);
-				} else {
-					// Before we need to create one, let's see if we have received this before.
+				} 
+				else {
+					// Before we need to create one, let's see if we have received this before using the source value.
 					patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
 					if (patientClass == null) {
 						this.person = new PersonComplement();
 						this.person.setPersonSourceValue(patientRef.toString());
 						if (patientReference.getDisplay() != null)
 							this.person.setNameFromString(patientReference.getDisplay().getValueAsString());
-					} else {
+					}
+					else {
 						this.setPerson(patientClass);
 					}
 				}
@@ -282,7 +285,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 		if (tempDate != null) { 
 			this.startDate = tempDate;
 			this.startTime = fmt.format(this.startDate);
-		} else {
+		}
+		else {
 			this.startDate = new Date(0);
 		}
 		
@@ -290,7 +294,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 		if (tempDate != null) {
 			this.endDate = tempDate; 
 			this.endTime = fmt.format(this.endDate);
-		} else {
+		}
+		else {
 			this.endDate = new Date(0);
 		}
 		
@@ -320,7 +325,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			this.setVisitConcept(visitConcept);
 		}
 		
-		/* Set Visit Type - we hardcode this */
+		/* Set Dummy Visit Type - we hardcode this */
 		Concept visitTypeConcept = new Concept();
 		visitTypeConcept.setId(44818518L); // This is Visit derived from EHR
 		this.setVisitTypeConcept(visitTypeConcept);
@@ -335,14 +340,16 @@ public class VisitOccurrence extends BaseResourceEntity {
 					Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, provider_id);
 					if (provider != null) {
 						this.setProvider(provider);
-					} else {
+					}
+					else {
 						// See if we have received this earlier.
 						provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", provider_id.toString());
 						if (provider == null) {
 							this.provider = new Provider();
 							this.provider.setProviderName(individualRef.getDisplay().getValueAsString());
 							this.provider.setProviderSourceValue(provider_id.toString());
-						} else {
+						}
+						else {
 							this.setProvider(provider);
 						}
 					}
@@ -355,7 +362,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 			CareSite careSite = (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, careSiteRef);
 			if (careSite != null) {
 				this.setCareSite(careSite);
-			} else {
+			}
+			else {
 				// TODO: We have care site info. But, couldn't find it from our database.
 				// We may want to create one and link it to this encounter.
 			}
@@ -474,55 +482,4 @@ public class VisitOccurrence extends BaseResourceEntity {
 		return param;
 	}
 	
-	/**
-	 * Dumb database call to query the db directly and mess around with foreign source reference
-	 * IMPORTANT INTERRUPTING CALL HERE
-	 * THIS CALL TAKES 
-	 * A) A OMOP resource class/type
-	 * B) an ID
-	 * Check the resource table for 
-	 * @return
-	 */
-	private Long checkSourceValue(Long referenceID,Class c){
-		String baseReferenceName = c.getName(); //NOTE SUPER DANGEROUS REFLECTION CALL HERE. CAN EASILY MISS THE DB IF TABLES NOT GENERATED RIGHT
-		//Terrible garbage hibernate sessioning that should be something else
-		Configuration cfg = new Configuration();
-		cfg.configure("..\\gt-fhir-webapp\\src\\main\\resources\\META-INF\\persistence.xml");//Garbage local redirection. Probably wrong. Might not work on windows
-		SessionFactory factory = cfg.buildSessionFactory();
-		Session session = factory.openSession();
-		if(checkEntry(referenceID,baseReferenceName,baseReferenceName,session))
-			return referenceID;
-		//No real ID set here.
-		
-		String sourceRedirectColumn = baseReferenceName+"_source_id"; //Assuming this is the right way to represent the source value
-		
-		if(checkEntry(referenceID,baseReferenceName,sourceRedirectColumn,session))
-		{
-			//Make a new ID in THIS ROW
-			Long realID = referenceID; //Translate here somehow
-			return realID;
-		}
-		else
-		{
-		//CREATE A NEW EMPTY RESOURCE
-			return -1L; //NOTE BETTER NOT HAVE A MAX_ENTRY TABLE OR THIS MESSES UP AN ENTRY
-		}
-	}
-	
-	/**
-	 * Dumb database call to query the db directly and mess around with foreign source reference
-	 * Utility call to check for a long entry
-	 * @param ID Long ID of what to find
-	 * @param tableName tableName we're searching
-	 * @param columnName columnName we're searching
-	 * @param session session ID setup to grab the database directly
-	 * @return
-	 */
-	private boolean checkEntry(Long ID,String tableName,String columnName,Session session)
-	{
-		String myStringQuery = "SELECT "+columnName+"_id,"+"FROM "+tableName+"WHERE "+columnName+" = "+ID;
-		Query query = session.createQuery(myStringQuery);
-		List results = query.list();
-		return results.size() == 0;
-	}
 }

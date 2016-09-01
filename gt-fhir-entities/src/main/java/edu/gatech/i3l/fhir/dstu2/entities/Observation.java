@@ -19,6 +19,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -56,6 +58,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Table(name = "f_observation_view")
+@NamedQueries(value = { @NamedQuery( name = "findObservationBySourceValue", query = "select id from Observation v where v.observationSourceValue like :source")})
 public class Observation extends BaseResourceEntity {
 
 	private static final String RES_TYPE = "Observation";
@@ -94,15 +97,19 @@ public class Observation extends BaseResourceEntity {
 	@Column(name = "value_as_number")
 	private BigDecimal valueAsNumber;
 
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@JoinColumn(name = "value_as_concept_id")
+	private Concept valueAsConcept;
+
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@JoinColumn(name = "unit_concept_id")
+	private Concept unit;
+	
 	@Column(name = "range_low")
 	private BigDecimal rangeLow;
 
 	@Column(name = "range_high")
 	private BigDecimal rangeHigh;
-
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "value_as_concept_id")
-	private Concept valueAsConcept;
 
 //	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 //	@JoinColumn(name = "relevant_condition_concept_id")
@@ -114,19 +121,16 @@ public class Observation extends BaseResourceEntity {
 	private Concept type;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "provider_id")
+	@JoinColumn(name = "associated_provider_id")
 	private Provider provider;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
-	@Column(name = "source_value")
-	private String sourceValue;
+	@Column(name = "observation_source_value")
+	private String observationSourceValue;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "unit_concept_id")
-	private Concept unit;
 
 	@Column(name = "unit_source_value")
 	private String unitSourceValue;
@@ -152,7 +156,7 @@ public class Observation extends BaseResourceEntity {
 		this.type = type;
 		this.provider = provider;
 		this.visitOccurrence = visitOccurrence;
-		this.sourceValue = sourceValue;
+		this.observationSourceValue = sourceValue;
 		this.unit = unit;
 		this.unitSourceValue = unitsSourceValue;
 	}
@@ -270,11 +274,11 @@ public class Observation extends BaseResourceEntity {
 	}
 
 	public String getSourceValue() {
-		return sourceValue;
+		return observationSourceValue;
 	}
 
 	public void setSourceValue(String sourceValue) {
-		this.sourceValue = sourceValue;
+		this.observationSourceValue = sourceValue;
 	}
 
 	public Concept getUnit() {
@@ -300,6 +304,58 @@ public class Observation extends BaseResourceEntity {
 		// and just return null for this. But then, response will not be correct. Revisit this.
 		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
+		
+		//Find or Empty Create a Patient entity
+		ResourceReferenceDt patientReference = (ResourceReferenceDt) observation.getSubject();
+		if (patientReference != null) {
+			//If we have a patient reference, handle grabbing that patient. Handle source values too
+			Long patientRef = patientReference.getReference().getIdPartAsLong();
+			if(patientRef != null){
+				// We have person reference. We have to make sure if this patient exists.
+				PersonComplement patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, patientRef);
+				if (patientClass != null) {
+					this.setPerson(patientClass);
+				} 
+				else {
+					// Before we need to create one, let's see if we have received this before using the source value.
+					patientClass = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
+					if (patientClass == null) {
+						this.person = new PersonComplement();
+						this.person.setPersonSourceValue(patientRef.toString());
+						if (patientReference.getDisplay() != null)
+							this.person.setNameFromString(patientReference.getDisplay().getValueAsString());
+					}
+					else {
+						this.setPerson(patientClass);
+					}
+				}
+			}
+		}
+		//Find or Empty Create an encounter entity
+		ResourceReferenceDt encounterReference = (ResourceReferenceDt) observation.getEncounter();
+		if (encounterReference != null) {
+			//If we have a patient reference, handle grabbing that patient. Handle source values too
+			Long encounterRef = encounterReference.getReference().getIdPartAsLong();
+			if(encounterRef != null){
+				// We have person reference. We have to make sure if this patient exists.
+				VisitOccurrence visitOccurrenceClass = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, encounterRef);
+				if (visitOccurrenceClass != null) {
+					this.setVisitOccurrence(visitOccurrenceClass);
+				} 
+				else {
+					// Before we need to create one, let's see if we have received this before using the source value.
+					visitOccurrenceClass = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounterRef.toString());
+					if (visitOccurrenceClass == null) {
+						this.visitOccurrence = new VisitOccurrence();
+						this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
+						this.visitOccurrence.setPerson(this.person);
+					}
+					else {
+						this.setVisitOccurrence(visitOccurrenceClass);
+					}
+				}
+			}
+		}
 
 		if (observation.getEffective() instanceof DateTimeDt) {
 			this.date = ((DateTimeDt) observation.getEffective()).getValue();
@@ -382,7 +438,7 @@ public class Observation extends BaseResourceEntity {
 		}
 
 		// quick solution.
-		this.sourceValue = "NA";
+		this.observationSourceValue = "NA";
 
 		return this;
 	}
