@@ -49,7 +49,9 @@ import ca.uhn.fhir.model.api.BundleEntry;
 import ca.uhn.fhir.model.api.ExtensionDt;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
+import ca.uhn.fhir.model.base.resource.BaseConformance;
 import ca.uhn.fhir.model.dstu.resource.Conformance.RestQuery;
+import ca.uhn.fhir.model.dstu2.composite.ElementDefinitionDt.Type;
 import ca.uhn.fhir.model.dstu2.resource.Conformance;
 import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
 //import ca.uhn.fhir.model.dstu2.resource.Conformance.RestQuery;
@@ -72,6 +74,8 @@ import ca.uhn.fhir.rest.client.apache.ApacheHttpResponse;
 import ca.uhn.fhir.rest.client.api.IHttpRequest;
 import ca.uhn.fhir.rest.client.api.IHttpResponse;
 import ca.uhn.fhir.rest.gclient.ICreateTyped;
+import ca.uhn.fhir.rest.gclient.IFetchConformanceTyped;
+import ca.uhn.fhir.rest.gclient.IFetchConformanceUntyped;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.gclient.IUntypedQuery;
 import ca.uhn.fhir.rest.gclient.NumberClientParam.IMatches;
@@ -1177,16 +1181,17 @@ public class Controller {
 	private IResource loadAndAddConfDstu2(HttpServletRequest theServletRequest, final HomeRequest theRequest, final ModelMap theModel) {
 		IGenericClient client = getContext(theRequest).newRestfulGenericClient(theRequest.getServerBase(theServletRequest, myConfig));
 
+		IFetchConformanceUntyped Iconformance;
 		ca.uhn.fhir.model.dstu2.resource.Conformance conformance;
 		try {
-			conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) client.fetchConformance();
+			conformance = client.fetchConformance().ofType(ca.uhn.fhir.model.dstu2.resource.Conformance.class).execute();
 		} catch (Exception e) {
 			ourLog.warn("Failed to load conformance statement", e);
 			theModel.put("errorMsg", "Failed to load conformance statement, error was: " + e.toString());
 			conformance = new ca.uhn.fhir.model.dstu2.resource.Conformance();
 		}
-
-		theModel.put("jsonEncodedConf", getContext(theRequest).newJsonParser().encodeResourceToString(conformance));
+		
+		//theModel.put("jsonEncodedConf", getContext(theRequest).newJsonParser().encodeResourceToString(conformance));
 
 		Map<String, Number> resourceCounts = new HashMap<String, Number>();
 		long total = 0;
