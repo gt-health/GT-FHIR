@@ -21,7 +21,7 @@
 		<init-param>
 			<param-name>authServerUrl</param-name>
 			<!-- <param-value>http://localhost:9085/</param-value> -->
-			<param-value>http://smart-st.i3l.gatech.edu:9085/</param-value>
+			<param-value>http://localhost:9085/</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
