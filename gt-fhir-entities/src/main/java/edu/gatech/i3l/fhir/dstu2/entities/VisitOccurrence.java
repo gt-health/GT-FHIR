@@ -26,6 +26,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
@@ -43,7 +47,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /**
  * @author Myung Choi
- *
+ * NOTE: This is the OMOP equivalent of a FHIR Encounter
  */
 @Entity
 @Table(name="visit_occurrence")
@@ -245,6 +249,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.id = encounter.getId().getIdPartAsLong();
 		Long patientRef = encounter.getPatient().getReference().getIdPartAsLong();
 		if(patientRef != null){
+			patientRef = checkSourceValue(patientRef,Person.class);
 			this.person = new Person();
 			this.person.setId(patientRef);
 		}
@@ -362,5 +367,56 @@ public class VisitOccurrence extends BaseResourceEntity {
 		}
 		return param;
 	}
-
+	
+	/**
+	 * Dumb database call to query the db directly and mess around with foreign source reference
+	 * IMPORTANT INTERRUPTING CALL HERE
+	 * THIS CALL TAKES 
+	 * A) A OMOP resource class/type
+	 * B) an ID
+	 * Check the resource table for 
+	 * @return
+	 */
+	private Long checkSourceValue(Long referenceID,Class c){
+		String baseReferenceName = c.getName(); //NOTE SUPER DANGEROUS REFLECTION CALL HERE. CAN EASILY MISS THE DB IF TABLES NOT GENERATED RIGHT
+		//Terrible garbage hibernate sessioning that should be something else
+		Configuration cfg = new Configuration();
+		cfg.configure("..\\gt-fhir-webapp\\src\\main\\resources\\META-INF\\persistence.xml");//Garbage local redirection. Probably wrong. Might not work on windows
+		SessionFactory factory = cfg.buildSessionFactory();
+		Session session = factory.openSession();
+		if(checkEntry(referenceID,baseReferenceName,baseReferenceName,session))
+			return referenceID;
+		//No real ID set here.
+		
+		String sourceRedirectColumn = baseReferenceName+"_source_id"; //Assuming this is the right way to represent the source value
+		
+		if(checkEntry(referenceID,baseReferenceName,sourceRedirectColumn,session))
+		{
+			//Make a new ID in THIS ROW
+			Long realID = referenceID; //Translate here somehow
+			return realID;
+		}
+		else
+		{
+		//CREATE A NEW EMPTY RESOURCE
+			return -1L; //NOTE BETTER NOT HAVE A MAX_ENTRY TABLE OR THIS MESSES UP AN ENTRY
+		}
+	}
+	
+	/**
+	 * Dumb database call to query the db directly and mess around with foreign source reference
+	 * Utility call to check for a long entry
+	 * @param ID Long ID of what to find
+	 * @param tableName tableName we're searching
+	 * @param columnName columnName we're searching
+	 * @param session session ID setup to grab the database directly
+	 * @return
+	 */
+	private boolean checkEntry(Long ID,String tableName,String columnName,Session session)
+	{
+		String myStringQuery = "SELECT "+columnName+"_id,"+"FROM "+tableName+"WHERE "+columnName+" = "+ID;
+		Query query = session.createQuery(myStringQuery);
+		List results = query.list();
+		return results.size() == 0;
+	}
 }
