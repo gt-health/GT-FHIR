@@ -1179,7 +1179,7 @@ public class Controller {
 
 		ca.uhn.fhir.model.dstu2.resource.Conformance conformance;
 		try {
-			conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) client.conformance();
+			conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) client.fetchConformance();
 		} catch (Exception e) {
 			ourLog.warn("Failed to load conformance statement", e);
 			theModel.put("errorMsg", "Failed to load conformance statement, error was: " + e.toString());
