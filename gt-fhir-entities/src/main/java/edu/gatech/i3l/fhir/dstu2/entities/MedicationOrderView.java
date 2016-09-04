@@ -392,6 +392,27 @@ public final class MedicationOrderView extends DrugExposure {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		MedicationOrder medicationOrder = (MedicationOrder) resource;
 		
+		/* Set patient */
+		ResourceReferenceDt patientResource =  medicationOrder.getPatient();
+		if (patientResource == null) return null; // We have to have a patient
+		
+//		Long patientRef = patientResource.getReference().getIdPartAsLong();
+		PersonComplement person = PersonComplement.searchAndUpdate(patientResource);
+		if (person == null) return null; // We must have a patient
+		
+		this.setPerson(person);
+
+		// We are writing to the database. Keep the source so we know where it is coming from
+		if (medicationOrder.getId() != null) {
+			// See if we already have this in the source field. If so,
+			// then we want update not create
+			MedicationOrderView origMed = (MedicationOrderView) OmopConceptMapping.getInstance().loadEntityBySource(MedicationOrderView.class, "MedicationOrderView", "drugSourceValue", medicationOrder.getId().getIdPart());
+			if (origMed == null)
+				this.setDrugSourceValue(medicationOrder.getId().getIdPart());
+			else
+				this.setId(origMed.getId());
+		}
+
 		/* Set drup exposure type */
 		this.drugExposureType = new Concept();
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
@@ -399,29 +420,28 @@ public final class MedicationOrderView extends DrugExposure {
 		/* Set start date of prescription */
 		this.startDate = medicationOrder.getDateWritten();
 		
-		/* Set patient */
-		Long patientRef = medicationOrder.getPatient().getReference().getIdPartAsLong();
-		if (patientRef != null) {
-			PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance()
-					.loadEntityById(PersonComplement.class, patientRef);
-			if (person != null) {
-				this.setPerson(person);
-			} else {
-				// See if we have already received this.
-				person = (PersonComplement) OmopConceptMapping.getInstance()
-						.loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
-				if (person != null) {
-					this.setPerson(person);
-				} else {
-					this.person = new PersonComplement();
-					this.person.setPersonSourceValue(patientRef.toString());
-				}
-			}
-		} else {
-			// Patient is not required field. But, OMOP requires it. If we 
-			// no Patient, return null.
-			return null;
-		}
+
+//		if (patientRef != null) {
+//			PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance()
+//					.loadEntityById(PersonComplement.class, patientRef);
+//			if (person != null) {
+//				this.setPerson(person);
+//			} else {
+//				// See if we have already received this.
+//				person = (PersonComplement) OmopConceptMapping.getInstance()
+//						.loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
+//				if (person != null) {
+//					this.setPerson(person);
+//				} else {
+//					this.person = new PersonComplement();
+//					this.person.setPersonSourceValue(patientRef.toString());
+//				}
+//			}
+//		} else {
+//			// Patient is not required field. But, OMOP requires it. If we 
+//			// no Patient, return null.
+//			return null;
+//		}
 
 		/* Set VisitOccurrence */
 		ResourceReferenceDt visitResRef = medicationOrder.getEncounter();
@@ -431,25 +451,29 @@ public final class MedicationOrderView extends DrugExposure {
 //			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
 //			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
 			if (encounterRef != null) {
-				// See if this exists.
-				VisitOccurrence visitOccurrence = 
-						(VisitOccurrence) OmopConceptMapping.getInstance().loadEntityById(VisitOccurrence.class, encounterRef);
-				if (visitOccurrence != null) {
+				VisitOccurrence visitOccurrence = VisitOccurrence.searchAndUpdate(encounterRef, startDate, null, this.person);
+				if (visitOccurrence != null)
 					this.setVisitOccurrence(visitOccurrence);
-				} else {
-					// Check source column to see if we have received this before.
-					visitOccurrence = (VisitOccurrence) OmopConceptMapping.getInstance()
-							.loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounterRef.toString());
-					if (visitOccurrence != null) {
-						this.setVisitOccurrence(visitOccurrence);
-					} else {
-						this.visitOccurrence = new VisitOccurrence();
-						this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
-						this.visitOccurrence.setStartDate(startDate);
-						this.visitOccurrence.setEndDate(startDate);
-						this.visitOccurrence.setPerson(this.person);
-					}
-				}
+				
+				// See if this exists.
+//				VisitOccurrence visitOccurrence = 
+//						(VisitOccurrence) OmopConceptMapping.getInstance().loadEntityById(VisitOccurrence.class, encounterRef);
+//				if (visitOccurrence != null) {
+//					this.setVisitOccurrence(visitOccurrence);
+//				} else {
+//					// Check source column to see if we have received this before.
+//					visitOccurrence = (VisitOccurrence) OmopConceptMapping.getInstance()
+//							.loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounterRef.toString());
+//					if (visitOccurrence != null) {
+//						this.setVisitOccurrence(visitOccurrence);
+//					} else {
+//						this.visitOccurrence = new VisitOccurrence();
+//						this.visitOccurrence.setVisitSourceValue(encounterRef.toString());
+//						this.visitOccurrence.setStartDate(startDate);
+//						this.visitOccurrence.setEndDate(startDate);
+//						this.visitOccurrence.setPerson(this.person);
+//					}
+//				}
 			}
 		}
 		
@@ -535,23 +559,28 @@ public final class MedicationOrderView extends DrugExposure {
 		
 		ResourceReferenceDt medOrderRef = medicationOrder.getPrescriber();
 		if (medOrderRef != null) {
-		 	Long prescriberID = medOrderRef.getReference().getIdPartAsLong();
-			if (prescriberID != null) {
-				Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, prescriberID);
-				if (provider != null) {
-					this.setPrescribingProvider(provider);
-				} else {
-					// See the source field and find if we have received this before
-					provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", prescriberID.toString());
-					if (provider != null) {
-						this.setPrescribingProvider(provider);
-					} else {
-						// We don't have provider... Create one.
-						this.prescribingProvider = new Provider();
-						this.prescribingProvider.setProviderSourceValue(prescriberID.toString());
-					}
-				}
+			Provider provider = Provider.searchAndUpdate(medOrderRef);
+			if (provider != null) {
+				this.setPrescribingProvider(provider);
 			}
+			
+//		 	Long prescriberID = medOrderRef.getReference().getIdPartAsLong();
+//			if (prescriberID != null) {
+//				Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, prescriberID);
+//				if (provider != null) {
+//					this.setPrescribingProvider(provider);
+//				} else {
+//					// See the source field and find if we have received this before
+//					provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", prescriberID.toString());
+//					if (provider != null) {
+//						this.setPrescribingProvider(provider);
+//					} else {
+//						// We don't have provider... Create one.
+//						this.prescribingProvider = new Provider();
+//						this.prescribingProvider.setProviderSourceValue(prescriberID.toString());
+//					}
+//				}
+//			}
 		}
 		
 		return this;

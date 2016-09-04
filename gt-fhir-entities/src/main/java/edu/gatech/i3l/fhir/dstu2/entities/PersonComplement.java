@@ -15,15 +15,19 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /** 
  * This class adds some properties to the Omop data model Person, in order to provide
@@ -243,27 +247,72 @@ public class PersonComplement extends Person{
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		super.constructEntityFromResource(resource);
+		
 		if(resource instanceof Patient){
 			Patient patient = (Patient)resource;
 			
 			Iterator<HumanNameDt> iterator = patient.getName().iterator();
 			//while(iterator.hasNext()){
-				if(iterator.hasNext()){
-					HumanNameDt next = iterator.next();
-					this.givenName1 = next.getGiven().get(0).getValue();//the next method was not advancing to the next element, then the need to use the get(index) method
-					if(next.getGiven().size() > 1) //TODO add unit tests, to assure this won't be changed to hasNext
-						this.givenName2 = next.getGiven().get(1).getValue();
-					Iterator<StringDt> family = next.getFamily().iterator();
-					this.familyName = "";
-					while(family.hasNext()){
-						this.familyName = this.familyName.concat(family.next().getValue()+" ");
+			if(iterator.hasNext()){
+				HumanNameDt next = iterator.next();
+				this.givenName1 = next.getGiven().get(0).getValue();//the next method was not advancing to the next element, then the need to use the get(index) method
+				if(next.getGiven().size() > 1) //TODO add unit tests, to assure this won't be changed to hasNext
+					this.givenName2 = next.getGiven().get(1).getValue();
+				Iterator<StringDt> family = next.getFamily().iterator();
+				this.familyName = "";
+				while(family.hasNext()){
+					if (this.familyName == "") {
+						this.familyName = this.familyName.concat(family.next().getValue());
+					} else {
+						this.familyName = this.familyName.concat(" "+family.next().getValue());						
 					}
-					if(next.getSuffix().iterator().hasNext())
-						this.suffixName = next.getSuffix().iterator().next().getValue();
-					if(next.getPrefix().iterator().hasNext())
-						this.prefixName = next.getPrefix().iterator().next().getValue();
 				}
+				if(next.getSuffix().iterator().hasNext())
+					this.suffixName = next.getSuffix().iterator().next().getValue();
+				if(next.getPrefix().iterator().hasNext())
+					this.prefixName = next.getPrefix().iterator().next().getValue();
+			}
 			//}
+			
+			IdDt myID = patient.getId();
+			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
+				PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
+				if (person != null) {
+					this.setId(myID.getIdPartAsLong());
+				} else {
+					person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", myID.getIdPart());
+					if (person != null) {
+						this.setId(person.getId());
+					} 
+					this.setPersonSourceValue(myID.getIdPart());
+				}
+			} else {
+				// We have no Patient ID. However, we could have a matching patient. Compare 
+				// name and address.
+				System.out.println("No Patient ID provided");
+				List<AddressDt> addresses = patient.getAddress();
+				AddressDt newAddress = null;
+				if (addresses.size() > 0) {
+					newAddress = addresses.get(0);
+				}
+				Long existingID = OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress));
+				System.out.println("Patient Exists with PID="+existingID);
+				if (existingID != null) {
+					this.setId(existingID);
+				} else {
+					//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
+					//      But, FHIR Patient does not have race data element
+					Concept race = new Concept();
+					race.setId(8552L);
+					this.setRaceConcept(race);
+					
+					// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
+					Concept ethnicity = new Concept();
+					ethnicity.setId(0L);
+					this.setEthnicityConcept(ethnicity);
+				}
+			}	
+			
 			
 			if (patient.getActive())
 				this.setActive((short)1);
@@ -275,6 +324,7 @@ public class PersonComplement extends Person{
 				Set<MaritalStatusCodesEnum> maritalEnum = maritalStat.getValueAsEnum();
 				if (maritalEnum != null) {
 					for (MaritalStatusCodesEnum myCode : maritalEnum) {
+						System.out.println("MARITAL STATUS:"+myCode.name());
 						this.setMaritalStatus(myCode.name());
 						break;
 					}
@@ -345,6 +395,30 @@ public class PersonComplement extends Person{
 				this.setFamilyName(subNames[1]);
 			} else {
 				this.setFamilyName(subNames[0]);
+			}
+		}
+	}
+		
+	public static PersonComplement searchAndUpdate(ResourceReferenceDt patientResourceRef) {
+		if (patientResourceRef == null) return null;
+				
+		Long patientRef = patientResourceRef.getReference().getIdPartAsLong();
+		PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance()
+				.loadEntityById(PersonComplement.class, patientRef);
+		if (person != null) {
+			return person;
+		} else {
+			// See if we have already received this.
+			person = (PersonComplement) OmopConceptMapping.getInstance()
+					.loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
+			if (person != null) {
+				return person;
+			} else {
+				person = new PersonComplement();
+				person.setNameFromString(patientResourceRef.getDisplay().toString());
+				person.setPersonSourceValue(patientRef.toString());
+				
+				return person;
 			}
 		}
 	}

@@ -29,6 +29,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
@@ -84,7 +85,7 @@ public class Person extends BaseResourceEntity{
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 
@@ -345,7 +346,7 @@ public class Person extends BaseResourceEntity{
 //				.setPeriod(period);
 		}
 		
-		if(this.genderConcept != null){
+		if (this.genderConcept != null) {
 			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
 			String gName = this.genderConcept.getName(); 
 			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
@@ -358,6 +359,13 @@ public class Person extends BaseResourceEntity{
 			patient.setGender(admGender);
 		}
 		
+		if (this.provider != null) {
+			ResourceReferenceDt practitionerResourceRef = new ResourceReferenceDt(this.provider.getIdDt());
+			practitionerResourceRef.setDisplay(this.provider.getProviderName());
+			List<ResourceReferenceDt> pracResourceRefs = new ArrayList<ResourceReferenceDt>();
+			pracResourceRefs.add(practitionerResourceRef);
+			patient.setCareProvider(pracResourceRefs);
+		}
 		return patient;
 	}
 
@@ -382,31 +390,6 @@ public class Person extends BaseResourceEntity{
 		if(resource instanceof Patient){
 			Patient patient = (Patient) resource;
 			
-			IdDt myID = patient.getId();
-			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
-				PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
-				if (person != null) {
-					this.setId(myID.getIdPartAsLong());
-				} else {
-					person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", myID.getIdPart());
-					if (person != null) {
-						this.setId(person.getId());
-					} else {
-						this.setPersonSourceValue(myID.getIdPart());
-					}
-				}
-			} else {
-				//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
-				//      But, FHIR Patient does not have race data element
-				Concept race = new Concept();
-				race.setId(8552L);
-				this.setRaceConcept(race);
-				
-				// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
-				Concept ethnicity = new Concept();
-				ethnicity.setId(0L);
-				this.setEthnicityConcept(ethnicity);
-			}
 			Calendar c = Calendar.getInstance();
 			c.setTime(patient.getBirthDate());
 			this.yearOfBirth = c.get(Calendar.YEAR);
@@ -421,31 +404,61 @@ public class Person extends BaseResourceEntity{
 			else
 				this.genderConcept.setId(0L);
 			
-			Location location;
-			if(this.location != null){
-				location = this.location;
-			}else {
-				location = new Location();
-			}
+//			Location location;
+//			if(this.location != null){
+//				location = this.location;
+//			}else {
+//				location = new Location();
+//			}
 			
 			List<AddressDt> addresses = patient.getAddress();
 			if (addresses != null && addresses.size() > 0) {
 				AddressDt address = addresses.get(0);
-//				location.setAddressUse(address.getUseElement().getValueAsEnum());
-				List<StringDt> addressLines = address.getLine();
-				if (addressLines.size() > 0) {
-					location.setAddress1(addressLines.get(0).getValue());
-					if (address.getLine().size() > 1)// iterator.hasNext or listIterator.hasNext were returning true in all cases
-						location.setAddress2(address.getLine().get(1).getValue());
-					location.setZipCode(address.getPostalCode());
-					location.setCity(address.getCity());
-					location.setState(address.getState());
-		//			location.setEndDate(address.getPeriod().getEnd());
-		//			location.setStartDate(address.getPeriod().getStart());
-					this.location = location;
+				
+				Location retLocation = Location.searchAndUpdate(address, this.location);
+				if (retLocation != null) {
+					this.setLocation(retLocation);
 				}
+						
+////				location.setAddressUse(address.getUseElement().getValueAsEnum());
+//				List<StringDt> addressLines = address.getLine();
+//				if (addressLines.size() > 0) {
+//					String line1 = addressLines.get(0).getValue();
+//					String line2 = null;
+//					if (address.getLine().size() > 1)
+//						line2 = address.getLine().get(1).getValue();
+//					String zipCode = address.getPostalCode();
+//					String city = address.getCity();
+//					String state = address.getState();
+//					
+//					Location location = (Location) OmopConceptMapping.getInstance()
+//							.loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
+//					if (location != null) {
+//						System.out.println("location exists in DB");
+//						this.setLocation(location);
+//					} else {
+//						if (this.location != null) {
+//							this.location.setAddress1(line1);
+//							if (line2 != null)
+//								this.location.setAddress2(line2);
+//							this.location.setZipCode(zipCode);
+//							this.location.setCity(city);
+//							this.location.setState(state);
+//						} else {
+//							this.location = new Location (line1, line2, city, state, zipCode);
+//						}
+//					}
+//					
+////					location.setEndDate(address.getPeriod().getEnd());
+////					location.setStartDate(address.getPeriod().getStart());
+//				}
 			}
-					
+			
+			List<ResourceReferenceDt> providers = patient.getCareProvider();
+			if (providers.size() > 0) {
+				// We can handle only one provider.
+				this.setProvider(Provider.searchAndUpdate(providers.get(0)));
+			}
 		}
 		
 		return this;

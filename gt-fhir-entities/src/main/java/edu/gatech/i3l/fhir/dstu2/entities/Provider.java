@@ -393,6 +393,30 @@ public class Provider extends BaseResourceEntity {
 		return this;
 	}
 
+	public static Provider searchAndUpdate(ResourceReferenceDt resourceRef) {
+		if (resourceRef == null) return null;
+		
+		// See if this exists.
+		Provider provider = 
+				(Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, resourceRef.getReference().getIdPartAsLong());
+		if (provider != null) {
+			return provider;
+		} else {
+			// Check source column to see if we have received this before.
+			provider = (Provider) OmopConceptMapping.getInstance()
+					.loadEntityBySource(Provider.class, "Provider", "providerSourceValue", resourceRef.getReference().getIdPart());
+			if (provider != null) {
+				return provider;
+			} else {
+				provider = new Provider();
+				provider.setProviderSourceValue(resourceRef.getReference().getIdPart());
+				if (resourceRef.getDisplay() != null)
+					provider.setProviderName(resourceRef.getDisplay().toString());
+				return provider;
+			}
+		}
+	}
+	
 	@Override
 	public String translateSearchParam(String chain) {
 		String translatedChain = "";

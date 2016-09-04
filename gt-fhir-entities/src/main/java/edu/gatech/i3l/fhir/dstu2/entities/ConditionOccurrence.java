@@ -94,11 +94,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 * @fhirVersion 0.4.0
 	 * @omopVersion 4.0
 	 */
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence encounter;
 	
@@ -230,10 +230,32 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		if (resource instanceof Condition) {
 			Condition condition = (Condition) resource;
-			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
-			if(patientRef != null){
-				this.person =  new PersonComplement();
-				this.person.setId(patientRef);
+			
+			/* Set patient */
+			ResourceReferenceDt patientResource =  condition.getPatient();
+			if (patientResource == null) return null; // We have to have a patient
+			
+//			Long patientRef = patientResource.getReference().getIdPartAsLong();
+			PersonComplement person = PersonComplement.searchAndUpdate(patientResource);
+			if (person == null) return null; // We must have a patient
+			
+			this.setPerson(person);
+
+//			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
+//			if(patientRef != null){
+//				this.person =  new PersonComplement();
+//				this.person.setId(patientRef);
+//			}
+			
+			// We are writing to the database. Keep the source so we know where it is coming from
+			if (condition.getId() != null) {
+				// See if we already have this in the source field. If so,
+				// then we want update not create
+				ConditionOccurrence origCondition = (ConditionOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", condition.getId().getIdPart());
+				if (origCondition == null)
+					this.sourceValue = condition.getId().getIdPart();
+				else
+					this.setId(origCondition.getId());
 			}
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
@@ -242,6 +264,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				this.conditionConcept = new Concept();
 				this.conditionConcept.setId(conditionConceptRef);
 			}
+			
 			IDatatype onSetDate = condition.getOnset();
 			if (onSetDate instanceof DateTimeDt) {
 				DateTimeDt dateTimeDt = (DateTimeDt) onSetDate;
@@ -252,14 +275,19 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				this.endDate = periodDt.getEnd();
 			}
 
-			Long encounterReference = condition.getEncounter().getReference().getIdPartAsLong();
-			this.conditionTypeConcept = new Concept();
-			if (encounterReference != null) {
-				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
-				this.encounter = new VisitOccurrence();
-				this.encounter.setId(encounterReference);
+			ResourceReferenceDt encounterResource = condition.getEncounter();
+			if (encounterResource != null) {
+				Long encounterReference = encounterResource.getReference().getIdPartAsLong();
+				if (encounterReference != null) {
+					VisitOccurrence visitOccurrence = VisitOccurrence
+							.searchAndUpdate(encounterReference, startDate, endDate, this.person);
+					if (visitOccurrence != null) {
+						this.setEncounter(visitOccurrence);
+					} 
+				}
 			}
 			
+			this.conditionTypeConcept = new Concept();
 			ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt<ConditionCategoryCodesEnum> condCategory = condition.getCategory();
 			CodingDt condCatCoding = condCategory.getCodingFirstRep();
 			if (condCatCoding != null) {
@@ -268,20 +296,37 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				} else {
 					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
 				}
+			} else {
+				this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
 			}
 
 			// this.stopReason = stopReason; NOTE: no FHIR parameter for
 			// stopReason.
 
 			IdDt asserterReference = condition.getAsserter().getReference();
-				if (asserterReference.getIdPartAsLong() != null && asserterReference.getResourceType() != null 
-						&& asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
-					long providerId = asserterReference.getIdPartAsLong();
-					this.provider = new Provider();
-					this.provider.setId(providerId);
-				}
+			ResourceReferenceDt asserterResRef = condition.getAsserter();
+			if (asserterResRef != null && asserterReference.getIdPartAsLong() != null && asserterReference.getResourceType() != null 
+					&& asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
+				Long providerId = asserterReference.getIdPartAsLong();					
+				if (providerId != null) {
+					Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, providerId);
+					if (provider != null) {
+						this.setProvider(provider);
+					} else {
+						// See if we have received this earlier.
+						provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", providerId.toString());
+						if (provider == null) {
+							this.provider = new Provider();
+							this.provider.setProviderName(asserterResRef.getDisplay().getValueAsString());
+							this.provider.setProviderSourceValue(providerId.toString());
+						} else {
+							this.setProvider(provider);
+						}
+					}
+				} 
+			}
 
-			this.sourceValue = "FHIRCREATE";
+			//this.sourceValue = "FHIRCREATE";
 		}
 
 		return this;
