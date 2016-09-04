@@ -260,9 +260,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 			Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());
+			this.conditionConcept = new Concept();
 			if(conditionConceptRef != null){
-				this.conditionConcept = new Concept();
 				this.conditionConcept.setId(conditionConceptRef);
+			} else {
+				this.conditionConcept.setId(0L);
+				System.out.println("Condition code not recognized: "+condition.getCode().getCodingFirstRep().getCode()+". System: "+condition.getCode().getCodingFirstRep().getSystem());
 			}
 			
 			IDatatype onSetDate = condition.getOnset();

@@ -147,8 +147,13 @@ public class OmopConceptMapping implements Runnable {
 	}
 	
 	public Long get(String conceptCode){
-		Query query = entityManager.createNamedQuery("findConceptByCode", Long.class).setParameter("code", conceptCode);
-		return (Long) query.getSingleResult();
+		TypedQuery<Long> query = entityManager.createNamedQuery("findConceptByCode", Long.class).setParameter("code", conceptCode);
+		List<Long> results = query.getResultList();
+		if (results.size() > 0)
+			return results.get(0);
+		else
+			return null;
+//		return (Long) query.getSingleResult();
 	}
 
 	public Map<String, Long> getConceptsForClass(String conceptClass) {
@@ -156,8 +161,13 @@ public class OmopConceptMapping implements Runnable {
 	}
 	
 	public String getVocabularyReference(String vocabularyID) {
-		Query query = entityManager.createNamedQuery("findReferenceById", String.class).setParameter("value", vocabularyID);
-		return (String) query.getSingleResult();
+		TypedQuery<String> query = entityManager.createNamedQuery("findReferenceById", String.class).setParameter("value", vocabularyID);
+		List<String> results = query.getResultList();
+		if (results.size() > 0)
+			return results.get(0);
+		else
+			return null;
+//		return (String) query.getSingleResult();
 	}
 	
 	public Long getPersonByNameAndLocation(PersonComplement person, Location location) {
