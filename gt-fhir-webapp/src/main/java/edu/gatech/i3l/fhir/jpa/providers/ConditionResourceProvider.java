@@ -96,7 +96,7 @@ public class ConditionResourceProvider extends
 //			@OptionalParam(name="stage")
 //			TokenAndListParam theStage, 
   
-			@Description(shortDefinition="")
+			@Description(shortDefinition="The patient that the condition is about")
 			@OptionalParam(name="patient", targetTypes={  Patient.class   } )
 			ReferenceAndListParam thePatient, 
   

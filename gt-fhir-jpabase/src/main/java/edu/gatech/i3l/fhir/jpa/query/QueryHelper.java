@@ -297,7 +297,6 @@ public class QueryHelper {
 				ReferenceParam ref = (ReferenceParam) params;
 
 				String resourceId = ref.getValueAsQueryToken(myContext);
-
 				if (isBlank(ref.getChain())) {
 					if (resourceId.contains("/")) {
 						IIdType dt = new IdDt(resourceId);
@@ -368,7 +367,9 @@ public class QueryHelper {
 							continue;
 						}
 
-						Predicate eq = from.get("id").in(pids);
+						Predicate eq = predicateBuilder.getPath(myResourceEntity, theParamName, from).in(pids);
+//						Predicate eq = builder.equal(predicateBuilder.getPath(myResourceEntity, theParamName, from).get("id"), resourceId);
+//						Predicate eq = from.get("id").in(pids);
 						codePredicates.add(eq);
 
 					}
@@ -391,6 +392,7 @@ public class QueryHelper {
 			Predicate inPids = (from.get("id").in(pidsToRetain));
 			cq.where(builder.and(//type, 
 					masterCodePredicate, inPids));
+
 		} else {
 			cq.where(builder.and(//type, 
 					masterCodePredicate));

@@ -348,6 +348,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		StopWatch w = new StopWatch();
 		final InstantDt now = InstantDt.withCurrentTime();
 
+		System.out.println("theParams:"+theParams.toString());
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
 			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
