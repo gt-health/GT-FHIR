@@ -1,6 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -27,12 +29,15 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
@@ -46,19 +51,17 @@ public class Person extends BaseResourceEntity{
 	public static final String RES_TYPE = "Patient";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="persons_seq_gen")
-	@SequenceGenerator(name="persons_seq_gen", sequenceName="person_id_seq")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="person_id_seq")
+	@SequenceGenerator(name="person_id_seq", sequenceName="person_id_seq", allocationSize=1)
 	@Column(name="person_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="gender_concept_id", nullable= false)
-	@NotNull
 	private Concept genderConcept;
 	
 	@Column(name="year_of_birth", nullable=false)
-	@NotNull
 	private Integer yearOfBirth;
 	
 	@Column(name="month_of_birth")
@@ -70,11 +73,11 @@ public class Person extends BaseResourceEntity{
 	@Column(name="time_of_birth")
 	private String timeOfBirth;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
@@ -82,7 +85,7 @@ public class Person extends BaseResourceEntity{
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 
@@ -96,21 +99,21 @@ public class Person extends BaseResourceEntity{
 	@Column(name="gender_source_value")
 	private String genderSourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="gender_source_concept_id")
 	private Concept genderSourceConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="race_source_concept_id")
 	private Concept raceSourceConcept;
 
 	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name="ethnicity_source_concept_id")
 	private Concept ethnicitySourceConcept;
 
@@ -121,6 +124,13 @@ public class Person extends BaseResourceEntity{
 
 	public Person() {
 		super();
+		this.genderConcept = new Concept();
+		this.genderConcept.setId(0L);
+		this.raceConcept = new Concept();
+		this.raceConcept.setId(0L);
+		this.setYearOfBirth(0);
+		this.ethnicityConcept = new Concept();
+		this.ethnicityConcept.setId(0L);
 	}
 
 	public Person(Long id, Concept genderConcept, Integer yearOfBirth, Integer monthOfBirth,
@@ -332,12 +342,11 @@ public class Person extends BaseResourceEntity{
 				.addLine(this.location.getAddress2())//WARNING check if mapping for lines are correct
 				.setCity(this.location.getCity())
 				.setPostalCode(this.location.getZipCode())
-				.setState(this.location.getState())
-				.setCountry(this.location.getCountry());
+				.setState(this.location.getState());
 //				.setPeriod(period);
 		}
 		
-		if(this.genderConcept != null){
+		if (this.genderConcept != null) {
 			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
 			String gName = this.genderConcept.getName(); 
 			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
@@ -350,6 +359,13 @@ public class Person extends BaseResourceEntity{
 			patient.setGender(admGender);
 		}
 		
+		if (this.provider != null) {
+			ResourceReferenceDt practitionerResourceRef = new ResourceReferenceDt(this.provider.getIdDt());
+			practitionerResourceRef.setDisplay(this.provider.getProviderName());
+			List<ResourceReferenceDt> pracResourceRefs = new ArrayList<ResourceReferenceDt>();
+			pracResourceRefs.add(practitionerResourceRef);
+			patient.setCareProvider(pracResourceRefs);
+		}
 		return patient;
 	}
 
@@ -373,6 +389,7 @@ public class Person extends BaseResourceEntity{
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		if(resource instanceof Patient){
 			Patient patient = (Patient) resource;
+			
 			Calendar c = Calendar.getInstance();
 			c.setTime(patient.getBirthDate());
 			this.yearOfBirth = c.get(Calendar.YEAR);
@@ -381,38 +398,68 @@ public class Person extends BaseResourceEntity{
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
 			this.genderConcept = new Concept();
-			this.genderConcept.setId(OmopConceptMapping.getInstance().get(patient.getGender().substring(0, 1), OmopConceptMapping.GENDER));
+			String genderString = patient.getGender();
+			if (genderString != null) 
+				this.genderConcept.setId(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
+			else
+				this.genderConcept.setId(0L);
 			
-			Location location;
-			if(this.location != null){
-				location = this.location;
-			}else {
-				location = new Location();
+//			Location location;
+//			if(this.location != null){
+//				location = this.location;
+//			}else {
+//				location = new Location();
+//			}
+			
+			List<AddressDt> addresses = patient.getAddress();
+			if (addresses != null && addresses.size() > 0) {
+				AddressDt address = addresses.get(0);
+				
+				Location retLocation = Location.searchAndUpdate(address, this.location);
+				if (retLocation != null) {
+					this.setLocation(retLocation);
+				}
+						
+////				location.setAddressUse(address.getUseElement().getValueAsEnum());
+//				List<StringDt> addressLines = address.getLine();
+//				if (addressLines.size() > 0) {
+//					String line1 = addressLines.get(0).getValue();
+//					String line2 = null;
+//					if (address.getLine().size() > 1)
+//						line2 = address.getLine().get(1).getValue();
+//					String zipCode = address.getPostalCode();
+//					String city = address.getCity();
+//					String state = address.getState();
+//					
+//					Location location = (Location) OmopConceptMapping.getInstance()
+//							.loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
+//					if (location != null) {
+//						System.out.println("location exists in DB");
+//						this.setLocation(location);
+//					} else {
+//						if (this.location != null) {
+//							this.location.setAddress1(line1);
+//							if (line2 != null)
+//								this.location.setAddress2(line2);
+//							this.location.setZipCode(zipCode);
+//							this.location.setCity(city);
+//							this.location.setState(state);
+//						} else {
+//							this.location = new Location (line1, line2, city, state, zipCode);
+//						}
+//					}
+//					
+////					location.setEndDate(address.getPeriod().getEnd());
+////					location.setStartDate(address.getPeriod().getStart());
+//				}
 			}
-			AddressDt address = patient.getAddress().get(0);
-//			location.setAddressUse(address.getUseElement().getValueAsEnum());
-			location.setAddress1(address.getLine().get(0).getValue());
-			if (address.getLine().size() > 1)// iterator.hasNext or listIterator.hasNext were returning true in all cases
-				location.setAddress2(address.getLine().get(1).getValue());
-			location.setZipCode(address.getPostalCode());
-			location.setCity(address.getCity());
-			location.setState(address.getState());
-			location.setCountry(address.getCountry());
-//			location.setEndDate(address.getPeriod().getEnd());
-//			location.setStartDate(address.getPeriod().getStart());
-			this.location = location;
+			
+			List<ResourceReferenceDt> providers = patient.getCareProvider();
+			if (providers.size() > 0) {
+				// We can handle only one provider.
+				this.setProvider(Provider.searchAndUpdate(providers.get(0)));
+			}
 		}
-		
-		//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
-		//      But, FHIR Patient does not have race data element
-		Concept race = new Concept();
-		race.setId(8552L);
-		this.setRaceConcept(race);
-		
-		// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
-		Concept ethnicity = new Concept();
-		ethnicity.setId(0L);
-		this.setEthnicityConcept(ethnicity);
 		
 		return this;
 	}

@@ -348,6 +348,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		StopWatch w = new StopWatch();
 		final InstantDt now = InstantDt.withCurrentTime();
 
+		System.out.println("theParams:"+theParams.toString());
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
 			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
@@ -1055,7 +1056,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			try {
 				entity = (BaseResourceEntity) myEntityManager.find(myResourceEntity, resourceId.getIdPartAsLong());
 				if (entity == null) {
-					throw new ResourceNotFoundException(resourceId);
+					// Spec says that with ID, we either update or create if not exits.
+					return create(theResource, null, thePerformIndexing);
+					//throw new ResourceNotFoundException(resourceId);
 				}
 //				validateGivenIdIsAppropriateToRetrieveResource(resourceId, entity);
 			} catch (ResourceNotFoundException e) {

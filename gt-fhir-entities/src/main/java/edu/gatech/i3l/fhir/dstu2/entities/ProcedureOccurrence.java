@@ -251,13 +251,13 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		// Set patient 
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(person.getResourceType(), person.getId()));
 		String patientName = "";
-		if (!person.getGivenName1().isEmpty()) {
+		if (person.getGivenName1() != null && !person.getGivenName1().isEmpty()) {
 			patientName = person.getGivenName1();
 		}
-		if (!person.getGivenName2().isEmpty()) {
+		if (person.getGivenName2() != null && !person.getGivenName2().isEmpty()) {
 			patientName += " "+person.getGivenName2();
 		}
-		if (!person.getFamilyName().isEmpty()) {
+		if (person.getFamilyName() != null && !person.getFamilyName().isEmpty()) {
 			patientName += " "+person.getFamilyName();
 		}
 		patientReference.setDisplay(patientName);

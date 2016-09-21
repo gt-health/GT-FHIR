@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
@@ -19,6 +21,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 @Entity
 @Table(name="vocabulary")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
+@NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select vocabularyReference from Vocabulary c where c.id like :value")})
 public class Vocabulary {
 	
 	@Id
@@ -30,7 +33,7 @@ public class Vocabulary {
 	@Column(name="vocabulary_name", updatable=false)
 	private String name;
 	
-	@Column(name="vocabulary_reference")
+	@Column(name="vocabulary_reference", updatable=false)
 	private String vocabularyReference;
 	
 	
