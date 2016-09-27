@@ -13,8 +13,7 @@
 	<context:annotation-config />
 	<context:mbean-server />
 	
-	<bean class="org.gtri.fhir.api.vistaex.service.config.ApplicationConfig"/>
-	<bean class="org.springframwork.config.java.process.ConfigurationPostProcessor"/>
+	<bean class="org.gtri.fhir.api.vistaex.rest.service.config.ApplicationConfig"/>
 	
 	<bean id="myDaoConfig" class="edu.gatech.i3l.fhir.jpa.dao.DaoConfig">
 	</bean>
