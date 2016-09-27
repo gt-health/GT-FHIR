@@ -15,7 +15,7 @@ public class BaseFhirDaoTest  extends BaseJpaTest {
 	
 	@Test
 	public void testTranslateMatchUrl() {
-		SearchParameterMap match = DaoUtils.translateMatchUrl("Condition?subject=304&_lastUpdated=>2011-01-01T11:12:21.0000Z", ourCtx.getResourceDefinition(Condition.class));
+		SearchParameterMap match = DaoUtils.translateMatchUrl("Condition?patient=304&_lastUpdated=>2011-01-01T11:12:21.0000Z", ourCtx.getResourceDefinition(Condition.class));
 		assertEquals("2011-01-01T11:12:21.0000Z", match.getLastUpdated().getLowerBound().getValueAsString());
 	}
 	

@@ -21,6 +21,7 @@
 	</repositories>
 	<properties>
 		<parent_version>2.0-SNAPSHOT</parent_version>
+		<gt-fhir-external-vista_version>1.0.0-SNAPSHOT</gt-fhir-external-vista_version>
 	</properties>
 	<dependencies>
 		<!-- This dependency is used for the "FHIR Tester" web app overlay -->
@@ -113,6 +114,11 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>${hibernate_validator_version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gtri.fhir.api.vistaex</groupId>
+			<artifactId>gt-fhir-external-vista</artifactId>
+			<version>${gt-fhir-external-vista_version}</version>
 		</dependency>
 	</dependencies>
 

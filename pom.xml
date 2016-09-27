@@ -7,6 +7,13 @@
 	<packaging>pom</packaging>
 
 	<name>GATECH FHIR SERVER</name>
+	
+	<modules>
+		<module>gt-fhir-jpabase</module>
+		<module>gt-fhir-entities</module>
+		<module>gt-fhir-overlay</module>
+		<module>gt-fhir-webapp</module>
+	</modules>
 
 	<!--<organization>
 		<name>University Health Network</name>
@@ -99,6 +106,7 @@
 		<thymeleaf-version>2.1.4.RELEASE</thymeleaf-version>
 		<ebay_cors_filter_version>1.0.1</ebay_cors_filter_version>
 		<woodstox_version>4.4.1</woodstox_version>
+		<gt-fhir-external-vista_version>1.0.0-SNAPSHOT</gt-fhir-external-vista_version>
 
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
@@ -272,7 +280,11 @@
 			<version>${jetty_version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.gtri.fhir.api.vistaex</groupId>
+			<artifactId>gt-fhir-external-vista</artifactId>
+			<version>${gt-fhir-external-vista_version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
