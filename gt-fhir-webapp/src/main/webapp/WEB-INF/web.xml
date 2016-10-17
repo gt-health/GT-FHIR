@@ -47,6 +47,15 @@
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>fhirVistExServlet</servlet-name>
+		<servlet-class>org.gtri.fhir.api.vistaex.rest.service.servlet.GtVistaRestfulServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>fhirVistExServlet</servlet-name>
+		<url-pattern>/fhir/*</url-pattern>
+	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>SmartServices</servlet-name>
 		<url-pattern>/base/_services/smart/Launch/*</url-pattern>
