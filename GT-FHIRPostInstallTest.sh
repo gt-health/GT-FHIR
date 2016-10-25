@@ -1,10 +1,5 @@
 #! /bin/bash
 
-#This is a simple endpoint test script for GT-FHIR
-#It uses wget to call out to GT-FHIR
-# The first param can change the base domain. default=localhost
-# The second param can change the port number. default=8080
-
 logError ()
 {
   echo "WGET URL: $1"
