@@ -37,13 +37,12 @@
 	</bean>
 	
 	<bean id="myOAuthInterceptor" class="edu.gatech.i3l.fhir.security.OIDCInterceptor">
-		<!-- <property name="enableOAuth" value="True" /> -->
 	    <property name="introspectUrl" value="http://localhost:9085/introspect" />
-		<property name="enableOAuth" value="False" />
+		<property name="enableOAuth" value="True" />
 <!-- 	    <property name="introspectUrl" value="http://smart-st.i3l.gatech.edu:9085/introspect" /> -->
 		<property name="clientId" value="client" />
 		<property name="clientSecret" value="secret" />
 		<property name="localByPass" value="True" />
-		<property name="readOnly" value="False" />
+		<property name="readOnly" value="True" />
 	</bean>
 </beans>
