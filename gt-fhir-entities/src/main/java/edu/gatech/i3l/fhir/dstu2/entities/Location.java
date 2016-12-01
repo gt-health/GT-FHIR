@@ -20,7 +20,6 @@ import org.hibernate.envers.RelationTargetAuditMode;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;

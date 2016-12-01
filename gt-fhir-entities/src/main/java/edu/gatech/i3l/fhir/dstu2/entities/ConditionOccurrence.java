@@ -34,7 +34,6 @@ import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
-import ca.uhn.fhir.model.primitive.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -248,17 +247,17 @@ public class ConditionOccurrence extends BaseResourceEntity {
 //			}
 			
 			// We are writing to the database. Keep the source so we know where it is coming from
+			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 			if (condition.getId() != null) {
 				// See if we already have this in the source field. If so,
 				// then we want update not create
-				ConditionOccurrence origCondition = (ConditionOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", condition.getId().getIdPart());
+				ConditionOccurrence origCondition = (ConditionOccurrence) ocm.loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", condition.getId().getIdPart());
 				if (origCondition == null)
 					this.sourceValue = condition.getId().getIdPart();
 				else
 					this.setId(origCondition.getId());
 			}
 
-			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 			Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());
 			this.conditionConcept = new Concept();
 			if(conditionConceptRef != null){

@@ -2,9 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_PATIENT;
-import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_SUBJECT;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Access;
@@ -12,7 +10,6 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,7 +24,6 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Procedure;
 import ca.uhn.fhir.model.dstu2.valueset.ProcedureStatusEnum;
