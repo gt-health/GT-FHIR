@@ -547,9 +547,11 @@ public final class MedicationOrderView extends DrugExposure {
 		
 		ResourceReferenceDt medOrderRef = medicationOrder.getPrescriber();
 		if (medOrderRef != null) {
-			Provider provider = Provider.searchAndUpdate(medOrderRef);
-			if (provider != null) {
-				this.setPrescribingProvider(provider);
+			if (!medOrderRef.isEmpty()) {
+				Provider provider = Provider.searchAndUpdate(medOrderRef);
+				if (provider != null) {
+					this.setPrescribingProvider(provider);
+				}
 			}
 			
 //		 	Long prescriberID = medOrderRef.getReference().getIdPartAsLong();
