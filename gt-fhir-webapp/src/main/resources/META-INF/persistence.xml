@@ -25,6 +25,8 @@
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class> -->
 		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Observation</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.OmopMeasurement</class>
+		<class>edu.gatech.i3l.fhir.dstu2.entities.OmopObservation</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class> -->
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>

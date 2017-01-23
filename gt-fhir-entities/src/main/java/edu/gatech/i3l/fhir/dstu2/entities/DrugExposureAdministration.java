@@ -1,11 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -23,18 +20,16 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
-import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
 import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
+import ca.uhn.fhir.model.dstu2.valueset.MedicationAdministrationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
-import edu.gatech.i3l.omop.mapping.StaticVariables;
 
 @Entity
 @Audited
@@ -60,8 +55,11 @@ public final class DrugExposureAdministration extends DrugExposure {
 	@Column(name="drug_exposure_end_date", nullable=false)
 	private Date endDate;
 	
+	@Column(name="stop_reason")
+	private String stopReason;
+	
 	@Column(name="quantity")
-	private BigDecimal quantity;
+	private Double quantity;
 	
 	@Column(name="days_supply")
 	private Integer daysSupply;
@@ -79,11 +77,19 @@ public final class DrugExposureAdministration extends DrugExposure {
 		this.person = person;
 	}
 
-	public BigDecimal getQuantity() {
+	public String getStopReason() {
+		return stopReason;
+	}
+	
+	public void setStopReason(String stopReason) {
+		this.stopReason = stopReason;
+	}
+	
+	public Double getQuantity() {
 		return quantity;
 	}
 
-	public void setQuantity(BigDecimal quantity) {
+	public void setQuantity(Double quantity) {
 		this.quantity = quantity;
 	}
 
@@ -187,7 +193,11 @@ public final class DrugExposureAdministration extends DrugExposure {
         // End of contained medication.
 
         Double doseValue = this.getEffectiveDrugDose();
-        if (doseValue >= 0.0)  {
+        if (doseValue == null || doseValue <= 0.0) {
+        	// If effective Drug Dose is not provided, then check if we have quantity.
+        	doseValue = this.getQuantity();
+        }
+        if (doseValue != null && doseValue >= 0.0)  {
         	Dosage dosage = new Dosage();
         	SimpleQuantityDt dose = new SimpleQuantityDt();
         	dose.setValue(doseValue);
@@ -197,7 +207,8 @@ public final class DrugExposureAdministration extends DrugExposure {
         	}
         	dosage.setQuantity(dose);
         	resource.setDosage(dosage);
-        }
+        } 
+        
 //    	DrugExposureComplement f_drug = this.getComplement();
 //		if (f_drug != null) {
 //			Dosage dosage = new Dosage();
@@ -224,6 +235,32 @@ public final class DrugExposureAdministration extends DrugExposure {
 			resource.setEffectiveTime(period);
 		} else {
 			resource.setEffectiveTime(new DateTimeDt(this.startDate));
+		}
+		
+		// Set the status. First check if we have anything in the stop_reason column
+		if (getStopReason() != null && !getStopReason().isEmpty()) {
+			resource.setStatus(MedicationAdministrationStatusEnum.STOPPED);
+		} else {
+			// We have no stop reason. Check the effective time range.
+			// If today falls within this range, we set status to in-progress. 
+			// If future, we set status to on-hold.
+			// If past, we set status to completed.
+			Date now = new Date();
+			if (this.startDate.getTime() > now.getTime()) {
+				resource.setStatus(MedicationAdministrationStatusEnum.ON_HOLD);
+			} else {
+				if (this.endDate != null) {
+					if (now.getTime() < this.endDate.getTime()) {
+						resource.setStatus(MedicationAdministrationStatusEnum.IN_PROGRESS);
+					} else {
+						resource.setStatus(MedicationAdministrationStatusEnum.COMPLETED);
+					}
+				} else {
+					// Administration should have start and end. But, if stop is null 
+					// but start is not null, then we may have this drug still in progress.
+					resource.setStatus(MedicationAdministrationStatusEnum.IN_PROGRESS);
+				}
+			}
 		}
 
 		return resource;
