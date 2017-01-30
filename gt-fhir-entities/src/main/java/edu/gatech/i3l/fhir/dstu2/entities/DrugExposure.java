@@ -50,6 +50,10 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	@Column(name = "drug_source_value")
 	private String drugSourceValue;
 	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name = "drug_source_concept_id")
+	private Concept drugSourceConcept;
+
 	@Column(name = "dose_unit_source_value")
 	private String doseUnitSourceValue;
 	
@@ -88,6 +92,14 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	
 	public void setDrugSourceValue(String drugSourceValue) {
 		this.drugSourceValue = drugSourceValue;
+	}
+	
+	public Concept getDrugSourceConcept() {
+		return drugSourceConcept;
+	}
+	
+	public void setDrugSourceConcept(Concept drugSourceConcept) {
+		this.drugSourceConcept = drugSourceConcept;
 	}
 	
 	public String getDoseUnitSourceValue() {
