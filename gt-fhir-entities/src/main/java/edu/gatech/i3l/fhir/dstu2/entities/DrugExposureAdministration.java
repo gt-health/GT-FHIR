@@ -64,11 +64,6 @@ public final class DrugExposureAdministration extends DrugExposure {
 	@Column(name="days_supply")
 	private Integer daysSupply;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_concept_id")
-	@NotNull
-	private Concept medication;
-	
 	public Person getPerson() {
 		return person;
 	}
@@ -99,14 +94,6 @@ public final class DrugExposureAdministration extends DrugExposure {
 
 	public void setDaysSupply(Integer daysSupply) {
 		this.daysSupply = daysSupply;
-	}
-
-	public Concept getMedication() {
-		return medication;
-	}
-
-	public void setMedication(Concept medication) {
-		this.medication = medication;
 	}
 
 	public Concept getDrugExposureType() {
@@ -167,30 +154,7 @@ public final class DrugExposureAdministration extends DrugExposure {
 		MedicationAdministration resource = new MedicationAdministration();
 		resource.setId(this.getIdDt());
 		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
-
-		// Adding medication to Contained.
-		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
-		medCoding.setDisplay(this.getMedication().getName());
-		
-		List<CodingDt> codingList = new ArrayList<CodingDt>();
-		codingList.add(medCoding);
-		CodeableConceptDt codeDt = new CodeableConceptDt();
-		codeDt.setCoding(codingList);
-
-		resource.setMedication(codeDt);
-		
-//        Medication medResource = new Medication();
-//        // No ID set
-//        medResource.setCode(codeDt);
-//
-//        // Medication reference. This should point to the contained resource.
-//        ResourceReferenceDt medRefDt = new ResourceReferenceDt();
-//        medRefDt.setDisplay(this.getMedication().getName());
-//        // Resource reference set, but no ID
-//        medRefDt.setResource(medResource);
-//        
-//        resource.setMedication(medRefDt);
-        // End of contained medication.
+		resource.setMedication(medicationCodeableConcept());
 
         Double doseValue = this.getEffectiveDrugDose();
         if (doseValue == null || doseValue <= 0.0) {
@@ -208,20 +172,6 @@ public final class DrugExposureAdministration extends DrugExposure {
         	dosage.setQuantity(dose);
         	resource.setDosage(dosage);
         } 
-        
-//    	DrugExposureComplement f_drug = this.getComplement();
-//		if (f_drug != null) {
-//			Dosage dosage = new Dosage();
-//			SimpleQuantityDt dose = new SimpleQuantityDt();
-//			if (f_drug.getDose() != null && Pattern.matches(StaticVariables.fpRegex, f_drug.getDose())) {
-//				Double doseValue = Double.valueOf(f_drug.getDose()); // Will not throw NumberFormatException
-//				dose.setValue(doseValue);
-//				dose.setUnit(this.getComplement().getUnit());
-//				dosage.setQuantity(dose);
-//				resource.setDosage(dosage);
-//			} 
-//		}
-
 		
 //		Calendar c = Calendar.getInstance();
 //		c.setTime(this.startDate);

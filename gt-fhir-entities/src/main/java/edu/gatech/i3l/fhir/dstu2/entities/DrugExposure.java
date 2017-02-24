@@ -1,5 +1,8 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -14,10 +17,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.envers.Audited;
 
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 
 
@@ -40,6 +46,11 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="drug_concept_id")
+	@NotNull
+	private Concept medication;
+	
 	@Column(name = "effective_drug_dose")
 	private Double effectiveDrugDose;
 	
@@ -49,6 +60,10 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	
 	@Column(name = "drug_source_value")
 	private String drugSourceValue;
+	
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name = "drug_source_concept_id")
+	private Concept drugSourceConcept;
 	
 	@Column(name = "dose_unit_source_value")
 	private String doseUnitSourceValue;
@@ -66,6 +81,14 @@ public abstract class DrugExposure extends BaseResourceEntity {
 		this.id = id;
 	}
 
+	public Concept getMedication() {
+		return medication;
+	}
+
+	public void setMedication(Concept medication) {
+		this.medication = medication;
+	}
+	
 	public Double getEffectiveDrugDose() {
 		return effectiveDrugDose;
 	}
@@ -90,6 +113,14 @@ public abstract class DrugExposure extends BaseResourceEntity {
 		this.drugSourceValue = drugSourceValue;
 	}
 	
+	public Concept getDrugSourceConcept() {
+		return drugSourceConcept;
+	}
+	
+	public void setDrugSourceConcept(Concept drugSourceConcept) {
+		this.drugSourceConcept = drugSourceConcept;
+	}
+	
 	public String getDoseUnitSourceValue() {
 		return doseUnitSourceValue;
 	}
@@ -98,11 +129,24 @@ public abstract class DrugExposure extends BaseResourceEntity {
 		this.doseUnitSourceValue = doseUnitSourceValue;
 	}
 
-//	public DrugExposureComplement getComplement() {
-//		return complement;
-//	}
-//
-//	public void setComplement(DrugExposureComplement complement) {
-//		this.complement = complement;
-//	}
+	// Supporting functions for FHIR/OMOP translations
+	protected CodeableConceptDt medicationCodeableConcept() {
+		// We need to do the system URI mapping here. 
+		if (getMedication().getId() == 0) {
+			// We have zero concept ID. This is not error. 
+			// We may have entry that we couldn't map with OMOP concept ID.
+			// Look at the source_concept_id column to see if we have 
+			
+		} else {
+			CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+			medCoding.setDisplay(this.getMedication().getName());
+		
+			List<CodingDt> codingList = new ArrayList<CodingDt>();
+			codingList.add(medCoding);
+			CodeableConceptDt codeDt = new CodeableConceptDt();
+			codeDt.setCoding(codingList);
+		}
+		
+		return codeDt;
+	}
 }

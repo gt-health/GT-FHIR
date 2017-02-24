@@ -267,43 +267,12 @@ public final class MedicationOrderView extends DrugExposure {
 		MedicationOrder resource = new MedicationOrder();
 		resource.setId(this.getIdDt());
 		resource.setDateWritten(new DateTimeDt(this.startDate));
-		/* Begin Setting Dispense */
-		// ResourceReferenceDt medicationRef = new ResourceReferenceDt(new
-		// IdDt("Medication", this.medication.getId()));
-
-		// Adding medication to Contained.
-		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(),
-				this.getMedication().getConceptCode());
-		medCoding.setDisplay(this.getMedication().getName());
-
-		List<CodingDt> codingList = new ArrayList<CodingDt>();
-		codingList.add(medCoding);
-		CodeableConceptDt codeDt = new CodeableConceptDt();
-		codeDt.setCoding(codingList);
-
+		CodeableConceptDt codeDt = medicationCodeableConcept();
 		resource.setMedication(codeDt);
-		
-//		
-//		Medication medResource = new Medication();
-//		// No ID set
-//		medResource.setCode(codeDt);
-//
-//		// Medication reference. This should point to the contained resource.
-//		ResourceReferenceDt medRefDt = new ResourceReferenceDt();
-//		medRefDt.setDisplay(this.getMedication().getName());
-//		// Resource reference set, but no ID
-//		medRefDt.setResource(medResource);
-//
-//		resource.setMedication(medRefDt);
-		// End of contained medication.
 
-		// resource.setMedication(medicationRef);
 		DispenseRequest dispense = new DispenseRequest();
 		dispense.setMedication(codeDt);
 		
-		// dispense.setMedication(medicationRef);
-//		dispense.setMedication(medRefDt);
-
 		if (this.refills != null)
 			dispense.setNumberOfRepeatsAllowed(this.refills);
 		if (this.quantity != null) {
@@ -326,6 +295,7 @@ public final class MedicationOrderView extends DrugExposure {
 
 		resource.setDispenseRequest(dispense);
 		/* End Setting Dispense */
+		
 		if (this.visitOccurrence != null) {
 			resource.setEncounter(
 					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));

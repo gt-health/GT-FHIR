@@ -57,11 +57,6 @@ public final class DrugExposureDispensed extends DrugExposure{
 	@Column(name="days_supply")
 	private Integer daysSupply;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="drug_concept_id")
-	@NotNull
-	private Concept medication;
-	
 	public Person getPerson() {
 		return person;
 	}
@@ -84,14 +79,6 @@ public final class DrugExposureDispensed extends DrugExposure{
 
 	public void setDaysSupply(Integer daysSupply) {
 		this.daysSupply = daysSupply;
-	}
-
-	public Concept getMedication() {
-		return medication;
-	}
-
-	public void setMedication(Concept medication) {
-		this.medication = medication;
 	}
 
 	public Concept getDrugExposureType() {
@@ -143,26 +130,9 @@ public final class DrugExposureDispensed extends DrugExposure{
 	public IResource getRelatedResource() {
 		ca.uhn.fhir.model.dstu2.resource.MedicationDispense resource = new ca.uhn.fhir.model.dstu2.resource.MedicationDispense();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
-		// resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
-		// we return medication with contained codeable concept instead of reference.
-	
-		// Adding medication to Contained.
-		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
-		medCoding.setDisplay(this.getMedication().getName());
-		
-		List<CodingDt> codingList = new ArrayList<CodingDt>();
-		codingList.add(medCoding);
-		CodeableConceptDt codeDt = new CodeableConceptDt();
-		codeDt.setCoding(codingList);
-
-		resource.setMedication(codeDt);
-		
-//		CodeableConceptDt medCodeableConcept = new CodeableConceptDt(this.getMedication().getVocabulary().getSystemUri(), 
-//				this.getMedication().getConceptCode());
-//		//medCodeableConcept.getCodingFirstRep().setDisplay(this.medication.getName());
-//		resource.setMedication(medCodeableConcept);
-		
+		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));	
+		resource.setMedication(medicationCodeableConcept());
+				
 		resource.setWhenPrepared(new DateTimeDt(this.startDate));
 		if (this.quantity != null){
 			Concept unitConcept = this.getDoseUnitConcept();
@@ -200,15 +170,15 @@ public final class DrugExposureDispensed extends DrugExposure{
 					medicationDispense.getMedication()).getCodingFirstRep().getCode(),
 					OmopConceptMapping.CLINICAL_FINDING);
 			if (valueAsConceptId != null){
-				this.medication = new Concept();
-				this.medication.setConceptCode(valueAsConceptId.toString());
+				setMedication(new Concept());
+				getMedication().setConceptCode(valueAsConceptId.toString());
 			}
 		} else if (medicationDispense.getMedication() instanceof ResourceReferenceDt) {
 			ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationDispense.getMedication();
 			Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
 			if(medicationRef != null){
-				this.medication = new Concept();
-				this.medication.setId(medicationRefId);
+				setMedication(new Concept());
+				getMedication().setId(medicationRefId);
 			}
 		}
 		
