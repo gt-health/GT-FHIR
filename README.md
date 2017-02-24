@@ -1,6 +1,6 @@
-# GT-FHIR
+# GT-FHIR : OMOP on FHIR Project
 
-This is the Georgia Tech FHIR Server. It is built on top of <a href="https://github.com/jamesagnew/hapi-fhir/releases/tag/v1.1">Hapi Fhir (v1.1)</a> Fhir spec implementation. Currently the objects model is built in conformance to Fhir spec <a href="http://hl7.org/fhir/2015May">DSTU2</a> - some features in DSTU1 are not supported.
+GT-FHIR is a Fast Healthcare Interoperability Resources (FHIR) project to build a FHIR resource on Observational Medical Outcomes Partnership (OMOP) common data model (CDM). It is built on top of <a href="http://hapifhir.io">Hapi Fhir</a> reference implementation. Currently the objects model is built in conformance to Fhir spec <a href="http://hl7.org/fhir/2015May">DSTU2</a> - some features in DSTU1 are not supported.
 For the Data Access Layer, this server uses a modified version of Hapi Fhir <a href="https://github.com/ismael-sarmento-jr/hapi-fhir/tree/master/hapi-fhir-jpaserver-base">JpaServer-Base</a> project, which is implemented to provided support for any database schema, so we can focus on the creation of Resources from the data on the databases.
 
 <img src="https://gtvault-my.sharepoint.com/personal/isarmento6_gatech_edu/_layouts/15/guestaccess.aspx?guestaccesstoken=FFSRHfel2NS71y8vd%2fLMx21iXrcNbU%2bYAg7tVElc%2fAw%3d&docid=00227279769bc4ea3b77aaede60011f45">Server Structure and Communication</img>
