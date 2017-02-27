@@ -16,6 +16,7 @@ We are constantly working on mapping new concepts and adding to new features. *P
 ## Collaborators
  * Apervita
  * Cerner
+ * Docsnap
  * Duke University
  * Emory University School of Medicine
  * Medical University in South Carolina
