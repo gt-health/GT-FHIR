@@ -6,7 +6,7 @@ The key component of GT-FHIR is a data access layer that has been modified to su
 
 For more detail information about the mapping, visit [**Mapping Document**](fhir_omop_mapping.md).
 
-This project is still in progress. More mappings and features will be implemented as a need-basis. GT-FHIR consists of several sub-projects. Please see the following notes for what the base projects are. For more details on source codes, visit [GT-FHIR Project Github](https://github.com/gt-health/GT-FHIR). 
+We are constantly working on mapping new concepts and adding to new features.  Pull requests are welcome!. GT-FHIR consists of several sub-projects. Please see the following notes for what the base projects are. For more details on source codes, visit [GT-FHIR Project Github](https://github.com/gt-health/GT-FHIR). 
 
 ## People
  * Myung Choi - FHIR
