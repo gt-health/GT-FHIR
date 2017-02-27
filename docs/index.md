@@ -9,7 +9,9 @@ This project is still in progress. More mappings and features will be implemente
 ## People
  * Myung Choi - FHIR
  * Richard Starr - OMOP CDM
+ * Michael Riley - Deployment Scripts
  
 ## Related Publications
  1. M. Choi, R. Starr, M. Braunstein, and J. Duke, "OHDSI on FHIR Platform Development with OMOP CDM mapping to FHIR Resources," [ODHSI 2016](http://www.ohdsi.org/web/wiki/lib/exe/fetch.php?media=resources:ohdsionfhir_gatech.pdf)
- 2. 
+ 2. H. Su, A. Henderson, M. Choi, R. Starr, and J. Sun, "Clinical Predictive Modeling Development and Deployment with OMOP CDM and FHIR," [ODHSI 2015](http://www.ohdsi.org/web/wiki/lib/exe/fetch.php?media=resources:gt_ohdsi-abs-final.pdf)
+ 3. K. Mohammed, M. Choi, A. Henderson, S. Iyengar, M. Braunstein, and J. Sun, "Clinical Predictive Modeling Development and Deployment through FHIR Web Services," [AMIA 2015](https://knowledge.amia.org/59310-amia-1.2741865/t004-1.2745466/f004-1.2745467/2248709-1.2745684/2248709-1.2745685?qr=1)
