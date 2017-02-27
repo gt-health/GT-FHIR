@@ -13,6 +13,14 @@ We are constantly working on mapping new concepts and adding to new features. *P
  * Richard Starr - OMOP CDM
  * Michael Riley - Deployment Scripts
  
+## Collaborators
+ * Cerner
+ * Duke University
+ * Emory University School of Medicine
+ * Medical University in South Carolina
+ * UCB
+ * VA - DHP
+ 
 ## Related Publications
  1. M. Choi, R. Starr, M. Braunstein, and J. Duke, "OHDSI on FHIR Platform Development with OMOP CDM mapping to FHIR Resources," [ODHSI 2016](http://www.ohdsi.org/web/wiki/lib/exe/fetch.php?media=resources:ohdsionfhir_gatech.pdf)
  2. H. Su, A. Henderson, M. Choi, R. Starr, and J. Sun, "Clinical Predictive Modeling Development and Deployment with OMOP CDM and FHIR," [ODHSI 2015](http://www.ohdsi.org/web/wiki/lib/exe/fetch.php?media=resources:gt_ohdsi-abs-final.pdf)
