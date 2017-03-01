@@ -49,133 +49,33 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | quantity, dose_unit_concept_id | concept table for unit | quantity ||
 | days_supply || daysSupply ||
 ||
-| ***Table*: drug_exposure where drug_type_concept_id = 38000179 or 43542356 or 43542357 or 43542358 Or "Physician administered drug \*"** | **Note** | ***Resource*: MedicationAdministration ** | **Note** |
-drug_exposure_id
-
-id
-
-person_id
-person Table.
-patient
-Resource Reference
-drug_concept_id
-
-
-
-concept Table. concept_code (code), concept_name (display), vocabulary_id (vocabulary table – need to convert to system URI) 
-medication[x]
-Complex Data Type: medicationCodeableConcept
-stop_reason and/or drug_exposure_start(end)_date
-Use these fields to guess what to put in the status field in FHIR
-status
-Should be one of in-progress, on-hold, completed, entered-in-error, stopped. If stop_reason in OMOP is not null, use stopped. Otherwise, look at the date range to decide if this is in-progress (within range) or completed (past) or on-hold (future). (based on current date).
-effective_drug_dose
-dose_unit_concept_id
-quantity
-Use concept table for unit
-if effective_drug_dose is not available, use quantity column for the dosage.quantity.value in FHIR. In this case, we don’ t know the unit. Thus, this will contain only the quantity.
-dosage.quantity
-SimpleQuantity
-drug_exposure_start_date
-drug_exposure_end_date
-
-effectiveTime[x]
-[x] =DateTime if end_date = null
-[x] = Period otherwise
-
-Table: measurement and observation merged to view*
-Note: We named the view as “f_observation_view”
-Resource: Observation
-Note
-observation_id
-We are joining two tables. And, IDs can be same. All IDs from observation table will be negated (‘-‘ prepended) in the view. Original tables do not need any modifications.
-id
-
-person_id
-person Table.
-subject
-•	Person (REQUIRED in OMOP)
-Resource Reference
-observation_concept_id
-(measurement table – measurement_concept_id)
-concept table
-code
-Complex Data Type: CodeableConcept.  Code will be overwritten for blood pressure as combined value.
-value_as_number
-value_as_string (only for observation table)
-value_as_concept_id
-
-valueQuantity
-valueString
-valueCodeableConcept
-This is value[x]
-range_low
-range_hight
-
-referenceRange.low
-referenceRange.high
-
-
-
-status = FINAL
-Status is required field in FHIR. This is hard-coded. OMOP data are final.
-observation_date & observation_time
-measurement_date & measurement_time
-
-effectiveDateTime
-Effective[x]
-measurement_type_concept_id
-observation_type_concept_id
-This is required column in OMOP v5
-category 
-CodeableConcept (https://www.hl7.org/fhir/valueset-observation-category.html) 
-
-See ** for mapping of category to omop v5 type concept ID.
-visit_occurrence_id
-visit_occurrence table
-encounter
-Resource Reference
-Table: person
-
-Resource: Patient
-Note
-person_id
-
-Id
-
-year_of_birth
-month_of_birth
-day_of_birth
-
-birthDate
-
-location_id
-location table
-address
-Complex Data Type: Address
-gender_concept_id
-concept table
-gender
-OMOP gender concept needs to map to AdministrativeGender Enum
-family_name
-given1_name
-given2_name
-prefix_name
-suffix_name
-preferred_language
-ssn
-maritalstatus_concept_id
-active
-f_person table – This is one of custom tables to provide data elements that are not available in OMOP v5
-family
-given (list)
-maritalStatus
-active
-
-
-
-race_concept_id = Unknown (8552)
-FHIR person does not have race data element
+| ***Table*: drug_exposure where drug_type_concept_id = 38000179 or 43542356 or 43542357 or 43542358 Or "Physician administered drug \*"** | **Note** | ***Resource*: MedicationAdministration** | **Note** |
+| drug_exposure_id || id ||
+| person_id | person Table. | patient | Resource Reference |
+| drug_concept_id | concept Table. concept_code (code), concept_name (display), vocabulary_id (vocabulary table – need to convert to system URI) | medication[x] | Complex Data Type: medicationCodeableConcept |
+| stop_reason and/or drug_exposure_start(end)\_date | Use these fields to guess what to put in the status field in FHIR |status | Should be one of in-progress, on-hold, completed, entered-in-error, stopped. If stop_reason in OMOP is not null, use stopped. Otherwise, look at the date range to decide if this is in-progress (within range) or completed (past) or on-hold (future). (based on current date). |
+| effective_drug_dose, dose_unit_concept_id, quantity | Use concept table for unit. if effective_drug_dose is not available, use quantity column for the dosage.quantity.value in FHIR. In this case, we don’ t know the unit. Thus, this will contain only the quantity. | dosage.quantity | SimpleQuantity |
+| drug_exposure_start_date, drug_exposure_end_date | effectiveTime[x], [x] =DateTime if end_date = null, [x] = Period otherwise ||
+||
+| ***Table*: measurement and observation merged to view** | **Note: We named the view as "f_observation_view"** | ***Resource*: Observation** | **Note** |
+| observation_id | We are joining two tables. And, IDs can be same. All IDs from observation table will be negated (‘-‘ prepended) in the view. Original tables do not need any modifications. | id ||
+| person_id | person Table. | subject •	Person (REQUIRED in OMOP) | Resource Reference |
+| observation_concept_id (measurement table – measurement_concept_id) | concept table | code | Complex Data Type: CodeableConcept.  Code will be overwritten for blood pressure as combined value. |
+| value_as_number, value_as_string (only for observation table), value_as_concept_id | valueQuantity, valueString, valueCodeableConcept | This is value[x] |
+| range_low, range_hight || referenceRange.low, referenceRange.high || 
+||| status = FINAL | Status is required field in FHIR. This is hard-coded. OMOP data are final. |
+| observation_date & observation_time, measurement_date & measurement_time || effectiveDateTime | Effective[x]
+| measurement_type_concept_id, observation_type_concept_id | This is required column in OMOP v5 | category | CodeableConcept (https://www.hl7.org/fhir/valueset-observation-category.html). See \*\* for mapping of category to omop v5 type concept ID. |
+| visit_occurrence_id | visit_occurrence table | encounter | Resource Reference ||
+||
+| ***Table*: person** | **Note** | **Resource: Patient** | **Note** |
+| person_id || Id ||
+| year_of_birth, month_of_birth, day_of_birth || birthDate ||
+| location_id | location table | address | Complex Data Type: Address
+| gender_concept_id | concept table | gender | OMOP gender concept needs to map to AdministrativeGender Enum |
+| family_name, given1_name, given2_name, prefix_name, suffix_name, preferred_language, ssn, maritalstatus_concept_id, active | f_person table – This is one of custom tables to provide data elements that are not available in OMOP v5 | family, given (list), maritalStatus, active ||
+||| race_concept_id = Unknown (8552) | FHIR person does not have race data element.|
+||
 Table: procedure_occurrence
 
 Resource: Procedure
