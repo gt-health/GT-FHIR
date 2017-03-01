@@ -76,31 +76,14 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | family_name, given1_name, given2_name, prefix_name, suffix_name, preferred_language, ssn, maritalstatus_concept_id, active | f_person table – This is one of custom tables to provide data elements that are not available in OMOP v5 | family, given (list), maritalStatus, active ||
 ||| race_concept_id = Unknown (8552) | FHIR person does not have race data element.|
 ||
-Table: procedure_occurrence
-
-Resource: Procedure
-Note
-procedure_occurrence_id
-
-id
-
-person_id
-person Table.
-subject
-Resource Reference
-procedure_concept_id
-concept table
-code
-Complex Data Type: CodeableConcept
-
-
-status = IN_PROGRESS
-Hard-coded
-procedure_date
-
-performedDateTime
-performed{x}
-Table: provider
+| ***Table*: procedure_occurrence** | **Note** | ***Resource*: Procedure ** | **Note** |
+| procedure_occurrence_id || id ||
+| person_id | person Table. | subject | Resource Reference |
+| procedure_concept_id | concept table | code | Complex Data Type: CodeableConcept
+||| status = IN_PROGRESS | Hard-coded |
+| procedure_date || performedDateTime | performed{x} |
+||
+|Table: provider
 
 Resource: Practitioner
 Note
