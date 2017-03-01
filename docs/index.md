@@ -8,6 +8,8 @@ For more detail information about the mapping, visit [**Mapping Document**](fhir
 
 We are constantly working on mapping new concepts and adding to new features. *Pull requests are welcome!* GT-FHIR consists of several sub-projects. Please see the following notes for what the base projects are. For more details on source codes, visit [GT-FHIR Project Github](https://github.com/gt-health/GT-FHIR). 
 
+**SMART on FHIR**: GT-FHIR is also equipped to support SMART on FHIR. GT-FHIR talks to Authorization server in [SMART-on-FHIR Reference Implementation](https://github.com/smart-on-fhir/installer) for launch ID resolution. You will need to install this reference implementation of SMART on FHIR and use the Authorization server part with GT-FHIR.
+
 ## People
  * Myung Choi - FHIR
  * Richard Starr - OMOP CDM
