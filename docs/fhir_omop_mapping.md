@@ -40,49 +40,16 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | provider_id | provider Table | prescriber | Resource (Practitioner) Reference |
 | effective_drug_dose | concept table for unit | doseInstructions.doseQuantity ||
 | dose_unit_concept_id ||||
-
-
-
-
-
-Table: drug_exposure
-where drug_type_concept_id = 38000176 or 38000175 Or “Prescription dispensed *”
-Note
-Resource: MedicationDispense
-Note
-drug_exposure_id
-
-id
-
-person_id
-person Table.
-patient
-Resource Reference
-drug_concept_id
-
-
-
-concept Table. concept_code (code), concept_name (display), vocabulary_id (vocabulary table – need to convert to system URI) 
-medication[x]
-Complex Data Type: medicationCodeableConcept
-drug_exposure_start_date
-
-whenPrepared
-
-quantity
-dose_unit_concept_id 
-concept table for unit
-quantity
-
-days_supply
-
-daysSupply
-
-Table: drug_exposure
-where drug_type_concept_id = 38000179 or 43542356 or 43542357 or 43542358 Or “Physician administered drug *”
-Note
-Resource: MedicationAdministration
-Note
+||
+| ***Table*: drug_exposure where drug_type_concept_id = 38000176 or 38000175 Or "Prescription dispensed \*"** | **Note** | ***Resource*: MedicationDispense ** | **Note**
+| drug_exposure_id || id ||
+| person_id | person Table. | patient | Resource Reference |
+| drug_concept_id | concept Table. concept_code (code), concept_name (display), vocabulary_id (vocabulary table – need to convert to system URI) |  medication[x] | Complex Data Type: medicationCodeableConcept |
+| drug_exposure_start_date || whenPrepared ||
+| quantity, dose_unit_concept_id | concept table for unit | quantity ||
+| days_supply || daysSupply ||
+||
+| ***Table*: drug_exposure where drug_type_concept_id = 38000179 or 43542356 or 43542357 or 43542358 Or "Physician administered drug \*"** | **Note** | ***Resource*: MedicationAdministration ** | **Note** |
 drug_exposure_id
 
 id
