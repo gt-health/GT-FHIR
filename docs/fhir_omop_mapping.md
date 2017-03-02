@@ -27,7 +27,7 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | condition_start_date, condition_end_date || onset[x] | If condition_end_date is null, then onsetDateTime. If both dates are available, then onsetPeriod |
 ||| verificationStatus | This is required field. We have no mapping from OMOP table. This is hardcoded to **CONFIRMED** |
 ||
-| ***Table*: drug_exposure** where drug_type_concept_id = 38000177 or "Prescription written" | Note | ***Resource*: MedicationOrder ** | Note |
+| ***Table*: drug_exposure** where drug_type_concept_id = 38000177 or "Prescription written" | Note | ***Resource*: MedicationOrder** | Note |
 | drug_exposure_id || id ||
 | person_id | person Table. | patient | Resource Reference |
 | drug_exposure_start_date || dateWritten, dispenseRequest.validityPeriod.start ||
