@@ -76,121 +76,41 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | family_name, given1_name, given2_name, prefix_name, suffix_name, preferred_language, ssn, maritalstatus_concept_id, active | f_person table – This is one of custom tables to provide data elements that are not available in OMOP v5 | family, given (list), maritalStatus, active ||
 ||| race_concept_id = Unknown (8552) | FHIR person does not have race data element.|
 ||
-| ***Table*: procedure_occurrence** | **Note** | ***Resource*: Procedure ** | **Note** |
+| ***Table*: procedure_occurrence** | **Note** | ***Resource*: Procedure** | **Note** |
 | procedure_occurrence_id || id ||
 | person_id | person Table. | subject | Resource Reference |
 | procedure_concept_id | concept table | code | Complex Data Type: CodeableConcept
 ||| status = IN_PROGRESS | Hard-coded |
 | procedure_date || performedDateTime | performed{x} |
 ||
-|Table: provider
-
-Resource: Practitioner
-Note
-provider_id
-
-Id
-
-provider_name
-
-name
-OMOP v5 has entire name in one field. There is no rule on format. So, we put entire name to text field.
-gender_concept_id
-
-gender
-
-year_of_birth
-
-birthDate
-Only year is available
-care_site_id
-
-practitionerRole.managingOrganization
-
-specialty_concept_id
-concept table
-practitionerRole.specialty
-CodeableConcept
-Table: visit_occurrence
-
-Resource: Encounter
-Note
-visit_occurrence_id
-
-id
-
-persion_id
-person table
-patient
-Resource Reference
-visit_concept_id
-concept table
-class
-
-visit_start_date & visit_start_time
-visit_end_date & visit_end_time
-
-period
-
-visit_type_concept_id
-44818518 (Visit derived from EHR)
-
-
-care_site_id
-
-serviceProvider (Organization)
-Resource Reference
-provider_id
-
-participant.individual
-Resource Reference
-Table: device_exposure
-
-Resource: Device
-Note
-device_exposure_id
-
-id
-
-person_id
-
-patient
-Resource Reference
-device_concept_id
-
-type
-CodeableConcept
-device_exposure_start_date
-This is not mappable. For CREATE from FHIR, this can be a problem. 
-
-
-device_exposure_end_date
-
-
-
-device_type_concept_id
-This is required, but not mapperable.
-
-
-unique_device_id
-
-udi
-
-provider_id
-provider.care_site_id
-owner (Organization)
-
-quantity
-Is it possible to have multiple devices with the same UDI?
-
-Device Resource does not have quantity information. 
-visit_occurrence_id
-visit_occurrence.care_site _id 
-if provider_id is not available.
-owner (Organization)
-Resource Reference
-
-
+| ***Table*: provider** | **Note** | ***Resource*: Practitioner** | **Note** |
+| provider_id || Id |
+| provider_name || name | OMOP v5 has entire name in one field. There is no rule on format. So, we put entire name to text field. |
+| gender_concept_id || gender |
+| year_of_birth || birthDate | Only year is available
+| care_site_id || practitionerRole.managingOrganization |
+| specialty_concept_id | concept table practitionerRole.specialty | CodeableConcept |
+||
+|***Table*: visit_occurrence** | **Note** | ***Resource*: Encounter** | **Note** |
+| visit_occurrence_id || id |
+| persion_id | person table | patient | Resource Reference |
+| visit_concept_id | concept table | class |
+| visit_start_date & visit_start_time, visit_end_date & visit_end_time || period |
+| visit_type_concept_id | 44818518 (Visit derived from EHR) |
+| care_site_id || serviceProvider (Organization) | Resource Reference |
+| provider_id || participant.individual | Resource Reference |
+||
+| ***Table*: device_exposure** | **Note** | ***Resource*: Device** | **Note** |
+| device_exposure_id || id |
+| person_id || patient | Resource Reference |
+| device_concept_id || type | CodeableConcept
+| device_exposure_start_date | This is not mappable. For CREATE from FHIR, this can be a problem. 
+| device_exposure_end_date |
+| device_type_concept_id | This is required, but not mapperable. |
+| unique_device_id || udi |
+| provider_id | provider.care_site_id | owner (Organization) |
+| quantity | Is it possible to have multiple devices with the same UDI? || Device Resource does not have quantity information. |
+| visit_occurrence_id | visit_occurrence.care_site \_id if provider_id is not available. | owner (Organization) |Resource Reference |
 
 
 ## Mapping Implementation in GT-FHIR v2
