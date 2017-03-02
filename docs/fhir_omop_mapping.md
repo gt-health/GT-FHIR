@@ -41,7 +41,7 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | effective_drug_dose | concept table for unit | doseInstructions.doseQuantity ||
 | dose_unit_concept_id ||||
 ||
-| ***Table*: drug_exposure where drug_type_concept_id = 38000176 or 38000175 Or "Prescription dispensed \*"** | **Note** | ***Resource*: MedicationDispense ** | **Note**
+| ***Table*: drug_exposure where drug_type_concept_id = 38000176 or 38000175 Or "Prescription dispensed \*"** | **Note** | ***Resource*: MedicationDispense** | **Note**
 | drug_exposure_id || id ||
 | person_id | person Table. | patient | Resource Reference |
 | drug_concept_id | concept Table. concept_code (code), concept_name (display), vocabulary_id (vocabulary table – need to convert to system URI) |  medication[x] | Complex Data Type: medicationCodeableConcept |
@@ -68,7 +68,7 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | measurement_type_concept_id, observation_type_concept_id | This is required column in OMOP v5 | category | CodeableConcept (https://www.hl7.org/fhir/valueset-observation-category.html). See \*\* for mapping of category to omop v5 type concept ID. |
 | visit_occurrence_id | visit_occurrence table | encounter | Resource Reference ||
 ||
-| ***Table*: person** | **Note** | **Resource: Patient** | **Note** |
+| ***Table*: person** | **Note** | ***Resource*: Patient** | **Note** |
 | person_id || Id ||
 | year_of_birth, month_of_birth, day_of_birth || birthDate ||
 | location_id | location table | address | Complex Data Type: Address
