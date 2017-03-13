@@ -36,6 +36,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
@@ -295,6 +296,7 @@ public class Observation extends BaseResourceEntity {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
+		System.out.println("Trying to write to Observation View Table");
 		// TODO: This is view, which is read-only. We need to come up with a way to write
 		// to either measurement or observation tables in OMOP. We may write them manually
 		// and just return null for this. But then, response will not be correct. Revisit this.
@@ -508,103 +510,6 @@ public class Observation extends BaseResourceEntity {
 		observation.setCode(code);
 		
 		observation.setStatus(STATUS);
-		// observation.setMethod(new CodeableConceptDt(theSystem, theCode));
-
-		
-//		// We may have related or component resources within observation.
-//		// If this observation has the relationshipType, it should be specified
-//		// in the observation source field with comma separated values
-//		if (this.sourceValue != null) {
-//			String[] relatedComponentResource = this.sourceValue.split(",");
-//			if (relatedComponentResource.length > 1) {
-//				if (relatedComponentResource[0].equalsIgnoreCase("COMP")) {
-//					// This is has-component. From DSTU2, has-component moved to
-//					// new component tag within observation resource.
-//					List<Component> components = new ArrayList<Component>();
-//					for (int i = 1; i < relatedComponentResource.length; i++) {
-//						String id = relatedComponentResource[i];
-//						// TODO: we need to add components here.
-//						
-//						WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-//						EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
-//
-//						CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-//						CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
-//						Root<Observation> from = criteria.from(Observation.class);
-//						criteria.select(from).where(builder.equal(from.get("id"), id));
-//						TypedQuery<Observation> query = entityManager.createQuery(criteria);
-//						List<Observation> results = query.getResultList();
-//						
-//						for (Observation ob : results) {
-//							Component comp = new Component();
-//							CodeableConceptDt componentCode = new CodeableConceptDt(ob.observationConcept.getVocabulary().getSystemUri(),
-//									ob.observationConcept.getConceptCode());
-//							componentCode.getCodingFirstRep().setDisplay(ob.observationConcept.getName());
-//							comp.setCode(componentCode);
-//							
-//							IDatatype compValue = null;
-//							if (ob.valueAsNumber != null) {
-//								QuantityDt quantity = new QuantityDt(ob.valueAsNumber.doubleValue());
-//								// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
-//								if (ob.unit != null) {
-//									quantity.setUnit(ob.unit.getConceptCode());
-//									quantity.setCode(ob.unit.getConceptCode());
-//									quantity.setSystem(ob.unit.getVocabulary().getSystemUri());
-//								}
-//								compValue = quantity;
-//								if (ob.rangeLow != null)
-//									comp.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(ob.rangeLow.doubleValue()));
-//								if (ob.rangeHigh != null)
-//									comp.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(ob.rangeHigh.doubleValue()));
-//							} else if (ob.valueAsString != null) {
-//								compValue = new StringDt(ob.valueAsString);
-//							} else if (ob.valueAsConcept != null) {
-//								// vocabulary is a required attribute for concept, then it's expected to not be null
-//								CodeableConceptDt valueAsConcept = new CodeableConceptDt(ob.valueAsConcept.getVocabulary().getSystemUri(), 
-//										ob.valueAsConcept.getConceptCode());
-//								compValue = valueAsConcept;
-//							}
-//							comp.setValue(compValue);
-//
-//							components.add(comp);
-//						}
-//					}
-//					
-//					if (components.size() > 0) {
-//						observation.setComponent(components);
-//					}
-//				} else {
-//					ObservationRelationshipTypeEnum obsRelationshipType = null;
-//					if (relatedComponentResource[0].equalsIgnoreCase("MBR")) {
-//						obsRelationshipType = ObservationRelationshipTypeEnum.HAS_MEMBER;
-//					} else if (relatedComponentResource[0].equalsIgnoreCase("DRIV")) {
-//						obsRelationshipType = ObservationRelationshipTypeEnum.DERIVED_FROM;
-//					} else if (relatedComponentResource[0].equalsIgnoreCase("SEQL")) {
-//						obsRelationshipType = ObservationRelationshipTypeEnum.SEQUEL_TO;
-//					} else if (relatedComponentResource[0].equalsIgnoreCase("RPLC")) {
-//						obsRelationshipType = ObservationRelationshipTypeEnum.REPLACES;
-//					} else if (relatedComponentResource[0].equalsIgnoreCase("QUALF")) {
-//						obsRelationshipType = ObservationRelationshipTypeEnum.QUALIFIED_BY;
-//					} else if (relatedComponentResource[0].equalsIgnoreCase("INTF")) {
-//						obsRelationshipType = ObservationRelationshipTypeEnum.INTERFERED_BY;
-//					}
-//
-//					if (obsRelationshipType != null) {
-//						List<Related> relateds = new ArrayList<Related>();
-//						for (int i = 1; i < relatedComponentResource.length; i++) {
-//							Related related = new Related();
-//							related.setType(obsRelationshipType);
-//							ResourceReferenceDt referencedResDt = new ResourceReferenceDt(
-//									"Observation/" + relatedComponentResource[i]);
-//							related.setTarget(referencedResDt);
-//							relateds.add(related);
-//						}
-//						observation.setRelated(relateds);
-//					}
-//				}
-//			}
-//
-//		}
 
 		if (this.date != null) {
 			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
@@ -641,6 +546,51 @@ public class Observation extends BaseResourceEntity {
 		}
 		if (this.visitOccurrence != null)
 			observation.getEncounter().setReference(new IdDt (VisitOccurrence.RES_TYPE, this.visitOccurrence.getId()));
+		
+		if (this.type != null) {
+			if (this.type.getId() == 44818701L) {
+				// This is From physical examination.
+				CodeableConceptDt typeConcept = new CodeableConceptDt();
+				List<CodingDt> typeCodings = new ArrayList<CodingDt>();
+				CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "exam");
+				typeCodings.add(typeCoding);
+				typeConcept.setCoding(typeCodings);
+				observation.setCategory(typeConcept);
+			} else if (this.type.getId() == 44818702L) {
+				CodeableConceptDt typeConcept = new CodeableConceptDt();
+				// This is Lab result
+				List<CodingDt> typeCodings = new ArrayList<CodingDt>();
+				CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "laboratory");
+				typeCodings.add(typeCoding);
+				typeConcept.setCoding(typeCodings);				
+				observation.setCategory(typeConcept);
+			} else if (this.type.getId() == 45905771L) {
+				CodeableConceptDt typeConcept = new CodeableConceptDt();
+				// This is Lab result
+				List<CodingDt> typeCodings = new ArrayList<CodingDt>();
+				CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "survey");
+				typeCodings.add(typeCoding);
+				typeConcept.setCoding(typeCodings);				
+				observation.setCategory(typeConcept);
+			} else if (this.type.getId() == 38000277L || this.type.getId() == 38000278L) {
+				CodeableConceptDt typeConcept = new CodeableConceptDt();
+				// This is Lab result
+				List<CodingDt> typeCodings = new ArrayList<CodingDt>();
+				CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "laboratory");
+				typeCodings.add(typeCoding);
+				typeConcept.setCoding(typeCodings);				
+				observation.setCategory(typeConcept);
+			} else if (this.type.getId() == 38000280L || this.type.getId() == 38000281L) {
+				CodeableConceptDt typeConcept = new CodeableConceptDt();
+				// This is Lab result
+				List<CodingDt> typeCodings = new ArrayList<CodingDt>();
+				CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "exam");
+				typeCodings.add(typeCoding);
+				typeConcept.setCoding(typeCodings);				
+				observation.setCategory(typeConcept);
+			}
+		}
+		
 		return observation;
 	}
 

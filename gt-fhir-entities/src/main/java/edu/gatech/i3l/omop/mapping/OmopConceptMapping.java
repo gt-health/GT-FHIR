@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -16,8 +15,6 @@ import javax.persistence.criteria.Root;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.dstu2.entities.Concept;
 import edu.gatech.i3l.fhir.dstu2.entities.Location;
 import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
@@ -60,13 +57,13 @@ public class OmopConceptMapping implements Runnable {
 	/*
 	 * Vocabularies
 	 */
-	private static final String OMOP_4_5 = "OMOP Vocabulary v4.5 20-Oct-2014";
+//	private static final String OMOP_4_5 = "OMOP Vocabulary v4.5 20-Oct-2014";
 //	private static final String GENDER_VOCABULARY = "HL7 Administrative Sex";
 	private static final String SNOMED_CT = "SNOMED";
 	private static final String LOINC = "LOINC";
 	private static final String OMOP_CONDITION_TYPE = "OMOP Condition Occurrence Type";
 	private static final String UCUM = "UCUM";
-	private static final String CMS_PLACE_OF_SERVICE = "CMS Place of Service";
+//	private static final String CMS_PLACE_OF_SERVICE = "CMS Place of Service";
 	
 	/**
 	 * A mapping for some of the existing concepts in the database. The key for the outter mapping is the Concept Class.
@@ -158,6 +155,15 @@ public class OmopConceptMapping implements Runnable {
 
 	public Map<String, Long> getConceptsForClass(String conceptClass) {
 		return concepts.get(conceptClass);
+	}
+	
+	public String getDomain(String conceptCode) {
+		TypedQuery<String> query = entityManager.createNamedQuery("findDomainByCode", String.class).setParameter("code", conceptCode);
+		List<String> results = query.getResultList();
+		if (results.size() > 0)
+			return results.get(0);
+		else
+			return null;
 	}
 	
 	public String getVocabularyReference(String vocabularyID) {

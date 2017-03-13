@@ -22,7 +22,12 @@ import org.hibernate.envers.RelationTargetAuditMode;
 @Entity
 @Table(name="concept")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-@NamedQueries(value = { @NamedQuery( name = "findConceptByCode", query = "select id from Concept c where c.conceptCode like :code")})
+@NamedQueries(value = { 
+		@NamedQuery(name = "findConceptByCode", 
+				query = "select id from Concept c where c.conceptCode like :code"),
+		@NamedQuery(name = "findDomainByCode",
+				query = "select domain from Concept c where c.conceptCode like :code")
+		})
 public class Concept{
 	
 	@Id
@@ -34,10 +39,13 @@ public class Concept{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-	@ManyToOne
-	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
-	private Domain domain;
+//	@ManyToOne
+//	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
+//	private Domain domain;
 	
+	@Column(name="domain_id", updatable=false)
+	private String domain;
+
 	@Column(name="concept_class_id", updatable=false)
 	private String conceptClassId;
 	
@@ -75,7 +83,7 @@ public class Concept{
 		this.name = name;
 	}
 
-	public Concept(Long id, String name, Domain domain, String conceptClassId, Character standardConcept,
+	public Concept(Long id, String name, String domain, String conceptClassId, Character standardConcept,
 			Vocabulary vocabulary, String conceptCode, Date validStartDate,
 			Date validEndDate, String invalidReason) {
 		super();
@@ -107,11 +115,11 @@ public class Concept{
 		this.name = name;
 	}
 
-	public Domain getDomainId() {
+	public String getDomainId() {
 		return domain;
 	}
 
-	public void setDomainId(Domain domain) {
+	public void setDomainId(String domain) {
 		this.domain = domain;
 	}
 

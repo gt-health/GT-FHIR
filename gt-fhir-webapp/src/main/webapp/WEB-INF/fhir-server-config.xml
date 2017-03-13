@@ -43,6 +43,6 @@
 		<property name="clientId" value="client" />
 		<property name="clientSecret" value="secret" />
 		<property name="localByPass" value="True" />
-		<property name="readOnly" value="True" />
+		<property name="readOnly" value="False" />
 	</bean>
 </beans>

@@ -220,9 +220,10 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			if(!violations.isEmpty()){
 				OperationOutcome oo = new OperationOutcome();
 				for (ConstraintViolation<BaseResourceEntity> violation : violations) {
-					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails(violation.getPropertyPath()+" "+ violation.getMessage());
+//					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails(violation.getPropertyPath()+" "+ violation.getMessage());
+					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails((new CodeableConceptDt()).setText(violation.getPropertyPath()+" "+ violation.getMessage()));
 				}
-				throw new UnprocessableEntityException(oo);
+				throw new UnprocessableEntityException(myContext, oo);
 			}
 		}
 
