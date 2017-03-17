@@ -100,7 +100,7 @@ public class DefaultServer extends RestfulServer {
 		 * helpful for testing and troubleshooting since it means you can look
 		 * at FHIR URLs directly in a browser.
 		 */
-		setUseBrowserFriendlyContentTypes(true);
+//		setUseBrowserFriendlyContentTypes(true);
 
 		/*
 		 * Default to JSON and pretty printing
