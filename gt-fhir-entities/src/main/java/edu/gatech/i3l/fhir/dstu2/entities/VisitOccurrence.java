@@ -18,6 +18,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -67,7 +68,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	private PersonComplement person;
 	
@@ -93,11 +94,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@JoinColumn(name="visit_type_concept_id")
 	private Concept visitTypeConcept;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite; //FIXME field names should reflect fhir names, for validation purposes.
 	
@@ -431,7 +432,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		
 		// set Patient Reference
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, person.getId()));
-		patientReference.setDisplay(person.getNameAsSingleString());
+//		patientReference.setDisplay(person.getNameAsSingleString()); //this should be added only if Patient is specified as _include param
 		encounter.setPatient(patientReference);
 		
 		// set Period
