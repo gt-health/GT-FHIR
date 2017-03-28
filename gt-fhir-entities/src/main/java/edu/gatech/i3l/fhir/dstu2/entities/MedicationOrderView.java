@@ -15,6 +15,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.Min;
@@ -49,7 +50,7 @@ public final class MedicationOrderView extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationOrder";
 
-	@ManyToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch= FetchType.LAZY)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
@@ -81,14 +82,14 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch= FetchType.LAZY)
 	@JoinColumn(name = "provider_id")
 	private Provider prescribingProvider;
 
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch= FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
@@ -331,7 +332,7 @@ public final class MedicationOrderView extends DrugExposure {
 					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));
 		}
 		ResourceReferenceDt patientRef = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
-		patientRef.setDisplay(this.person.getNameAsSingleString());
+//		patientRef.setDisplay(this.person.getNameAsSingleString()); //this dhould be added only when Patient is between _include params
 		resource.setPatient(patientRef);
 		
 //		if (this.relevantCondition != null)
