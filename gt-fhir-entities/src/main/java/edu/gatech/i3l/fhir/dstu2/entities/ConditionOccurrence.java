@@ -10,6 +10,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -61,7 +62,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
@@ -93,11 +94,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 * @fhirVersion 0.4.0
 	 * @omopVersion 4.0
 	 */
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence encounter;
 	
@@ -345,7 +346,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
-		patientReference.setDisplay(this.person.getNameAsSingleString());
+//		patientReference.setDisplay(this.person.getNameAsSingleString()); //this should be added only if Patient is specified as _include param
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.

@@ -7,6 +7,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -39,7 +40,7 @@ public class DeviceExposure extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.MERGE, fetch= FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private Person person;
@@ -65,11 +66,11 @@ public class DeviceExposure extends BaseResourceEntity {
 	@NotNull
 	private Concept deviceTypeConcept;
 
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.MERGE, fetch= FetchType.LAZY)
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.MERGE, fetch= FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 	
