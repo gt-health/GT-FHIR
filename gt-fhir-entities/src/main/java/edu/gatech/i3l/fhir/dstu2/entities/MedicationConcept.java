@@ -9,6 +9,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -45,7 +46,7 @@ public final class MedicationConcept extends BaseResourceEntity{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-	@ManyToOne
+	@ManyToOne(fetch= FetchType.LAZY)
 	@JoinColumn(name="domain_id", referencedColumnName="domain_id")
 	private Domain domain;
 	
@@ -156,7 +157,7 @@ public final class MedicationConcept extends BaseResourceEntity{
 		//Since this is an omop v.5 based model, all the information below is expected to be not null.
 		return this.getId() + ", "
 				+ this.getName() + ", "
-				+ this.getDomainId() + ", "
+//				+ this.getDomainId() + ", "
 				+ this.getConceptClassId() + ", "
 				+ this.getStandardConcept() + ", "
 				+ this.getVocabulary().getId() + ", "
