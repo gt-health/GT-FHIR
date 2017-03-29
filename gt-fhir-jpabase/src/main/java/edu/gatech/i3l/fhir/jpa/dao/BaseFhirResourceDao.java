@@ -24,15 +24,19 @@ import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
 import net.vidageek.mirror.dsl.Mirror;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -85,6 +89,7 @@ import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.util.FhirTerser;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
+import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
@@ -352,14 +357,15 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		System.out.println("theParams:"+theParams.toString());
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
-			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+			CriteriaBuilder criteriaBuilder = myEntityManager.getCriteriaBuilder();
+			CriteriaQuery<Long> criteria = criteriaBuilder.createQuery(Long.class);
 			Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
 			criteria.select(from.get("id").as(Long.class));
-			Predicate addPredicate = myQueryHelper.getPredicateBuilder().addCommonPredicate(builder, from);
+			PredicateBuilder predicateBuilder = myQueryHelper.getPredicateBuilder();
+			Predicate addPredicate = predicateBuilder.addCommonPredicate(criteriaBuilder, from);
 			if(addPredicate != null)
 				criteria.where(addPredicate);
-			criteria.orderBy(builder.asc(from.get("id").as(Long.class)));
+			criteria.orderBy(criteriaBuilder.asc(from.get("id").as(Long.class)));
 			List<Long> resultList = myEntityManager.createQuery(criteria).getResultList();
 			loadPids = new HashSet<Long>(resultList);
 		} else {
@@ -884,14 +890,17 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 
 		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-		@SuppressWarnings("unchecked")
-		CriteriaQuery<IResourceEntity> cq = (CriteriaQuery<IResourceEntity>) builder.createQuery(getResourceEntity());
+		CriteriaQuery<Object[]> cq = builder.createQuery(Object[].class);
 		Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
-		cq.select(from);
+		List<Selection<?>> selectionList = new ArrayList<Selection<?>>();
+		selectionList.add(from);
+		addJoins(getResourceEntity(), from, selectionList);
+		cq.multiselect(selectionList);
 		cq.where(from.get("id").in(theIncludePids));
-		TypedQuery<IResourceEntity> q = myEntityManager.createQuery(cq);
-		for (IResourceEntity entity : q.getResultList()) { 
+		TypedQuery<Object[]> q = myEntityManager.createQuery(cq);
+		for (Object[] result : q.getResultList()) { 
 			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
+			IResourceEntity entity = transformResultToEntity(result, selectionList);
 			IResource resource = entity.getRelatedResource();
 			Integer index = position.get(entity.getId());
 			if (index == null) {
@@ -905,7 +914,30 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 	}
 		
-	
+	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {
+		for (int i = 1; i < result.length; i++) {
+			selectionList.get(i).getAlias();
+		}
+		return null;
+	}
+
+	private void addJoins(Class<? extends IResourceEntity> resourceEntity, Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
+		Field[] fields = resourceEntity.getDeclaredFields();
+		for (int i = 0; i < fields.length; i++) {
+			Fetch fetch = fields[i].getDeclaredAnnotation(Fetch.class);
+			if(fetch != null && fetch.value() == FetchMode.JOIN) {
+				Join<Object, Object> join = from.join(fields[i].getName());
+				
+				Class<?> declaringClass = fields[i].getDeclaringClass();
+				DefaultFhirAttributes attsAnnotation = declaringClass.getAnnotation(DefaultFhirAttributes.class);
+				String[] atts = attsAnnotation.attributes();
+				for (int j = 0; j < atts.length; j++) {
+					selectionList.add( join.get(atts[j]).alias(fields[i].getName()+"."+atts[j]));
+				}
+			}
+		}
+	}
+
 	public BaseFhirDao getBaseFhirDao() {
 		return baseFhirDao;
 	}

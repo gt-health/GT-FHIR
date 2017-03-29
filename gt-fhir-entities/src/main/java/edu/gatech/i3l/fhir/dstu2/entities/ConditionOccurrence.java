@@ -22,6 +22,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -63,6 +65,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
+	@Fetch(FetchMode.JOIN)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
@@ -346,7 +349,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
-//		patientReference.setDisplay(this.person.getNameAsSingleString()); //this should be added only if Patient is specified as _include param
+		patientReference.setDisplay(this.person.getNameAsSingleString());
 		condition.setPatient(patientReference);
 
 		// Set encounter if exists.
