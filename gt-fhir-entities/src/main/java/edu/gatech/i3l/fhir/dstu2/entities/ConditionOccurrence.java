@@ -65,7 +65,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
-	@Fetch(FetchMode.JOIN)
+//	@Fetch(FetchMode.JOIN)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;

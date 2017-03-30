@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -41,6 +42,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
+import org.hibernate.proxy.HibernateProxy;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,7 +124,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	private QueryHelper myQueryHelper ;
 	private Validator myBeanValidator;
 
-	private boolean myValidateBean; 
+	private boolean myValidateBean;
+
 
 
 	public abstract PredicateBuilder getPredicateBuilder();
@@ -169,7 +172,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	public Class<? extends IResourceEntity> getResourceEntity() {
 		return myResourceEntity;
 	}
-
+	
 	public void setResourceEntity(Class<? extends IResourceEntity> theResourceEntity) {
 		this.myResourceEntity = theResourceEntity;
 	}
@@ -901,7 +904,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		for (Object[] result : q.getResultList()) { 
 			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
 			IResourceEntity entity = transformResultToEntity(result, selectionList);
-			IResource resource = entity.getRelatedResource();
+			IResource resource = entity.getRelatedResource ();
 			Integer index = position.get(entity.getId());
 			if (index == null) {
 				ourLog.warn("Got back unexpected resource PID {}", entity.getId());
@@ -915,24 +918,63 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	}
 		
 	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {
+		IResourceEntity entity = (IResourceEntity) result[0];
 		for (int i = 1; i < result.length; i++) {
-			selectionList.get(i).getAlias();
+			String alias = selectionList.get(i).getAlias();
+			String ref = alias.substring(0, alias.indexOf('.'));
+			String attrName = alias.substring(alias.indexOf('.')+1);
+			try {
+				Field field = getDeclaredField(getResourceEntity(), ref); 
+				if(field != null){
+					field.setAccessible(true);
+					Object attrObj = field.get(entity);
+					if(HibernateProxy.class.isInstance(attrObj))
+						attrObj = field.getType().newInstance();
+					field.set(entity, attrObj);
+					Field attrField = getDeclaredField(field.getType(), attrName);
+					if (attrField != null){
+						attrField.setAccessible(true);
+						attrField.set(attrObj, result[i]);
+					}
+				}
+			} catch (SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+				e.printStackTrace();
+			}
 		}
-		return null;
+		return entity;
+	}
+	
+	public Field getDeclaredField(Class<?> type, String fieldName) {
+		if(fieldName == null)
+			return null;
+		Field field = null;
+	    for (Field f : type.getDeclaredFields()) { 
+			if(fieldName.equals(f.getName())){
+				field = f;
+				break;
+			}
+		}
+	    if (field == null && type.getSuperclass() != null) {
+	        field = getDeclaredField(type.getSuperclass(), fieldName);
+	    }
+
+	    return field;
 	}
 
 	private void addJoins(Class<? extends IResourceEntity> resourceEntity, Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
 		Field[] fields = resourceEntity.getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
-			Fetch fetch = fields[i].getDeclaredAnnotation(Fetch.class);
-			if(fetch != null && fetch.value() == FetchMode.JOIN) {
+//			Fetch fetch = fields[i].getDeclaredAnnotation(Fetch.class);
+			if("person".equals(fields[i].getName())){//fetch != null && fetch.value() == FetchMode.JOIN) {
 				Join<Object, Object> join = from.join(fields[i].getName());
 				
-				Class<?> declaringClass = fields[i].getDeclaringClass();
+				Class<?> declaringClass = fields[i].getType();
 				DefaultFhirAttributes attsAnnotation = declaringClass.getAnnotation(DefaultFhirAttributes.class);
-				String[] atts = attsAnnotation.attributes();
-				for (int j = 0; j < atts.length; j++) {
-					selectionList.add( join.get(atts[j]).alias(fields[i].getName()+"."+atts[j]));
+				if(attsAnnotation != null){
+					String[] atts = attsAnnotation.attributes();
+					for (int j = 0; j < atts.length; j++) {
+						selectionList.add( join.get(atts[j]).alias(fields[i].getName()+"."+atts[j]));
+					}
 				}
 			}
 		}

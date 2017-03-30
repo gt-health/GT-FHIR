@@ -37,7 +37,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Table(name="f_person")
 @PrimaryKeyJoinColumn(name="person_id")
 @Audited
-@DefaultFhirAttributes(attributes={"givenName1","givenName2","familyName"})
+@DefaultFhirAttributes(attributes={"id","givenName1","givenName2","familyName"})
 public class PersonComplement extends Person{
 
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplement.class);
