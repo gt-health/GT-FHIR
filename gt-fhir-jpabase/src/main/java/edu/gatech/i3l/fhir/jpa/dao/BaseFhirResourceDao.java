@@ -19,13 +19,17 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -897,13 +901,13 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
 		List<Selection<?>> selectionList = new ArrayList<Selection<?>>();
 		selectionList.add(from);
-		addJoins(getResourceEntity(), from, selectionList);
+		addJoins(from, selectionList);
 		cq.multiselect(selectionList);
 		cq.where(from.get("id").in(theIncludePids));
 		TypedQuery<Object[]> q = myEntityManager.createQuery(cq);
 		for (Object[] result : q.getResultList()) { 
 			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
-			IResourceEntity entity = transformResultToEntity(result, selectionList);
+			IResourceEntity entity = (IResourceEntity) transformResultToEntity(result, selectionList, getResourceEntity());
 			IResource resource = entity.getRelatedResource ();
 			Integer index = position.get(entity.getId());
 			if (index == null) {
@@ -917,24 +921,33 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 	}
 		
-	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {
-		IResourceEntity entity = (IResourceEntity) result[0];
-		for (int i = 1; i < result.length; i++) {
+	private Object transformResultToEntity(Object[] result, List<Selection<?>> selectionList, Class<?> source) {
+		Object entity =  result[0];
+		for (int i = 0; i < result.length; i++) {
 			String alias = selectionList.get(i).getAlias();
-			String ref = alias.substring(0, alias.indexOf('.'));
-			String attrName = alias.substring(alias.indexOf('.')+1);
+			String ref = null;
+			if(alias.contains("_"))
+				ref = alias.substring(0, alias.indexOf('_'));
+			else
+				continue;
+			String attrName = alias.substring(alias.indexOf('_')+1);
 			try {
-				Field field = getDeclaredField(getResourceEntity(), ref); 
+				Field field = getDeclaredField(source, ref); 
 				if(field != null){
 					field.setAccessible(true);
-					Object attrObj = field.get(entity);
+					Object attrObj = field.get(entity); 
 					if(HibernateProxy.class.isInstance(attrObj))
 						attrObj = field.getType().newInstance();
-					field.set(entity, attrObj);
-					Field attrField = getDeclaredField(field.getType(), attrName);
-					if (attrField != null){
-						attrField.setAccessible(true);
-						attrField.set(attrObj, result[i]);
+					
+					if(attrName.contains("_")){
+						transformResultToEntity(new Object[]{attrObj}, selectionList, field.getType());
+					} else {
+						field.set(entity, attrObj);
+						Field attrField = getDeclaredField(field.getType(), attrName);
+						if (attrField != null){
+							attrField.setAccessible(true);
+							attrField.set(attrObj, result[i]);
+						}
 					}
 				}
 			} catch (SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
@@ -961,23 +974,51 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	    return field;
 	}
 
-	private void addJoins(Class<? extends IResourceEntity> resourceEntity, Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
-		Field[] fields = resourceEntity.getDeclaredFields();
+	private void addJoins(Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
+		Field[] fields = from.getJavaType().getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
 //			Fetch fetch = fields[i].getDeclaredAnnotation(Fetch.class);
-			if("person".equals(fields[i].getName())){//fetch != null && fetch.value() == FetchMode.JOIN) {
-				Join<Object, Object> join = from.join(fields[i].getName());
+			JoinColumn joinColumnAnn = fields[i].getDeclaredAnnotation(JoinColumn.class);
+			if(
+					joinColumnAnn != null) {
+//				fetch != null && fetch.value() == FetchMode.JOIN) {
+				String joinAlias = fields[i].getName();
+				Join<Object, Object> join = from.join(joinAlias, JoinType.LEFT);
+				join.alias(joinAlias);
+				addJoins(join, selectionList);
 				
 				Class<?> declaringClass = fields[i].getType();
 				DefaultFhirAttributes attsAnnotation = declaringClass.getAnnotation(DefaultFhirAttributes.class);
 				if(attsAnnotation != null){
 					String[] atts = attsAnnotation.attributes();
 					for (int j = 0; j < atts.length; j++) {
-						selectionList.add( join.get(atts[j]).alias(fields[i].getName()+"."+atts[j]));
+						selectionList.add( join.get(atts[j]).alias(joinAlias+"_"+atts[j]));
 					}
 				}
 			}
 		}
+	}
+
+	private void addJoins(From<Object, Object> from, List<Selection<?>> selectionList) {
+		Field[] fields = from.getJavaType().getDeclaredFields();
+		for (int i = 0; i < fields.length; i++) {
+			JoinColumn joinColumnAnn = fields[i].getDeclaredAnnotation(JoinColumn.class);
+			if(joinColumnAnn != null) {
+				Join<Object, Object> join = from.join(fields[i].getName(), JoinType.LEFT);
+				String joinAlias = from.getAlias()+"_"+fields[i].getName();
+				join.alias(joinAlias);
+				addJoins(join, selectionList);
+				
+				Class<?> declaringClass = fields[i].getType();
+				DefaultFhirAttributes attsAnnotation = declaringClass.getAnnotation(DefaultFhirAttributes.class);
+				if(attsAnnotation != null){
+					String[] atts = attsAnnotation.attributes();
+					for (int j = 0; j < atts.length; j++) {
+						selectionList.add( join.get(atts[j]).alias(joinAlias+"_"+atts[j]));
+					}
+				}
+			}
+		}		
 	}
 
 	public BaseFhirDao getBaseFhirDao() {

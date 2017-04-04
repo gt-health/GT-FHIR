@@ -14,6 +14,8 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
+
 /**
  * 
  * @author Myung Choi
@@ -22,6 +24,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 @Table(name="vocabulary")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 @NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select vocabularyReference from Vocabulary c where c.id like :value")})
+@DefaultFhirAttributes(attributes={"name", "vocabularyReference"})
 public class Vocabulary {
 	
 	@Id

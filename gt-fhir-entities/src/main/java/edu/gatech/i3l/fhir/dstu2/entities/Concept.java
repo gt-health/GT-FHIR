@@ -7,6 +7,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,6 +20,8 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
+
 @Entity
 @Table(name="concept")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
@@ -28,6 +31,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 		@NamedQuery(name = "findDomainByCode",
 				query = "select domain from Concept c where c.conceptCode like :code")
 		})
+@DefaultFhirAttributes(attributes={"name", "conceptCode", "vocabulary"})
 public class Concept{
 	
 	@Id
@@ -52,7 +56,7 @@ public class Concept{
 	@Column(name="standard_concept", updatable=false)
 	private Character standardConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.EAGER)
 	@JoinColumn(name="vocabulary_id", referencedColumnName="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	

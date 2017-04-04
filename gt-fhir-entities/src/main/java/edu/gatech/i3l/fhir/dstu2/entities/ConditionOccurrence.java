@@ -22,8 +22,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -65,12 +63,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	private Long id;
 	
 	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
-//	@Fetch(FetchMode.JOIN)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="condition_concept_id", nullable=false)
 	@NotNull
 	private Concept conditionConcept;
@@ -82,7 +79,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_end_date", nullable=false)
 	private Date endDate;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="condition_type_concept_id", nullable=false)
 	@NotNull
 	private Concept conditionTypeConcept;
@@ -108,7 +105,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_source_value")
 	private String sourceValue; 
 
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="condition_source_concept_id")
 	private Concept sourceConcept;
 	
