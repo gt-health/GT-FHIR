@@ -65,7 +65,7 @@ public class PersonComplement extends Person{
 	private String maritalStatus;
 	
 	@Column(name="active")
-	private short active;
+	private Short active;
 	
 	@Column(name="contact_point1")
 	String contactPoint1;
@@ -144,11 +144,11 @@ public class PersonComplement extends Person{
 		this.maritalStatus = maritalStatus;
 	}
 	
-	public short getActive() {
+	public Short getActive() {
 		return active;
 	}
 	
-	public void setActive(short active) {
+	public void setActive(Short active) {
 		this.active = active;
 	}
 	
@@ -183,7 +183,7 @@ public class PersonComplement extends Person{
 		if(this.givenName2 != null)
 			patient.getName().get(0).addGiven(this.givenName2);
 //		short active = this.active != null ? this.active : 0;
-		if (this.active == 0)
+		if (this.active == null || this.active == 0)
 			patient.setActive(false);
 		else
 			patient.setActive(true);

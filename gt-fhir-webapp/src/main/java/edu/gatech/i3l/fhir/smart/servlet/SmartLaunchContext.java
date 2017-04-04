@@ -22,7 +22,7 @@ public class SmartLaunchContext implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="smart_launch_context_launch_id_gen")
-	@SequenceGenerator(name="smart_launch_context_launch_id_gen", sequenceName="smart_launch_context_launch_id_seq", allocationSize=1)
+	@SequenceGenerator(name="smart_launch_context_launch_id_gen", sequenceName="smart_launch_context_seq", allocationSize=1)
 	@Column(name="launch_id")
 	private Long launchId;
 
