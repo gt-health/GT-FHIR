@@ -94,11 +94,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 * @fhirVersion 0.4.0
 	 * @omopVersion 4.0
 	 */
-	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.ALL}, fetch= FetchType.LAZY)
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence encounter;
 	

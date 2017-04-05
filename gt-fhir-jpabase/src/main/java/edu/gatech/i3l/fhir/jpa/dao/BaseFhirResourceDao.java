@@ -882,6 +882,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	}
 
 	public void loadResourcesByPid(Collection<Long> theIncludePids, List<IBaseResource> theResourceListToPopulate, BundleEntrySearchModeEnum theBundleEntryStatus) {
+		long init = System.currentTimeMillis();
 		if (theIncludePids.isEmpty()) {
 			return;
 		}
@@ -901,8 +902,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		cq.multiselect(selectionList);
 		cq.where(from.get("id").in(theIncludePids));
 		TypedQuery<Object[]> q = myEntityManager.createQuery(cq);
-		for (Object[] result : q.getResultList()) { 
-			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
+		List<Object[]> resultList = q.getResultList();
+		for (Object[] result : resultList) { 
 			IResourceEntity entity = transformResultToEntity(result, selectionList);
 			IResource resource = entity.getRelatedResource ();
 			Integer index = position.get(entity.getId());
@@ -915,11 +916,15 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 			theResourceListToPopulate.set(index, resource);
 		}
+		long end = System.currentTimeMillis();
+		System.err.println("load: "+(end-init));
 	}
 		
 	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {
 		IResourceEntity entity =  (IResourceEntity) result[0];
 		for (int i = 1; i < selectionList.size(); i++) {
+			if(result[i] == null)
+				continue;
 			String alias = selectionList.get(i).getAlias();
 			String ref = "";
 			String attrName = alias.substring(0);
@@ -974,15 +979,12 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	private void addJoins(Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
 		Field[] fields = from.getJavaType().getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
-//			Fetch fetch = fields[i].getDeclaredAnnotation(Fetch.class);
 			JoinColumn joinColumnAnn = fields[i].getDeclaredAnnotation(JoinColumn.class);
 			if(
 					joinColumnAnn != null) {
-//				fetch != null && fetch.value() == FetchMode.JOIN) {
 				String joinAlias = fields[i].getName();
 				Join<Object, Object> join = from.join(joinAlias, JoinType.LEFT);
 				join.alias(joinAlias);
-				addJoins(join, selectionList);
 				
 				selectionList.add( join.get("id").alias(joinAlias+"_id"));
 				Class<?> declaringClass = fields[i].getType();
@@ -991,32 +993,29 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 					String[] atts = attsAnnotation.attributes();
 					for (int j = 0; j < atts.length; j++) {
 						selectionList.add( join.get(atts[j]).alias(joinAlias+"_"+atts[j]));
+						addJoins(join, atts[j], joinAlias, selectionList);
 					}
 				}
 			}
 		}
 	}
 
-	private void addJoins(From<Object, Object> from, List<Selection<?>> selectionList) {
-		Field[] fields = from.getJavaType().getDeclaredFields();
-		for (int i = 0; i < fields.length; i++) {
-			JoinColumn joinColumnAnn = fields[i].getDeclaredAnnotation(JoinColumn.class);
-			if(joinColumnAnn != null) {
-				Join<Object, Object> join = from.join(fields[i].getName(), JoinType.LEFT);
-				String joinAlias = from.getAlias()+"_"+fields[i].getName();
+	private void addJoins(From<Object, Object> from, String attName, String joinAlias, List<Selection<?>> selectionList) {
+			Field attrField = getDeclaredField(from.getJavaType(), attName);
+			if(attrField.getDeclaredAnnotation(JoinColumn.class) != null) {
+				Join<Object, Object> join = from.join(attName, JoinType.LEFT);
+				joinAlias = joinAlias+"_"+attName;
+				selectionList.add( join.get("id").alias(joinAlias+"_id"));
 				join.alias(joinAlias);
-				addJoins(join, selectionList);
-				
-				Class<?> declaringClass = fields[i].getType();
-				FhirAttributesProvided attsAnnotation = declaringClass.getAnnotation(FhirAttributesProvided.class);
+				FhirAttributesProvided attsAnnotation = attrField.getType().getAnnotation(FhirAttributesProvided.class);
 				if(attsAnnotation != null){
 					String[] atts = attsAnnotation.attributes();
 					for (int j = 0; j < atts.length; j++) {
 						selectionList.add( join.get(atts[j]).alias(joinAlias+"_"+atts[j]));
+						addJoins(join, atts[j], joinAlias, selectionList);
 					}
-				}
+				}	
 			}
-		}		
 	}
 
 	public BaseFhirDao getBaseFhirDao() {
