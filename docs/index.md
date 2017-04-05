@@ -13,9 +13,15 @@ We are constantly working on mapping new concepts and adding to new features. *P
 [Deployment scripts](https://github.com/gt-health/gt-fhir-ansible) are available in ansible. These scripts help you installing GT-FHIR and other components for a complete GT-FHIR platform.
 
 ## People
- * Myung Choi - FHIR
- * Richard Starr - OMOP CDM
- * Michael Riley - Deployment Scripts
+**FHIR** 
+ * [Myung Choi](https://github.com/myungchoi)
+ * [Ismael Sarmento](https://github.com/ismael-sarmento-jr) 
+
+**OMOP CDM**
+ * [Richard Starr](https://github.com/orgs/gt-health/people/rstarr7)
+
+**Deployment Scripts**
+ * [Michael Riley](https://github.com/MikeRileyGTRI)
  
 ## Collaborators
  * Apervita
