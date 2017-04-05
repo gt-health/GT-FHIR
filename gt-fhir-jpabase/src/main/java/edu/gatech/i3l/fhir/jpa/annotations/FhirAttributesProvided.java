@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value={ElementType.TYPE})
-public @interface DefaultFhirAttributes {
+public @interface FhirAttributesProvided {
 
 	/**
 	 * @return the names of the attributes, or fields, to be loaded by default.

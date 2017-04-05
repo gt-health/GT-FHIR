@@ -24,7 +24,7 @@ import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
+import edu.gatech.i3l.fhir.jpa.annotations.FhirAttributesProvided;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -37,7 +37,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Table(name="f_person")
 @PrimaryKeyJoinColumn(name="person_id")
 @Audited
-@DefaultFhirAttributes(attributes={"id","givenName1","givenName2","familyName"})
+@FhirAttributesProvided(attributes={"id","givenName1","givenName2","familyName"})
 public class PersonComplement extends Person{
 
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplement.class);

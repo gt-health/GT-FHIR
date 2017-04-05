@@ -20,7 +20,7 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
-import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
+import edu.gatech.i3l.fhir.jpa.annotations.FhirAttributesProvided;
 
 @Entity
 @Table(name="concept")
@@ -31,7 +31,7 @@ import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
 		@NamedQuery(name = "findDomainByCode",
 				query = "select domain from Concept c where c.conceptCode like :code")
 		})
-@DefaultFhirAttributes(attributes={"name", "conceptCode", "vocabulary"})
+@FhirAttributesProvided(attributes={"name", "conceptCode", "vocabulary"})
 public class Concept{
 	
 	@Id

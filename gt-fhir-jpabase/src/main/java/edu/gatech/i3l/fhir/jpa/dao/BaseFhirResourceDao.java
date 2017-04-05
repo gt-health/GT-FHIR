@@ -5,7 +5,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -20,7 +19,6 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.Tuple;
@@ -40,8 +38,6 @@ import javax.validation.Validator;
 import net.vidageek.mirror.dsl.Mirror;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -95,7 +91,7 @@ import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.util.FhirTerser;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
-import edu.gatech.i3l.fhir.jpa.annotations.DefaultFhirAttributes;
+import edu.gatech.i3l.fhir.jpa.annotations.FhirAttributesProvided;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
@@ -907,7 +903,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		TypedQuery<Object[]> q = myEntityManager.createQuery(cq);
 		for (Object[] result : q.getResultList()) { 
 			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
-			IResourceEntity entity = (IResourceEntity) transformResultToEntity(result, selectionList, getResourceEntity());
+			IResourceEntity entity = transformResultToEntity(result, selectionList);
 			IResource resource = entity.getRelatedResource ();
 			Integer index = position.get(entity.getId());
 			if (index == null) {
@@ -921,34 +917,35 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 	}
 		
-	private Object transformResultToEntity(Object[] result, List<Selection<?>> selectionList, Class<?> source) {
-		Object entity =  result[0];
-		for (int i = 0; i < result.length; i++) {
+	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {
+		IResourceEntity entity =  (IResourceEntity) result[0];
+		for (int i = 1; i < selectionList.size(); i++) {
 			String alias = selectionList.get(i).getAlias();
-			String ref = null;
-			if(alias.contains("_"))
-				ref = alias.substring(0, alias.indexOf('_'));
-			else
-				continue;
-			String attrName = alias.substring(alias.indexOf('_')+1);
+			String ref = "";
+			String attrName = alias.substring(0);
+			Object refObj = entity;
+			Object attrObj = null;
 			try {
-				Field field = getDeclaredField(source, ref); 
-				if(field != null){
-					field.setAccessible(true);
-					Object attrObj = field.get(entity); 
-					if(HibernateProxy.class.isInstance(attrObj))
-						attrObj = field.getType().newInstance();
+				do {
+					ref = attrName.substring(0, attrName.indexOf('_'));
+					attrName = attrName.substring(attrName.indexOf('_')+1);
 					
-					if(attrName.contains("_")){
-						transformResultToEntity(new Object[]{attrObj}, selectionList, field.getType());
-					} else {
-						field.set(entity, attrObj);
-						Field attrField = getDeclaredField(field.getType(), attrName);
-						if (attrField != null){
-							attrField.setAccessible(true);
-							attrField.set(attrObj, result[i]);
-						}
+					Field field = getDeclaredField(refObj.getClass(), ref);
+					if (field != null) {
+						field.setAccessible(true);
+						attrObj = field.get(refObj);
+						if (attrObj == null || HibernateProxy.class.isInstance(attrObj))
+							attrObj = field.getType().newInstance();
+						field.set(refObj, attrObj);
 					}
+					
+					refObj = attrObj;
+					
+				} while(attrName.contains("_"));
+				Field attrField = getDeclaredField(refObj.getClass(),attrName);
+				if (attrField != null) {
+					attrField.setAccessible(true);
+					attrField.set(attrObj, result[i]);
 				}
 			} catch (SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				e.printStackTrace();
@@ -987,8 +984,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				join.alias(joinAlias);
 				addJoins(join, selectionList);
 				
+				selectionList.add( join.get("id").alias(joinAlias+"_id"));
 				Class<?> declaringClass = fields[i].getType();
-				DefaultFhirAttributes attsAnnotation = declaringClass.getAnnotation(DefaultFhirAttributes.class);
+				FhirAttributesProvided attsAnnotation = declaringClass.getAnnotation(FhirAttributesProvided.class);
 				if(attsAnnotation != null){
 					String[] atts = attsAnnotation.attributes();
 					for (int j = 0; j < atts.length; j++) {
@@ -1010,7 +1008,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				addJoins(join, selectionList);
 				
 				Class<?> declaringClass = fields[i].getType();
-				DefaultFhirAttributes attsAnnotation = declaringClass.getAnnotation(DefaultFhirAttributes.class);
+				FhirAttributesProvided attsAnnotation = declaringClass.getAnnotation(FhirAttributesProvided.class);
 				if(attsAnnotation != null){
 					String[] atts = attsAnnotation.attributes();
 					for (int j = 0; j < atts.length; j++) {
