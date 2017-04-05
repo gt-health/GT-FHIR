@@ -418,6 +418,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			pids = new ArrayList<Long>(loadPids);
 		}
 		
+		long init = System.currentTimeMillis();
 		IBundleProvider retVal = new IBundleProvider() {
 			@Override
 			public InstantDt getPublished() {
@@ -530,6 +531,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		ourLog.info("Processed search for {} on {} in {}ms", new Object[] { getResourceType(), theParams, w.getMillisAndRestart() });
 
+		long end = System.currentTimeMillis();
+		System.err.println("load: "+(end-init));
 		return retVal;
 	}
 	
@@ -882,7 +885,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	}
 
 	public void loadResourcesByPid(Collection<Long> theIncludePids, List<IBaseResource> theResourceListToPopulate, BundleEntrySearchModeEnum theBundleEntryStatus) {
-		long init = System.currentTimeMillis();
+		
 		if (theIncludePids.isEmpty()) {
 			return;
 		}
@@ -911,13 +914,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				ourLog.warn("Got back unexpected resource PID {}", entity.getId());
 				continue;
 			}
-
 			ResourceMetadataKeyEnum.ENTRY_SEARCH_MODE.put(resource, theBundleEntryStatus);
-
 			theResourceListToPopulate.set(index, resource);
 		}
-		long end = System.currentTimeMillis();
-		System.err.println("load: "+(end-init));
 	}
 		
 	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {

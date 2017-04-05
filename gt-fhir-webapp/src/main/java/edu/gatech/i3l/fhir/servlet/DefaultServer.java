@@ -112,8 +112,8 @@ public class DefaultServer extends RestfulServer {
 		 * This is a simple paging strategy that keeps the last 10 searches in
 		 * memory
 		 */
-		FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(1);
-		pp.setDefaultPageSize(10);
+		FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
+		pp.setDefaultPageSize(50);
 		pp.setMaximumPageSize(100);
 		// setPagingProvider(new FifoMemoryPagingProvider(10));
 		setPagingProvider(pp);
