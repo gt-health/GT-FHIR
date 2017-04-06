@@ -45,7 +45,7 @@ public class DeviceExposure extends BaseResourceEntity {
 	@NotNull
 	private Person person;
 
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.MERGE, fetch= FetchType.LAZY)
 	@JoinColumn(name="device_concept_id", nullable=false)
 	@NotNull
 	private Concept deviceConcept;
@@ -61,7 +61,7 @@ public class DeviceExposure extends BaseResourceEntity {
 	@NotNull
 	private String uniqueDeviceId;
 	
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.MERGE, fetch=FetchType.LAZY)
 	@JoinColumn(name="device_type_concept_id", nullable=false)
 	@NotNull
 	private Concept deviceTypeConcept;

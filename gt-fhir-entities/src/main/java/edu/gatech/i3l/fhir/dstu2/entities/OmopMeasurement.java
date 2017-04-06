@@ -53,7 +53,7 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
@@ -61,7 +61,7 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Column(name="measurement_source_value")
 	private String sourceValue; 
 
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="measurement_concept_id", nullable=false)
 	@NotNull
 	private Concept measurementConcept;

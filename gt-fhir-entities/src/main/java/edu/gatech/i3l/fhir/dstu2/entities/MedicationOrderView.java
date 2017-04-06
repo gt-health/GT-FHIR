@@ -50,7 +50,7 @@ public final class MedicationOrderView extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationOrder";
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch= FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch= FetchType.LAZY)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
@@ -62,7 +62,7 @@ public final class MedicationOrderView extends DrugExposure {
 	 * since we use {@link OmopConceptMapping} to gather the information in the
 	 * database.
 	 */
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch=FetchType.LAZY)
 	@JoinColumn(name = "drug_type_concept_id", nullable = false)
 	@NotNull
 	private Concept drugExposureType;
@@ -82,14 +82,14 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * @fhir prescriber
 	 */
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch= FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch= FetchType.LAZY)
 	@JoinColumn(name = "provider_id")
 	private Provider prescribingProvider;
 
 	/**
 	 * @fhir encounter
 	 */
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch= FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch= FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
@@ -111,7 +111,7 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * RxNorm. Generally in concept class 'Clinical Drug'.
 	 */
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch=FetchType.LAZY)
 	@JoinColumn(name = "drug_concept_id", nullable = false)
 	@NotNull
 	private Concept medication;

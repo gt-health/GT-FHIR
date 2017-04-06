@@ -3,22 +3,26 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import edu.gatech.i3l.fhir.jpa.annotations.FhirAttributesProvided;
+
 @Entity
 @Table(name="domain")
+@FhirAttributesProvided(attributes={"domainName"})
 public class Domain {
 	@Id
 	@Column(name="domain_id")
-	private String domainId;
+	private String id;
 	
 	@Column(name="domain_name")
 	private String domainName;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="domain_concept_id")
 	private Concept domainConcept;
 	
@@ -26,19 +30,18 @@ public class Domain {
 		super();
 	}
 	
-	public Domain(String domainId, String domainName, Concept domainConcept) {
+	public Domain(String domainName, Concept domainConcept) {
 		super();
-		this.domainId = domainId;
 		this.domainName = domainName;
 		this.domainConcept = domainConcept;
 	}
 	
-	public String getDomainId() {
-		return domainId;
+	public String getId() {
+		return id;
 	}
 	
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
+	public void setId(String id) {
+		this.id = id;
 	}
 	
 	public String getDomainName() {

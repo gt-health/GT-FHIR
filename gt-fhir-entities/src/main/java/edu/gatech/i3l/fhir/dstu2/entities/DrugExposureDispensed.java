@@ -37,7 +37,7 @@ public final class DrugExposureDispensed extends DrugExposure{
 	
 	public static final String RES_TYPE = "MedicationDispense";
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="drug_type_concept_id", nullable=false)
 	@NotNull
 	private Concept drugExposureType;
@@ -57,7 +57,7 @@ public final class DrugExposureDispensed extends DrugExposure{
 	@Column(name="days_supply")
 	private Integer daysSupply;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="drug_concept_id")
 	@NotNull
 	private Concept medication;

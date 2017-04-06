@@ -51,7 +51,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@NotNull
 	private PersonComplement person;
 
-	@ManyToOne(cascade = CascadeType.MERGE)
+	@ManyToOne(cascade = CascadeType.MERGE, fetch=FetchType.LAZY)
 	@JoinColumn(name = "procedure_concept_id")
 	private Concept procedureConcept;
 
@@ -60,7 +60,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@NotNull
 	private Date date;
 
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch=FetchType.LAZY)
 	@JoinColumn(name = "procedure_type_concept_id")
 	private Concept procedureTypeConcept;
 

@@ -957,6 +957,19 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 		return entity;
 	}
+
+	private List<Field> getDeclaredFields(Class<?> type) {
+		List<Field> fields = new ArrayList<Field>();
+		Field field = null;
+	    for (Field f : type.getDeclaredFields()) { 
+			fields.add(f);
+		}
+	    if (field == null && type.getSuperclass() != null) {
+	        fields.addAll( getDeclaredFields(type.getSuperclass()));
+	    }
+
+		return fields;
+	}
 	
 	public Field getDeclaredField(Class<?> type, String fieldName) {
 		if(fieldName == null)
@@ -976,7 +989,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	}
 
 	private void addJoins(Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
-		Field[] fields = from.getJavaType().getDeclaredFields();
+		Field[] fields = getDeclaredFields(from.getJavaType()).toArray(new Field[]{});
 		for (int i = 0; i < fields.length; i++) {
 			JoinColumn joinColumnAnn = fields[i].getDeclaredAnnotation(JoinColumn.class);
 			if(

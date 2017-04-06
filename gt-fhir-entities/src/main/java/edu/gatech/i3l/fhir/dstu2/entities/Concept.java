@@ -56,7 +56,7 @@ public class Concept{
 	@Column(name="standard_concept", updatable=false)
 	private Character standardConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.EAGER)
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="vocabulary_id", referencedColumnName="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	
