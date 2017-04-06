@@ -132,10 +132,22 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	// Supporting functions for FHIR/OMOP translations
 	protected CodeableConceptDt medicationCodeableConcept() {
 		// We need to do the system URI mapping here. 
-		if (getMedication().getId() == 0) {
+		CodeableConceptDt codeDt = new CodeableConceptDt();
+		if (getMedication().getId() == 0L) {
 			// We have zero concept ID. This is not error. 
 			// We may have entry that we couldn't map with OMOP concept ID.
-			// Look at the source_concept_id column to see if we have 
+			// Look at the source_concept_id column to see if we have something
+			// here.
+			if (this.getDrugSourceConcept() != null && this.getDrugSourceConcept().getId() != 0) {
+				CodingDt medCoding = new CodingDt(this.getDrugSourceConcept().getVocabulary().getSystemUri(), this.getDrugSourceConcept().getConceptCode());
+				medCoding.setDisplay(this.getDrugSourceConcept().getName());
+				List<CodingDt> codingList = new ArrayList<CodingDt>();
+				codingList.add(medCoding);
+				codeDt.setCoding(codingList);
+			} else if (this.getDrugSourceValue() != null) {
+				CodingDt medCoding = new CodingDt();
+				medCoding.setDisplay(this.getDrugSourceValue());
+			}
 			
 		} else {
 			CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
@@ -143,7 +155,6 @@ public abstract class DrugExposure extends BaseResourceEntity {
 		
 			List<CodingDt> codingList = new ArrayList<CodingDt>();
 			codingList.add(medCoding);
-			CodeableConceptDt codeDt = new CodeableConceptDt();
 			codeDt.setCoding(codingList);
 		}
 		

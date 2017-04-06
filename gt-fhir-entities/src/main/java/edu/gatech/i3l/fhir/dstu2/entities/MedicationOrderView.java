@@ -110,10 +110,10 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * RxNorm. Generally in concept class 'Clinical Drug'.
 	 */
-	@ManyToOne(cascade = { CascadeType.MERGE })
-	@JoinColumn(name = "drug_concept_id", nullable = false)
-	@NotNull
-	private Concept medication;
+//	@ManyToOne(cascade = { CascadeType.MERGE })
+//	@JoinColumn(name = "drug_concept_id", nullable = false)
+//	@NotNull
+//	private Concept medication;
 
 	/**
 	 * @fhir quantity
@@ -151,14 +151,14 @@ public final class MedicationOrderView extends DrugExposure {
 		this.person = person;
 	}
 
-	public Concept getMedication() {
-		return medication;
-	}
-
-	public void setMedication(Concept medication) {
-		this.medication = medication;
-	}
-
+//	public Concept getMedication() {
+//		return medication;
+//	}
+//
+//	public void setMedication(Concept medication) {
+//		this.medication = medication;
+//	} 
+//
 	public Concept getDrugExposureType() {
 		return drugExposureType;
 	}
