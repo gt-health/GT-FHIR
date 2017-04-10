@@ -97,6 +97,7 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.QueryHelper;
 import edu.gatech.i3l.fhir.jpa.util.DaoUtils;
+import edu.gatech.i3l.fhir.jpa.util.IndexesByResouceMapping;
 import edu.gatech.i3l.fhir.jpa.util.StopWatch;
 
 /**
@@ -107,6 +108,8 @@ import edu.gatech.i3l.fhir.jpa.util.StopWatch;
 public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirResourceDao<T>{
 	
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(BaseFhirResourceDao.class);
+
+	private static final int DEFAULT_MAX_RESULTS = 1000;
 	
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
 	private EntityManager myEntityManager;
@@ -140,6 +143,25 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			myQueryHelper = new QueryHelper( this.myEntityManager, this.myResourceEntity, this.myResourceType, this.myContext, this.baseFhirDao);
 			myQueryHelper.setPredicateBuilder(getPredicateBuilder());
 		}
+		
+		// Forcing search at server initialization, in orcer to cache some values
+		getIdsNoParams();
+	}
+
+	private List<Long> getIdsNoParams() {
+		CriteriaBuilder criteriaBuilder = myEntityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> criteria = criteriaBuilder.createQuery(Long.class);
+		Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
+		criteria.select(from.get("id").as(Long.class));
+		PredicateBuilder predicateBuilder = myQueryHelper.getPredicateBuilder();
+		Predicate addPredicate = predicateBuilder.addCommonPredicate(criteriaBuilder, from);
+		if(addPredicate != null)
+			criteria.where(addPredicate);
+		criteria.orderBy(criteriaBuilder.asc(from.get("id").as(Long.class)));
+		TypedQuery<Long> query = myEntityManager.createQuery(criteria);		
+		List<Long> resultList = query.getResultList();
+		IndexesByResouceMapping.getInstance().getIndexes().put(getResourceEntity(), new HashSet<Long>(resultList)) ;
+		return resultList;
 	}
 
 	public Validator getBeanValidator() {
@@ -359,18 +381,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		System.out.println("theParams:"+theParams.toString());
 		Set<Long> loadPids;
+		loadPids = IndexesByResouceMapping.getInstance().get(getResourceEntity());
 		if (theParams.isEmpty()) {
-			CriteriaBuilder criteriaBuilder = myEntityManager.getCriteriaBuilder();
-			CriteriaQuery<Long> criteria = criteriaBuilder.createQuery(Long.class);
-			Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
-			criteria.select(from.get("id").as(Long.class));
-			PredicateBuilder predicateBuilder = myQueryHelper.getPredicateBuilder();
-			Predicate addPredicate = predicateBuilder.addCommonPredicate(criteriaBuilder, from);
-			if(addPredicate != null)
-				criteria.where(addPredicate);
-			criteria.orderBy(criteriaBuilder.asc(from.get("id").as(Long.class)));
-			List<Long> resultList = myEntityManager.createQuery(criteria).getResultList();
-			loadPids = new HashSet<Long>(resultList);
+			if(loadPids == null){
+				loadPids = new HashSet<Long>(getIdsNoParams());
+			}
 		} else {
 			loadPids = searchForIdsWithAndOr(theParams);
 			if (loadPids.isEmpty()) {
@@ -418,7 +433,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			pids = new ArrayList<Long>(loadPids);
 		}
 		
-		long init = System.currentTimeMillis();
 		IBundleProvider retVal = new IBundleProvider() {
 			@Override
 			public InstantDt getPublished() {
@@ -531,8 +545,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		ourLog.info("Processed search for {} on {} in {}ms", new Object[] { getResourceType(), theParams, w.getMillisAndRestart() });
 
-		long end = System.currentTimeMillis();
-		System.err.println("load: "+(end-init));
 		return retVal;
 	}
 	

@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
 import edu.gatech.i3l.fhir.security.SMARTonFHIRConformanceStatement;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 public class DefaultServer extends RestfulServer {
 
