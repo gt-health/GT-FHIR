@@ -325,7 +325,7 @@ public class Person extends BaseResourceEntity{
 		calendar.set(yob, mob-1, dob);
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
-		if(this.location != null){
+		if(this.location != null && this.location.getId() != 0L){
 //			PeriodDt period = new PeriodDt();
 //			period.setStart(new DateTimeDt(this.location.getStartDate()));
 //			period.setEnd(new DateTimeDt(this.location.getEndDate()));
@@ -352,7 +352,7 @@ public class Person extends BaseResourceEntity{
 			patient.setGender(admGender);
 		}
 		
-		if (this.provider != null) {
+		if (this.provider != null && this.provider.getId() != 0L) {
 			ResourceReferenceDt practitionerResourceRef = new ResourceReferenceDt(this.provider.getIdDt());
 			practitionerResourceRef.setDisplay(this.provider.getProviderName());
 			List<ResourceReferenceDt> pracResourceRefs = new ArrayList<ResourceReferenceDt>();
