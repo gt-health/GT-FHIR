@@ -92,12 +92,12 @@ import ca.uhn.fhir.util.FhirTerser;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import edu.gatech.i3l.fhir.jpa.annotations.FhirAttributesProvided;
+import edu.gatech.i3l.fhir.jpa.conf.PropertiesResolver;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.QueryHelper;
 import edu.gatech.i3l.fhir.jpa.util.DaoUtils;
-import edu.gatech.i3l.fhir.jpa.util.IndexesByResouceMapping;
 import edu.gatech.i3l.fhir.jpa.util.StopWatch;
 
 /**
@@ -109,7 +109,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(BaseFhirResourceDao.class);
 
-	private static final int DEFAULT_MAX_RESULTS = 1000;
+	private Integer myDefaultMaxResults;
+	private Integer myDefaultPageSize;
 	
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
 	private EntityManager myEntityManager;
@@ -129,8 +130,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 	private boolean myValidateBean;
 
-
-
 	public abstract PredicateBuilder getPredicateBuilder();
 	
 	public BaseFhirResourceDao() {
@@ -143,12 +142,14 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			myQueryHelper = new QueryHelper( this.myEntityManager, this.myResourceEntity, this.myResourceType, this.myContext, this.baseFhirDao);
 			myQueryHelper.setPredicateBuilder(getPredicateBuilder());
 		}
-		
+		PropertiesResolver propertiesResolver = PropertiesResolver.getInstance();
+		myDefaultPageSize = Integer.valueOf( propertiesResolver.getPropertyValue("ca.uhn.fhir.paging_size"));
+		myDefaultMaxResults = Integer.valueOf( propertiesResolver.getPropertyValue("ca.uhn.fhir.max_results"));
 		// Forcing search at server initialization, in orcer to cache some values
-		getIdsNoParams();
+//		getIdsNoParams();
 	}
 
-	private List<Long> getIdsNoParams() {
+	private List<Long> getIdsNoParams(Integer offset) {
 		CriteriaBuilder criteriaBuilder = myEntityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> criteria = criteriaBuilder.createQuery(Long.class);
 		Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
@@ -159,8 +160,10 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			criteria.where(addPredicate);
 		criteria.orderBy(criteriaBuilder.asc(from.get("id").as(Long.class)));
 		TypedQuery<Long> query = myEntityManager.createQuery(criteria);		
+		query.setFirstResult(offset);
+		query.setMaxResults(myDefaultMaxResults);
 		List<Long> resultList = query.getResultList();
-		IndexesByResouceMapping.getInstance().getIndexes().put(getResourceEntity(), new HashSet<Long>(resultList)) ;
+//		IndexesByResouceMapping.getInstance().getIndexes().put(getResourceEntity(), new HashSet<Long>(resultList)) ;
 		return resultList;
 	}
 
@@ -378,59 +381,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	public IBundleProvider search(final SearchParameterMap theParams) {
 		StopWatch w = new StopWatch();
 		final InstantDt now = InstantDt.withCurrentTime();
-
-		System.out.println("theParams:"+theParams.toString());
-		Set<Long> loadPids;
-		loadPids = IndexesByResouceMapping.getInstance().get(getResourceEntity());
-		if (theParams.isEmpty()) {
-			if(loadPids == null){
-				loadPids = new HashSet<Long>(getIdsNoParams());
-			}
-		} else {
-			loadPids = searchForIdsWithAndOr(theParams);
-			if (loadPids.isEmpty()) {
-				return new SimpleBundleProvider();
-			}
-		}
-
-		final List<Long> pids;
-		if (theParams.getSort() != null && isNotBlank(theParams.getSort().getParamName())) {
-			List<Order> orders = new ArrayList<Order>();
-			List<Predicate> predicates = new ArrayList<Predicate>();
-			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-			CriteriaQuery<Tuple> cq = builder.createTupleQuery();
-			Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
-			predicates.add(from.get("id").in(loadPids));
-			createSort(builder, from, theParams.getSort(), orders);
-			if (orders.size() > 0) {
-				Set<Long> originalPids = loadPids;
-				loadPids = new LinkedHashSet<Long>();
-				cq.multiselect(from.get("id").as(Long.class));
-				cq.where(predicates.toArray(new Predicate[0]));
-				cq.orderBy(orders);
-
-				TypedQuery<Tuple> query = myEntityManager.createQuery(cq);
-
-				for (Tuple next : query.getResultList()) {
-					loadPids.add(next.get(0, Long.class));
-				}
-
-				ourLog.info("Sort PID order is now: {}", loadPids);
-
-				pids = new ArrayList<Long>(loadPids);
-
-				// Any ressources which weren't matched by the sort get added to the bottom
-				for (Long next : originalPids) {
-					if (loadPids.contains(next) == false) {
-						pids.add(next);
-					}
-				}
-
-			} else {
-				pids = new ArrayList<Long>(loadPids);
-			}
-		} else {
-			pids = new ArrayList<Long>(loadPids);
+		List<Long> pids = searchForIds(theParams, 0);
+		if(pids == null){
+			return new SimpleBundleProvider();
 		}
 		
 		IBundleProvider retVal = new IBundleProvider() {
@@ -450,6 +403,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						// Execute the query and make sure we return distinct results
 						List<IBaseResource> retVal = new ArrayList<IBaseResource>();
 						loadResourcesByPid(pidsSubList, retVal, BundleEntrySearchModeEnum.MATCH);
+						if((pids.size()- theToIndex <= myDefaultPageSize) && (pids.size()% myDefaultPageSize == 0)) 
+							//TODO check for parameters _count and _limit
+							updatePidsList(pids);
 
 						/*
 						 * Load _include resources - Note that _revincludes are handled differently than _include ones, as they are counted towards the total count and paged, so they are loaded
@@ -529,6 +485,10 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						return retVal;
 					}
 
+					private void updatePidsList(List<Long> pids) {
+						pids.addAll( searchForIds(theParams, pids.size()));
+					}
+
 				});
 			}
 
@@ -548,6 +508,61 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		return retVal;
 	}
 	
+	private List<Long> searchForIds(SearchParameterMap theParams, Integer offset) {
+		System.out.println("theParams:"+theParams.toString());
+		Set<Long> loadPids = null;
+//		loadPids = IndexesByResouceMapping.getInstance().get(getResourceEntity());
+		if (theParams.isEmpty()) {
+			loadPids = new HashSet<Long>(getIdsNoParams(offset));
+		} else {
+			loadPids = searchForIdsWithAndOr(theParams, offset);
+			if (loadPids.isEmpty()) {
+				return new ArrayList<Long>(loadPids);
+			}
+		}
+
+		final List<Long> pids;
+		if (theParams.getSort() != null && isNotBlank(theParams.getSort().getParamName())) {
+			List<Order> orders = new ArrayList<Order>();
+			List<Predicate> predicates = new ArrayList<Predicate>();
+			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+			CriteriaQuery<Tuple> cq = builder.createTupleQuery();
+			Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
+			predicates.add(from.get("id").in(loadPids));
+			createSort(builder, from, theParams.getSort(), orders);
+			if (orders.size() > 0) {
+				Set<Long> originalPids = loadPids;
+				loadPids = new LinkedHashSet<Long>();
+				cq.multiselect(from.get("id").as(Long.class));
+				cq.where(predicates.toArray(new Predicate[0]));
+				cq.orderBy(orders);
+
+				TypedQuery<Tuple> query = myEntityManager.createQuery(cq);
+
+				for (Tuple next : query.getResultList()) {
+					loadPids.add(next.get(0, Long.class));
+				}
+
+				ourLog.info("Sort PID order is now: {}", loadPids);
+
+				pids = new ArrayList<Long>(loadPids);
+
+				// Any ressources which weren't matched by the sort get added to the bottom
+				for (Long next : originalPids) {
+					if (loadPids.contains(next) == false) {
+						pids.add(next);
+					}
+				}
+
+			} else {
+				pids = new ArrayList<Long>(loadPids);
+			}
+		} else {
+			pids = new ArrayList<Long>(loadPids);
+		}
+		return pids;
+	}
+
 	private void addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids) {
 		if (!includePids.isEmpty()) {
 			ourLog.info("Loading {} included resources", includePids.size());
@@ -785,8 +800,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		createSort(theBuilder, from, theSort.getChain(), theOrders);
 	}
 	
-	@Override
-	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams) {
+	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams, Integer offset) {
 		SearchParameterMap params = theParams;
 		if (params == null) {
 			params = new SearchParameterMap();
@@ -827,7 +841,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						}
 					}
 
-					pids = myQueryHelper.searchById(pids, joinPids);
+					pids = myQueryHelper.searchById(pids, joinPids, offset);
 					if (pids.isEmpty()) {
 						return new HashSet<Long>();
 					}
@@ -850,37 +864,37 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 					switch (nextParamDef.getParamType()) {
 					case DATE:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByDate(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByDate(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case QUANTITY:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByQuantity(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByQuantity(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case REFERENCE:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByReference(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByReference(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case STRING:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByString(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByString(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case TOKEN:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByToken(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByToken(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case NUMBER:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByNumber(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByNumber(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case COMPOSITE:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByComposite(nextParamDef, pids, nextAnd);
+							pids = myQueryHelper.searchByComposite(nextParamDef, pids, nextAnd, offset);
 						}
 						break;
 					default:
@@ -894,6 +908,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 
 		return pids;
+	}
+	
+	@Override
+	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams) {
+		return searchForIdsWithAndOr(theParams, 0);
 	}
 
 	public void loadResourcesByPid(Collection<Long> theIncludePids, List<IBaseResource> theResourceListToPopulate, BundleEntrySearchModeEnum theBundleEntryStatus) {

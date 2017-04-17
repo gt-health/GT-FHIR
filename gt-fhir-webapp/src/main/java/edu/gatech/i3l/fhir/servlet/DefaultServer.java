@@ -16,6 +16,7 @@ import ca.uhn.fhir.rest.server.EncodingEnum;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import edu.gatech.i3l.fhir.jpa.conf.PropertiesResolver;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
 import edu.gatech.i3l.fhir.security.SMARTonFHIRConformanceStatement;
@@ -111,7 +112,8 @@ public class DefaultServer extends RestfulServer {
 		 * memory
 		 */
 		FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
-		pp.setDefaultPageSize(50);
+		String pageSize = PropertiesResolver.getInstance().getPropertyValue("ca.uhn.fhir.paging_size");
+		pp.setDefaultPageSize(Integer.valueOf(pageSize));
 		pp.setMaximumPageSize(100);
 		// setPagingProvider(new FifoMemoryPagingProvider(10));
 		setPagingProvider(pp);
