@@ -144,10 +144,13 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 				case Observation.SP_CODE:
 					path = from.get("observationConcept").get("vocabulary").get("id");
 					break;
+				case Observation.SP_CODE_VALUE_CONCEPT:
+					path = from.get("observationConcept").get("vocabulary").get("id");
+					break;
 				default:
 					break;
 				}
-				if (StringUtils.isNotBlank(system)) {
+				if (StringUtils.isNotBlank(system) && path != null) {
 					 predicate = theBuilder.like(path.as(String.class), system+"%");
 				}//	else {
 //					return theBuilder.isNull(path); //WARNING originally, if the system is empty, then it would be checked for null systems

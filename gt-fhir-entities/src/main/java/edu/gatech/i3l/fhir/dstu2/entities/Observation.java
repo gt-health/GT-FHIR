@@ -559,7 +559,7 @@ public class Observation extends BaseResourceEntity {
 //		}
 		if (this.person != null) {
 			ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
-			personRef.setDisplay(this.person.getNameAsSingleString());
+//			personRef.setDisplay(this.person.getNameAsSingleString());
 			observation.setSubject(personRef);
 		}
 		if (this.visitOccurrence != null)

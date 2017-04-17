@@ -10,6 +10,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -61,12 +62,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="condition_concept_id", nullable=false)
 	@NotNull
 	private Concept conditionConcept;
@@ -78,7 +79,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_end_date", nullable=false)
 	private Date endDate;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="condition_type_concept_id", nullable=false)
 	@NotNull
 	private Concept conditionTypeConcept;
@@ -93,18 +94,18 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	 * @fhirVersion 0.4.0
 	 * @omopVersion 4.0
 	 */
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence encounter;
 	
 	@Column(name="condition_source_value")
 	private String sourceValue; 
 
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch= FetchType.LAZY)
 	@JoinColumn(name="condition_source_concept_id")
 	private Concept sourceConcept;
 	

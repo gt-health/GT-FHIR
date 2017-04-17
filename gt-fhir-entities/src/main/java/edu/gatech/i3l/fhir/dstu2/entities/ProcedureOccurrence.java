@@ -10,6 +10,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -45,12 +46,12 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade = CascadeType.MERGE)
+	@ManyToOne(cascade = CascadeType.MERGE, fetch= FetchType.LAZY)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
 
-	@ManyToOne(cascade = CascadeType.MERGE)
+	@ManyToOne(cascade = CascadeType.MERGE, fetch=FetchType.LAZY)
 	@JoinColumn(name = "procedure_concept_id")
 	private Concept procedureConcept;
 
@@ -59,7 +60,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@NotNull
 	private Date date;
 
-	@ManyToOne(cascade = { CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch=FetchType.LAZY)
 	@JoinColumn(name = "procedure_type_concept_id")
 	private Concept procedureTypeConcept;
 
@@ -70,11 +71,11 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Column(name="quantity")
 	private Long quantity;
 	
-	@ManyToOne   // (cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne (cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "provider_id")
 	private Provider provider;
 
-	@ManyToOne
+	@ManyToOne (fetch= FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
@@ -246,17 +247,17 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 		
 		// Set patient 
 		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(person.getResourceType(), person.getId()));
-		String patientName = "";
-		if (person.getGivenName1() != null && !person.getGivenName1().isEmpty()) {
-			patientName = person.getGivenName1();
-		}
-		if (person.getGivenName2() != null && !person.getGivenName2().isEmpty()) {
-			patientName += " "+person.getGivenName2();
-		}
-		if (person.getFamilyName() != null && !person.getFamilyName().isEmpty()) {
-			patientName += " "+person.getFamilyName();
-		}
-		patientReference.setDisplay(patientName);
+//		String patientName = "";
+//		if (person.getGivenName1() != null && !person.getGivenName1().isEmpty()) {
+//			patientName = person.getGivenName1();
+//		}
+//		if (person.getGivenName2() != null && !person.getGivenName2().isEmpty()) {
+//			patientName += " "+person.getGivenName2();
+//		}
+//		if (person.getFamilyName() != null && !person.getFamilyName().isEmpty()) {
+//			patientName += " "+person.getFamilyName();
+//		}
+//		patientReference.setDisplay(patientName);
 		procedure.setSubject(patientReference);
 		
 		//TODO: revisit this. For now just set to in-progress

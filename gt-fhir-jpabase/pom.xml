@@ -49,7 +49,7 @@
 		
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
-			<artifactId>hapi-fhir-structures-dstu2</artifactId>
+			<artifactId>gt-fhir-structures-dstu2</artifactId>
 			<version>${hapi_stable_version}</version>
 			<optional>true</optional>
 		</dependency>
