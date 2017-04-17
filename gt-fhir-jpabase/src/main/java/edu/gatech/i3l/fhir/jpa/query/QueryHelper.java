@@ -33,7 +33,6 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.base.composite.BaseCodingDt;
 import ca.uhn.fhir.model.base.composite.BaseIdentifierDt;
 import ca.uhn.fhir.model.base.composite.BaseQuantityDt;
-import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.method.RestSearchParameterTypeEnum;
 import ca.uhn.fhir.rest.param.CompositeParam;
@@ -47,6 +46,7 @@ import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import edu.gatech.i3l.fhir.jpa.conf.PropertiesResolver;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirDao;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
@@ -62,15 +62,17 @@ public class QueryHelper {
 	private Class<? extends IResource> myResourceType;
 	private FhirContext myContext;
 	private PredicateBuilder predicateBuilder;
-
+	private Integer myDefaultMaxResults;
 	private IFhirDao baseFhirDao;
 	
 	public QueryHelper() {
 		super();
+		myDefaultMaxResults = Integer.valueOf( PropertiesResolver.getInstance().getPropertyValue("ca.uhn.fhir.max_results"));
 	}
 	
 	public QueryHelper(PredicateBuilder predicateBuilder){
 		this.predicateBuilder = predicateBuilder;
+		myDefaultMaxResults = Integer.valueOf( PropertiesResolver.getInstance().getPropertyValue("ca.uhn.fhir.max_results"));
 	}
 	
 	public QueryHelper( EntityManager theEntityManager, Class<? extends IResourceEntity> theResourceEntity,
@@ -91,7 +93,7 @@ public class QueryHelper {
 		this.predicateBuilder = predicateBuilder;
 	}
 
-	public Set<Long> searchById(Set<Long> theExistingPids, Set<Long> thePids) {
+	public Set<Long> searchById(Set<Long> theExistingPids, Set<Long> thePids, int offset) {
 		if (thePids == null || thePids.isEmpty()) {
 			return Collections.emptySet();
 		}
@@ -109,6 +111,8 @@ public class QueryHelper {
 			cq.where(idPrecidate);
 		}
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		HashSet<Long> found = new HashSet<Long>(q.getResultList());
 		if (!theExistingPids.isEmpty()) {
 			theExistingPids.retainAll(found);
@@ -117,7 +121,7 @@ public class QueryHelper {
 		return found;
 	}
 	
-	public Set<Long> searchByDate(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+	public Set<Long> searchByDate(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList, int offset) {
 		if (theList == null || theList.isEmpty()) {
 			return thePids;
 		}
@@ -163,6 +167,8 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 	}
 	
@@ -219,7 +225,7 @@ public class QueryHelper {
 	}
 	
 	
-	public Set<Long> searchByString(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+	public Set<Long> searchByString(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList, int offset) {
 		if (theList == null || theList.isEmpty()) {
 			return thePids;
 		}
@@ -263,11 +269,13 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 	}
 	
 	
-	public Set<Long> searchByReference(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+	public Set<Long> searchByReference(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList, int offset) {
 		assert theParamName.contains(".") == false;
 
 		Set<Long> pidsToRetain = thePids;
@@ -399,12 +407,14 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 	}
 	
 	
 	
-	public Set<Long> searchByToken(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+	public Set<Long> searchByToken(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList, int offset) {
 		if (theList == null || theList.isEmpty()) {
 			return thePids;
 		}
@@ -427,7 +437,7 @@ public class QueryHelper {
 			if (nextOr instanceof TokenParam) {
 				TokenParam id = (TokenParam) nextOr;
 				if (id.isText()) {
-					return searchByString(theParamName, thePids, theList);
+					return searchByString(theParamName, thePids, theList, offset);
 				}
 			}
 
@@ -445,6 +455,8 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 	}
 
@@ -487,7 +499,7 @@ public class QueryHelper {
 		return singleCode;
 	}
 	
-	public Set<Long> searchByComposite(RuntimeSearchParam theParamDef, Set<Long> thePids, List<? extends IQueryParameterType> theNextAnd) {
+	public Set<Long> searchByComposite(RuntimeSearchParam theParamDef, Set<Long> thePids, List<? extends IQueryParameterType> theNextAnd, int offset) {
 		// TODO: fail if missing is set for a composite query
 
 		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
@@ -520,6 +532,8 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 
 	}
@@ -550,7 +564,7 @@ public class QueryHelper {
 	}
 	
 
-	public Set<Long> searchByNumber(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+	public Set<Long> searchByNumber(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList, int offset) {
 		if (theList == null || theList.isEmpty()) {
 			return thePids;
 		}
@@ -591,10 +605,12 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 	}
 	
-	public Set<Long> searchByQuantity(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList) {
+	public Set<Long> searchByQuantity(String theParamName, Set<Long> thePids, List<? extends IQueryParameterType> theList, int offset) {
 		if (theList == null || theList.isEmpty()) {
 			return thePids;
 		}
@@ -672,6 +688,8 @@ public class QueryHelper {
 		}
 
 		TypedQuery<Long> q = myEntityManager.createQuery(cq);
+		q.setFirstResult(offset);
+		q.setMaxResults(myDefaultMaxResults);
 		return new HashSet<Long>(q.getResultList());
 	}
 	

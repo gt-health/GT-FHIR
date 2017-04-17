@@ -5,6 +5,7 @@ import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -43,7 +44,7 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	@Column(name = "effective_drug_dose")
 	private Double effectiveDrugDose;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name = "dose_unit_concept_id")
 	private Concept doseUnitConcept;
 	
@@ -54,7 +55,7 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	private String doseUnitSourceValue;
 	
 //	@OneToOne(mappedBy="prescription", 
-//			cascade={CascadeType.ALL}, fetch=FetchType.LAZY)
+//			cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 //	private DrugExposureComplement complement;
 
 	@Override

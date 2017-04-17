@@ -125,6 +125,9 @@ public class Observation extends BaseResourceEntity {
 	@Column(name = "source_value")
 	private String sourceValue;
 
+	@Column(name = "value_source_value")
+	private String valueSourceValue;
+
 	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_concept_id")
 	private Concept unit;
@@ -293,6 +296,14 @@ public class Observation extends BaseResourceEntity {
 	public void setUnitSourceValue(String unitSourceValue) {
 		this.unitSourceValue = unitSourceValue;
 	}
+	
+	public String getValueSourceValue() {
+		return valueSourceValue;
+	}
+	
+	public void setValueSourceValue(String valueSourceValue) {
+		this.valueSourceValue = valueSourceValue;
+	}
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
@@ -401,7 +412,12 @@ public class Observation extends BaseResourceEntity {
 
 		String systemUriString = this.observationConcept.getVocabulary().getSystemUri();
 		String codeString = this.observationConcept.getConceptCode();
-		String displayString = this.observationConcept.getName();
+		String displayString;
+		if (this.observationConcept.getId() == 0L) {
+			displayString = this.getSourceValue();
+		} else {
+			displayString = this.observationConcept.getName();
+		}
 		
 		// OMOP database maintains Systolic and Diastolic Blood Pressures separately.
 		// FHIR however keeps them together. Observation DAO filters out Diastolic values.
@@ -491,11 +507,13 @@ public class Observation extends BaseResourceEntity {
 				value = quantity;
 			} else if (this.valueAsString != null) {
 				value = new StringDt(this.valueAsString);
-			} else if (this.valueAsConcept != null) {
+			} else if (this.valueAsConcept != null && this.valueAsConcept.getId() != 0L) {
 				// vocabulary is a required attribute for concept, then it's expected to not be null
 				CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(), 
 						this.valueAsConcept.getConceptCode());
 				value = valueAsConcept;
+			} else {
+				value = new StringDt(this.getValueSourceValue());
 			}
 			observation.setValue(value);
 		}
@@ -541,7 +559,7 @@ public class Observation extends BaseResourceEntity {
 //		}
 		if (this.person != null) {
 			ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
-			personRef.setDisplay(this.person.getNameAsSingleString());
+//			personRef.setDisplay(this.person.getNameAsSingleString());
 			observation.setSubject(personRef);
 		}
 		if (this.visitOccurrence != null)

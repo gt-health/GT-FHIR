@@ -13,14 +13,13 @@ import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
 import ca.uhn.fhir.rest.server.ETagSupportEnum;
 import ca.uhn.fhir.rest.server.EncodingEnum;
-import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import edu.gatech.i3l.fhir.jpa.conf.PropertiesResolver;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
 import edu.gatech.i3l.fhir.security.SMARTonFHIRConformanceStatement;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 public class DefaultServer extends RestfulServer {
 
@@ -37,7 +36,7 @@ public class DefaultServer extends RestfulServer {
 		 * This is gonna load the concepts values present in an Omop based
 		 * database
 		 */
-		new Thread(OmopConceptMapping.getInstance()).run();
+//		new Thread(OmopConceptMapping.getInstance()).run();
 
 		setFhirContext(new FhirContext(FhirVersionEnum.DSTU2));
 
@@ -113,7 +112,8 @@ public class DefaultServer extends RestfulServer {
 		 * memory
 		 */
 		FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
-		pp.setDefaultPageSize(50);
+		String pageSize = PropertiesResolver.getInstance().getPropertyValue("ca.uhn.fhir.paging_size");
+		pp.setDefaultPageSize(Integer.valueOf(pageSize));
 		pp.setMaximumPageSize(100);
 		// setPagingProvider(new FifoMemoryPagingProvider(10));
 		setPagingProvider(pp);

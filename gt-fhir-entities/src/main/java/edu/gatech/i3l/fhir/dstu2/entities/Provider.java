@@ -73,11 +73,11 @@ public class Provider extends BaseResourceEntity {
 	@Column(name="dea")
 	private String dea;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="specialty_concept_id")
 	private Concept specialtyConcept;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	

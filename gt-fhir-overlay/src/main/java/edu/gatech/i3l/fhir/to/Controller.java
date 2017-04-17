@@ -496,8 +496,10 @@ public class Controller {
 		ResultType returnsResource;
 		try {
 			ourLog.info(logPrefix(theModel) + "Executing a search");
-
+			long init = System.currentTimeMillis();
 			query.execute();
+			long end = System.currentTimeMillis();
+			System.err.println("query,exec: "+(end-init));
 			returnsResource = ResultType.BUNDLE;
 		} catch (Exception e) {
 			returnsResource = handleClientException(client, e, theModel);

@@ -18,15 +18,20 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
+import javax.persistence.JoinColumn;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
@@ -37,6 +42,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
+import org.hibernate.proxy.HibernateProxy;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +91,8 @@ import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.util.FhirTerser;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
+import edu.gatech.i3l.fhir.jpa.annotations.FhirAttributesProvided;
+import edu.gatech.i3l.fhir.jpa.conf.PropertiesResolver;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
@@ -100,6 +108,9 @@ import edu.gatech.i3l.fhir.jpa.util.StopWatch;
 public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirResourceDao<T>{
 	
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(BaseFhirResourceDao.class);
+
+	private Integer myDefaultMaxResults;
+	private Integer myDefaultPageSize;
 	
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION)
 	private EntityManager myEntityManager;
@@ -117,8 +128,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	private QueryHelper myQueryHelper ;
 	private Validator myBeanValidator;
 
-	private boolean myValidateBean; 
-
+	private boolean myValidateBean;
 
 	public abstract PredicateBuilder getPredicateBuilder();
 	
@@ -132,6 +142,29 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			myQueryHelper = new QueryHelper( this.myEntityManager, this.myResourceEntity, this.myResourceType, this.myContext, this.baseFhirDao);
 			myQueryHelper.setPredicateBuilder(getPredicateBuilder());
 		}
+		PropertiesResolver propertiesResolver = PropertiesResolver.getInstance();
+		myDefaultPageSize = Integer.valueOf( propertiesResolver.getPropertyValue("ca.uhn.fhir.paging_size"));
+		myDefaultMaxResults = Integer.valueOf( propertiesResolver.getPropertyValue("ca.uhn.fhir.max_results"));
+		// Forcing search at server initialization, in orcer to cache some values
+//		getIdsNoParams();
+	}
+
+	private List<Long> getIdsNoParams(Integer offset) {
+		CriteriaBuilder criteriaBuilder = myEntityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> criteria = criteriaBuilder.createQuery(Long.class);
+		Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
+		criteria.select(from.get("id").as(Long.class));
+		PredicateBuilder predicateBuilder = myQueryHelper.getPredicateBuilder();
+		Predicate addPredicate = predicateBuilder.addCommonPredicate(criteriaBuilder, from);
+		if(addPredicate != null)
+			criteria.where(addPredicate);
+		criteria.orderBy(criteriaBuilder.asc(from.get("id").as(Long.class)));
+		TypedQuery<Long> query = myEntityManager.createQuery(criteria);		
+		query.setFirstResult(offset);
+		query.setMaxResults(myDefaultMaxResults);
+		List<Long> resultList = query.getResultList();
+//		IndexesByResouceMapping.getInstance().getIndexes().put(getResourceEntity(), new HashSet<Long>(resultList)) ;
+		return resultList;
 	}
 
 	public Validator getBeanValidator() {
@@ -164,7 +197,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	public Class<? extends IResourceEntity> getResourceEntity() {
 		return myResourceEntity;
 	}
-
+	
 	public void setResourceEntity(Class<? extends IResourceEntity> theResourceEntity) {
 		this.myResourceEntity = theResourceEntity;
 	}
@@ -348,65 +381,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	public IBundleProvider search(final SearchParameterMap theParams) {
 		StopWatch w = new StopWatch();
 		final InstantDt now = InstantDt.withCurrentTime();
-
-		System.out.println("theParams:"+theParams.toString());
-		Set<Long> loadPids;
-		if (theParams.isEmpty()) {
-			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
-			Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
-			criteria.select(from.get("id").as(Long.class));
-			Predicate addPredicate = myQueryHelper.getPredicateBuilder().addCommonPredicate(builder, from);
-			if(addPredicate != null)
-				criteria.where(addPredicate);
-			criteria.orderBy(builder.asc(from.get("id").as(Long.class)));
-			List<Long> resultList = myEntityManager.createQuery(criteria).getResultList();
-			loadPids = new HashSet<Long>(resultList);
-		} else {
-			loadPids = searchForIdsWithAndOr(theParams);
-			if (loadPids.isEmpty()) {
-				return new SimpleBundleProvider();
-			}
-		}
-
-		final List<Long> pids;
-		if (theParams.getSort() != null && isNotBlank(theParams.getSort().getParamName())) {
-			List<Order> orders = new ArrayList<Order>();
-			List<Predicate> predicates = new ArrayList<Predicate>();
-			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-			CriteriaQuery<Tuple> cq = builder.createTupleQuery();
-			Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
-			predicates.add(from.get("id").in(loadPids));
-			createSort(builder, from, theParams.getSort(), orders);
-			if (orders.size() > 0) {
-				Set<Long> originalPids = loadPids;
-				loadPids = new LinkedHashSet<Long>();
-				cq.multiselect(from.get("id").as(Long.class));
-				cq.where(predicates.toArray(new Predicate[0]));
-				cq.orderBy(orders);
-
-				TypedQuery<Tuple> query = myEntityManager.createQuery(cq);
-
-				for (Tuple next : query.getResultList()) {
-					loadPids.add(next.get(0, Long.class));
-				}
-
-				ourLog.info("Sort PID order is now: {}", loadPids);
-
-				pids = new ArrayList<Long>(loadPids);
-
-				// Any ressources which weren't matched by the sort get added to the bottom
-				for (Long next : originalPids) {
-					if (loadPids.contains(next) == false) {
-						pids.add(next);
-					}
-				}
-
-			} else {
-				pids = new ArrayList<Long>(loadPids);
-			}
-		} else {
-			pids = new ArrayList<Long>(loadPids);
+		List<Long> pids = searchForIds(theParams, 0);
+		if(pids == null){
+			return new SimpleBundleProvider();
 		}
 		
 		IBundleProvider retVal = new IBundleProvider() {
@@ -426,6 +403,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						// Execute the query and make sure we return distinct results
 						List<IBaseResource> retVal = new ArrayList<IBaseResource>();
 						loadResourcesByPid(pidsSubList, retVal, BundleEntrySearchModeEnum.MATCH);
+						if((pids.size()- theToIndex <= myDefaultPageSize) && (pids.size()% myDefaultPageSize == 0)) 
+							//TODO check for parameters _count and _limit
+							updatePidsList(pids);
 
 						/*
 						 * Load _include resources - Note that _revincludes are handled differently than _include ones, as they are counted towards the total count and paged, so they are loaded
@@ -505,6 +485,10 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						return retVal;
 					}
 
+					private void updatePidsList(List<Long> pids) {
+						pids.addAll( searchForIds(theParams, pids.size()));
+					}
+
 				});
 			}
 
@@ -524,6 +508,61 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		return retVal;
 	}
 	
+	private List<Long> searchForIds(SearchParameterMap theParams, Integer offset) {
+		System.out.println("theParams:"+theParams.toString());
+		Set<Long> loadPids = null;
+//		loadPids = IndexesByResouceMapping.getInstance().get(getResourceEntity());
+		if (theParams.isEmpty()) {
+			loadPids = new HashSet<Long>(getIdsNoParams(offset));
+		} else {
+			loadPids = searchForIdsWithAndOr(theParams, offset);
+			if (loadPids.isEmpty()) {
+				return new ArrayList<Long>(loadPids);
+			}
+		}
+
+		final List<Long> pids;
+		if (theParams.getSort() != null && isNotBlank(theParams.getSort().getParamName())) {
+			List<Order> orders = new ArrayList<Order>();
+			List<Predicate> predicates = new ArrayList<Predicate>();
+			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
+			CriteriaQuery<Tuple> cq = builder.createTupleQuery();
+			Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
+			predicates.add(from.get("id").in(loadPids));
+			createSort(builder, from, theParams.getSort(), orders);
+			if (orders.size() > 0) {
+				Set<Long> originalPids = loadPids;
+				loadPids = new LinkedHashSet<Long>();
+				cq.multiselect(from.get("id").as(Long.class));
+				cq.where(predicates.toArray(new Predicate[0]));
+				cq.orderBy(orders);
+
+				TypedQuery<Tuple> query = myEntityManager.createQuery(cq);
+
+				for (Tuple next : query.getResultList()) {
+					loadPids.add(next.get(0, Long.class));
+				}
+
+				ourLog.info("Sort PID order is now: {}", loadPids);
+
+				pids = new ArrayList<Long>(loadPids);
+
+				// Any ressources which weren't matched by the sort get added to the bottom
+				for (Long next : originalPids) {
+					if (loadPids.contains(next) == false) {
+						pids.add(next);
+					}
+				}
+
+			} else {
+				pids = new ArrayList<Long>(loadPids);
+			}
+		} else {
+			pids = new ArrayList<Long>(loadPids);
+		}
+		return pids;
+	}
+
 	private void addResourcesAsIncludesById(List<IBaseResource> theListToPopulate, Set<? extends IIdType> includePids) {
 		if (!includePids.isEmpty()) {
 			ourLog.info("Loading {} included resources", includePids.size());
@@ -761,8 +800,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		createSort(theBuilder, from, theSort.getChain(), theOrders);
 	}
 	
-	@Override
-	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams) {
+	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams, Integer offset) {
 		SearchParameterMap params = theParams;
 		if (params == null) {
 			params = new SearchParameterMap();
@@ -803,7 +841,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						}
 					}
 
-					pids = myQueryHelper.searchById(pids, joinPids);
+					pids = myQueryHelper.searchById(pids, joinPids, offset);
 					if (pids.isEmpty()) {
 						return new HashSet<Long>();
 					}
@@ -826,37 +864,37 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 					switch (nextParamDef.getParamType()) {
 					case DATE:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByDate(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByDate(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case QUANTITY:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByQuantity(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByQuantity(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case REFERENCE:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByReference(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByReference(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case STRING:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByString(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByString(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case TOKEN:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByToken(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByToken(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case NUMBER:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByNumber(nextParamName, pids, nextAnd);
+							pids = myQueryHelper.searchByNumber(nextParamName, pids, nextAnd, offset);
 						}
 						break;
 					case COMPOSITE:
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
-							pids = myQueryHelper.searchByComposite(nextParamDef, pids, nextAnd);
+							pids = myQueryHelper.searchByComposite(nextParamDef, pids, nextAnd, offset);
 						}
 						break;
 					default:
@@ -871,8 +909,14 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		return pids;
 	}
+	
+	@Override
+	public Set<Long> searchForIdsWithAndOr(SearchParameterMap theParams) {
+		return searchForIdsWithAndOr(theParams, 0);
+	}
 
 	public void loadResourcesByPid(Collection<Long> theIncludePids, List<IBaseResource> theResourceListToPopulate, BundleEntrySearchModeEnum theBundleEntryStatus) {
+		
 		if (theIncludePids.isEmpty()) {
 			return;
 		}
@@ -884,28 +928,139 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 
 		CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
-		@SuppressWarnings("unchecked")
-		CriteriaQuery<IResourceEntity> cq = (CriteriaQuery<IResourceEntity>) builder.createQuery(getResourceEntity());
+		CriteriaQuery<Object[]> cq = builder.createQuery(Object[].class);
 		Root<? extends IResourceEntity> from = cq.from(getResourceEntity());
-		cq.select(from);
+		List<Selection<?>> selectionList = new ArrayList<Selection<?>>();
+		selectionList.add(from);
+		addJoins(from, selectionList);
+		cq.multiselect(selectionList);
 		cq.where(from.get("id").in(theIncludePids));
-		TypedQuery<IResourceEntity> q = myEntityManager.createQuery(cq);
-		for (IResourceEntity entity : q.getResultList()) { 
-			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
-			IResource resource = entity.getRelatedResource();
+		TypedQuery<Object[]> q = myEntityManager.createQuery(cq);
+		List<Object[]> resultList = q.getResultList();
+		for (Object[] result : resultList) { 
+			IResourceEntity entity = transformResultToEntity(result, selectionList);
+			IResource resource = entity.getRelatedResource ();
 			Integer index = position.get(entity.getId());
 			if (index == null) {
 				ourLog.warn("Got back unexpected resource PID {}", entity.getId());
 				continue;
 			}
-
 			ResourceMetadataKeyEnum.ENTRY_SEARCH_MODE.put(resource, theBundleEntryStatus);
-
 			theResourceListToPopulate.set(index, resource);
 		}
 	}
 		
+	private IResourceEntity transformResultToEntity(Object[] result, List<Selection<?>> selectionList) {
+		IResourceEntity entity =  (IResourceEntity) result[0];
+		for (int i = 1; i < selectionList.size(); i++) {
+			if(result[i] == null)
+				continue;
+			String alias = selectionList.get(i).getAlias();
+			String ref = "";
+			String attrName = alias.substring(0);
+			Object refObj = entity;
+			Object attrObj = null;
+			try {
+				do {
+					ref = attrName.substring(0, attrName.indexOf('_'));
+					attrName = attrName.substring(attrName.indexOf('_')+1);
+					
+					Field field = getDeclaredField(refObj.getClass(), ref);
+					if (field != null) {
+						field.setAccessible(true);
+						attrObj = field.get(refObj);
+						if (attrObj == null || HibernateProxy.class.isInstance(attrObj))
+							attrObj = field.getType().newInstance();
+						field.set(refObj, attrObj);
+					}
+					
+					refObj = attrObj;
+					
+				} while(attrName.contains("_"));
+				Field attrField = getDeclaredField(refObj.getClass(),attrName);
+				if (attrField != null) {
+					attrField.setAccessible(true);
+					attrField.set(attrObj, result[i]);
+				}
+			} catch (SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+				e.printStackTrace();
+			}
+		}
+		return entity;
+	}
+
+	private List<Field> getDeclaredFields(Class<?> type) {
+		List<Field> fields = new ArrayList<Field>();
+		Field field = null;
+	    for (Field f : type.getDeclaredFields()) { 
+			fields.add(f);
+		}
+	    if (field == null && type.getSuperclass() != null) {
+	        fields.addAll( getDeclaredFields(type.getSuperclass()));
+	    }
+
+		return fields;
+	}
 	
+	public Field getDeclaredField(Class<?> type, String fieldName) {
+		if(fieldName == null)
+			return null;
+		Field field = null;
+	    for (Field f : type.getDeclaredFields()) { 
+			if(fieldName.equals(f.getName())){
+				field = f;
+				break;
+			}
+		}
+	    if (field == null && type.getSuperclass() != null) {
+	        field = getDeclaredField(type.getSuperclass(), fieldName);
+	    }
+
+	    return field;
+	}
+
+	private void addJoins(Root<? extends IResourceEntity> from, List<Selection<?>> selectionList) {
+		Field[] fields = getDeclaredFields(from.getJavaType()).toArray(new Field[]{});
+		for (int i = 0; i < fields.length; i++) {
+			JoinColumn joinColumnAnn = fields[i].getDeclaredAnnotation(JoinColumn.class);
+			if(
+					joinColumnAnn != null) {
+				String joinAlias = fields[i].getName();
+				Join<Object, Object> join = from.join(joinAlias, JoinType.LEFT);
+				join.alias(joinAlias);
+				
+				selectionList.add( join.get("id").alias(joinAlias+"_id"));
+				Class<?> declaringClass = fields[i].getType();
+				FhirAttributesProvided attsAnnotation = declaringClass.getAnnotation(FhirAttributesProvided.class);
+				if(attsAnnotation != null){
+					String[] atts = attsAnnotation.attributes();
+					for (int j = 0; j < atts.length; j++) {
+						selectionList.add( join.get(atts[j]).alias(joinAlias+"_"+atts[j]));
+						addJoins(join, atts[j], joinAlias, selectionList);
+					}
+				}
+			}
+		}
+	}
+
+	private void addJoins(From<Object, Object> from, String attName, String joinAlias, List<Selection<?>> selectionList) {
+			Field attrField = getDeclaredField(from.getJavaType(), attName);
+			if(attrField.getDeclaredAnnotation(JoinColumn.class) != null) {
+				Join<Object, Object> join = from.join(attName, JoinType.LEFT);
+				joinAlias = joinAlias+"_"+attName;
+				selectionList.add( join.get("id").alias(joinAlias+"_id"));
+				join.alias(joinAlias);
+				FhirAttributesProvided attsAnnotation = attrField.getType().getAnnotation(FhirAttributesProvided.class);
+				if(attsAnnotation != null){
+					String[] atts = attsAnnotation.attributes();
+					for (int j = 0; j < atts.length; j++) {
+						selectionList.add( join.get(atts[j]).alias(joinAlias+"_"+atts[j]));
+						addJoins(join, atts[j], joinAlias, selectionList);
+					}
+				}	
+			}
+	}
+
 	public BaseFhirDao getBaseFhirDao() {
 		return baseFhirDao;
 	}

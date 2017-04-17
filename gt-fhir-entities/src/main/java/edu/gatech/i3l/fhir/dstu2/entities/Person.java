@@ -66,19 +66,19 @@ public class Person extends BaseResourceEntity{
 	@Column(name="time_of_birth")
 	private String timeOfBirth;
 	
-	@ManyToOne
+	@ManyToOne(fetch= FetchType.LAZY)
 	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
-	@ManyToOne
+	@ManyToOne(fetch= FetchType.LAZY)
 	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch=FetchType.LAZY)
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.MERGE})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 
@@ -92,21 +92,21 @@ public class Person extends BaseResourceEntity{
 	@Column(name="gender_source_value")
 	private String genderSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="gender_source_concept_id")
 	private Concept genderSourceConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(fetch= FetchType.LAZY)
 	@JoinColumn(name="race_source_concept_id")
 	private Concept raceSourceConcept;
 
 	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
 	
-	@ManyToOne
+	@ManyToOne(fetch= FetchType.LAZY)
 	@JoinColumn(name="ethnicity_source_concept_id")
 	private Concept ethnicitySourceConcept;
 
@@ -325,7 +325,7 @@ public class Person extends BaseResourceEntity{
 		calendar.set(yob, mob-1, dob);
 		patient.setBirthDate(new DateDt(calendar.getTime()));
 		
-		if(this.location != null){
+		if(this.location != null && this.location.getId() != 0L){
 //			PeriodDt period = new PeriodDt();
 //			period.setStart(new DateTimeDt(this.location.getStartDate()));
 //			period.setEnd(new DateTimeDt(this.location.getEndDate()));
@@ -352,7 +352,7 @@ public class Person extends BaseResourceEntity{
 			patient.setGender(admGender);
 		}
 		
-		if (this.provider != null) {
+		if (this.provider != null && this.provider.getId() != 0L) {
 			ResourceReferenceDt practitionerResourceRef = new ResourceReferenceDt(this.provider.getIdDt());
 			practitionerResourceRef.setDisplay(this.provider.getProviderName());
 			List<ResourceReferenceDt> pracResourceRefs = new ArrayList<ResourceReferenceDt>();
