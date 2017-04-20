@@ -350,7 +350,8 @@ public final class MedicationOrderView extends DrugExposure {
         	Concept myUnitConcept = this.getDoseUnitConcept();
         	SimpleQuantityDt dose;
         	if (myUnitConcept != null) {
-        		dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", myUnitConcept.getConceptCode());
+        		dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", myUnitConcept.getName());
+        		dose.setCode(myUnitConcept.getConceptCode());
         	} else {
         		dose = new SimpleQuantityDt(doseValue);
         	}
