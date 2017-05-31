@@ -21,13 +21,13 @@
 	and other properties supported by BasicDataSource.
 	-->
 	<bean id="myPersistenceDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-<!-- 	
  		<property name="url" value="jdbc:postgresql://localhost:5433/omop_v5" />
- -->		
- 		<property name="url" value="jdbc:postgresql://ohdsi_v5.i3l.gatech.edu:5432/postgres?currentSchema=mimic_v5" />
+ 		<!-- <property name="url" value="jdbc:postgresql://ohdsi_v5.i3l.gatech.edu:5432/postgres?currentSchema=mimic_v5" /> -->
 		<property name="driverClassName" value="org.postgresql.Driver"></property>
-		<property name="username" value="fhir_user"/>
-		<property name="password" value="R1chard_0n_fire"/>
+		<!-- <property name="username" value="fhir_user"/>
+		<property name="password" value="R1chard_0n_fire"/> -->
+		<property name="username" value="postgres"/>
+		<property name="password" value="root"/>
 	</bean>
 	
 	<!--

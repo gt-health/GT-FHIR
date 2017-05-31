@@ -128,7 +128,7 @@
 														<a th:unless="${#lists.isEmpty(bundle.entries)}" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
 															<i id="collapseOneIcon" class="fa fa-minus-square-o"></i>
 															<span th:if="${bundle.totalResults.empty}" th:text="'Bundle contains ' + ${#lists.size(bundle.entries)} + ' entries'"/>
-															<span th:unless="${bundle.totalResults.empty}" th:text="'Bundle contains ' + ${#lists.size(bundle.entries)} + ' / ' + ${bundle.totalResults.value} + ' entries'"/>
+															<span th:unless="${bundle.totalResults.empty}" th:text="'Bundle contains ' + ${#lists.size(bundle.entries)} + ' entries'"/>
 														</a>
 
 														<th:block th:if="${!bundle.linkNext.empty} or ${!bundle.linkPrevious.empty}">

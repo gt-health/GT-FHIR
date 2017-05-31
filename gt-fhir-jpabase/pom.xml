@@ -47,12 +47,12 @@
 		</dependency>
  -->		
 		
-		<dependency>
+		<!-- <dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>gt-fhir-structures-dstu2</artifactId>
 			<version>${hapi_stable_version}</version>
 			<optional>true</optional>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-hl7org-dstu2</artifactId>

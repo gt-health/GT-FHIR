@@ -5,9 +5,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.dstu2.resource.Condition;
 import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 import edu.gatech.i3l.fhir.jpa.util.DaoUtils;
+import ca.uhn.fhir.model.dstu2.resource.Condition;
 
 public class BaseFhirDaoTest  extends BaseJpaTest {
 
