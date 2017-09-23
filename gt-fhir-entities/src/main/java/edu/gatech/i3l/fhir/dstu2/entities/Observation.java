@@ -62,7 +62,7 @@ public class Observation extends BaseResourceEntity {
 	private static final String RES_TYPE = "Observation";
 	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
 	public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
-	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;		
+	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;	
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -137,6 +137,7 @@ public class Observation extends BaseResourceEntity {
 
 	public Observation() {
 		super();
+		createDateTime();
 	}
 
 	public Observation(Long id, PersonComplement person, Concept observationConcept, Date date, String time, String valueAsString,
@@ -159,6 +160,7 @@ public class Observation extends BaseResourceEntity {
 		this.sourceValue = sourceValue;
 		this.unit = unit;
 		this.unitSourceValue = unitsSourceValue;
+		createDateTime();
 	}
 
 	public Long getId() {
@@ -530,21 +532,22 @@ public class Observation extends BaseResourceEntity {
 		observation.setStatus(STATUS);
 
 		if (this.date != null) {
-			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-			String dateString = fmt.format(this.date);
-			fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			Date myDate = null;
-			try {
-				if (this.time != null && this.time.isEmpty() == false) {
-					myDate = fmt.parse(dateString+" "+this.time);
-				} else {
-					myDate = this.date;
-				}
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+//			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+//			String dateString = fmt.format(this.date);
+//			fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//			Date myDate = null;
+//			try {
+//				if (this.time != null && this.time.isEmpty() == false) {
+//					myDate = fmt.parse(dateString+" "+this.time);
+//				} else {
+//					myDate = this.date;
+//				}
+//			} catch (ParseException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+			Date myDate = createDateTime();			
 			if (myDate != null) {
 				DateTimeDt appliesDate = new DateTimeDt(myDate);
 				observation.setEffective(appliesDate);
@@ -639,10 +642,32 @@ public class Observation extends BaseResourceEntity {
 			return "valueAsString";
 		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_VALUE_CONCEPT:
 			return "valueAsConcept";
+		case ca.uhn.fhir.model.dstu2.resource.Observation.SP_DATE:
+			return "date";
 		default:
 			break;
 		}
 		return theSearchParam;
 	}
 
+	private Date createDateTime() {
+		Date myDate = null;
+		if (this.date != null) {
+			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+			String dateString = fmt.format(this.date);
+			fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			try {
+				if (this.time != null && this.time.isEmpty() == false) {
+					myDate = fmt.parse(dateString+" "+this.time);
+				} else {
+					myDate = this.date;
+				}				
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return myDate;
+	}
 }
