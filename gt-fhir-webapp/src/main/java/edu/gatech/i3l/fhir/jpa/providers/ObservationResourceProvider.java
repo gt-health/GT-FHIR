@@ -18,6 +18,7 @@ import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.QuantityAndListParam;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.StringAndListParam;
@@ -73,9 +74,9 @@ public class ObservationResourceProvider extends
 			@OptionalParam(name="value-string")
 			StringAndListParam theValue_string, 
   
-//			@Description(shortDefinition="Obtained date/time. If the obtained element is a period, a date that falls in the period")
-//			@OptionalParam(name="date")
-//			DateRangeParam theDate, 
+			@Description(shortDefinition="Obtained date/time. If the obtained element is a period, a date that falls in the period")
+			@OptionalParam(name="date")
+			DateRangeParam theDate, 
 //  
 //			@Description(shortDefinition="The status of the observation")
 //			@OptionalParam(name="status")
@@ -174,7 +175,7 @@ public class ObservationResourceProvider extends
 			paramMap.add("value-concept", theValue_concept);
 //			paramMap.add("value-date", theValue_date);
 			paramMap.add("value-string", theValue_string);
-//			paramMap.add("date", theDate);
+			paramMap.add("date", theDate);
 //			paramMap.add("status", theStatus);
 //			paramMap.add("reliability", theReliability);
 			paramMap.add("subject", theSubject);
