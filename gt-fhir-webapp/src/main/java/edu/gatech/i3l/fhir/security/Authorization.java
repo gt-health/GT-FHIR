@@ -144,11 +144,13 @@ public class Authorization {
 		active = true;
 		
 		// Get the expiration time.
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+//		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 		Date expDate;
 		try {
-			expDate = df.parse(jsonObject.getString("exp"));
-		} catch (JSONException | ParseException e) {
+			int exp_ts = jsonObject.getInt("exp");
+			expDate = new java.util.Date((long)exp_ts*1000);
+//			expDate = df.parse(exp_str);
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			expired = true;

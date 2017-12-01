@@ -21,11 +21,14 @@
 	and other properties supported by BasicDataSource.
 	-->
 	<bean id="myPersistenceDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
- 		<property name="url" value="jdbc:postgresql://localhost:5432/postgres?currentSchema=omop_v5" />
+  		<property name="url" value="jdbc:postgresql://localhost:5432/postgres?currentSchema=omop_v5_local" />
+<!--  		<property name="url" value="jdbc:postgresql://datadump.hdap.gatech.edu:5432/omop_v5" /> -->
 		<property name="driverClassName" value="org.postgresql.Driver"></property>
-		<property name="username" value="omop_v5"/>
+ 		<property name="username" value="omop_v5"/>
 		<property name="password" value="i3lworks"/>
-	</bean>
+<!-- 		<property name="username" value="postgres"/>
+		<property name="password" value="HDAPForStudents5%"/>
+ -->	</bean>
 	
 	<!--
 	Hibernate can be configured with other dialects if you wish to connect to another
