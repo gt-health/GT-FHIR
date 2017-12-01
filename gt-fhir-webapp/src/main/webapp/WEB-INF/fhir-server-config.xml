@@ -37,7 +37,7 @@
 	</bean>
 	
 	<bean id="myOAuthInterceptor" class="edu.gatech.i3l.fhir.security.OIDCInterceptor">
-	    <property name="introspectUrl" value="http://localhost:9085/introspect" />
+	    <property name="introspectUrl" value="http://localhost:8060/introspect" />
 		<property name="enableOAuth" value="False" />
 <!-- 	    <property name="introspectUrl" value="http://smart-st.i3l.gatech.edu:9085/introspect" /> -->
 		<property name="clientId" value="client" />

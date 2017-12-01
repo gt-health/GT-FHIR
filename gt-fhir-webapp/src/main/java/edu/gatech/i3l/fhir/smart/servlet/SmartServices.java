@@ -138,14 +138,19 @@ public class SmartServices extends HttpServlet {
 			//
 			JSONObject servReq = new JSONObject(buffer.toString());
 
-			String launchContextClientId = servReq.getString("client_id");
+			String launchContextClientId = null;
+			if (!servReq.isNull("client_id")) {
+				launchContextClientId = servReq.getString("client_id");
+			}
+			
 			String launchContextCreatedBy = smartAuth.getClientId();
 			String launchContextUsername = smartAuth.getUserId();
 			java.util.Date date= new java.util.Date();
 			Timestamp ts = new Timestamp(date.getTime());
 
 			SmartLaunchContext smartLaunchContext = new SmartLaunchContext();
-			smartLaunchContext.setClientId(launchContextClientId);
+			if (launchContextClientId != null) 
+				smartLaunchContext.setClientId(launchContextClientId);
 			smartLaunchContext.setCreatedBy(launchContextCreatedBy);
 			smartLaunchContext.setCreatedAt(ts);
 			smartLaunchContext.setUsername(launchContextUsername);
