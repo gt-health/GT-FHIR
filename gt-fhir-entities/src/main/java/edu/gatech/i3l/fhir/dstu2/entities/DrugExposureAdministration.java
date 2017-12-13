@@ -24,7 +24,6 @@ import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
-import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
 import ca.uhn.fhir.model.dstu2.valueset.MedicationAdministrationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -152,10 +151,12 @@ public final class DrugExposureAdministration extends DrugExposure {
 	@Override
 	public String translateSearchParam(String theSearchParam) {
 		switch (theSearchParam) {
-		case MedicationDispense.SP_PATIENT:
+		case MedicationAdministration.SP_PATIENT:
 			return "person";
-		case MedicationDispense.SP_MEDICATION:
+		case MedicationAdministration.SP_MEDICATION:
 			return "medication";
+		case MedicationAdministration.SP_EFFECTIVETIME:
+			return "startDate";
 		default:
 			break;
 		}

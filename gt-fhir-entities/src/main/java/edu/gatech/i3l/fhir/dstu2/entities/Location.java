@@ -162,22 +162,23 @@ public class Location extends BaseResourceEntity {
 	}
 	
 	public static Location searchByAddressDt (AddressDt address) {
-		List<StringDt> addressLines = address.getLine();
-		if (addressLines.size() > 0) {
-			String line1 = addressLines.get(0).getValue();
-			String line2 = null;
-			if (address.getLine().size() > 1)
-				line2 = address.getLine().get(1).getValue();
-			String zipCode = address.getPostalCode();
-			String city = address.getCity();
-			String state = address.getState();
-			
-			Location existingLocation = (Location) OmopConceptMapping.getInstance()
-					.loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
-			
-			return existingLocation;
-		}
-		
+		if (address != null) {
+			List<StringDt> addressLines = address.getLine();
+			if (addressLines.size() > 0) {
+				String line1 = addressLines.get(0).getValue();
+				String line2 = null;
+				if (address.getLine().size() > 1)
+					line2 = address.getLine().get(1).getValue();
+				String zipCode = address.getPostalCode();
+				String city = address.getCity();
+				String state = address.getState();
+				
+				Location existingLocation = (Location) OmopConceptMapping.getInstance()
+						.loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
+				
+				return existingLocation;
+			}
+		}		
 		return null;
 	}
 	

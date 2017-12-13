@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -216,6 +218,13 @@ public class Authorization {
 		String resourceName = theRequestDetails.getResourceName();
 		RestOperationTypeEnum resourceOperationType = theRequestDetails.getRestOperationType();
 		for (String scope : scopeSet) {
+			// If the scope is not form of <patient or user>/<resource>.<access>, (eg) patient/*.read,
+			// then, we skip to next scope as this only evaluates the resource level check.
+			String patternString = "(user|patient)\\/[a-zA-Z*]+.(read|write|\\*)";
+			Pattern pattern = Pattern.compile(patternString);
+			Matcher matcher = pattern.matcher(scope);
+			if (matcher.matches() == false) continue;
+			
 			String[] scopeDetail = scope.split("/");
 			if (resourceOperationType ==  RestOperationTypeEnum.READ || 
 					resourceOperationType == RestOperationTypeEnum.VREAD ||

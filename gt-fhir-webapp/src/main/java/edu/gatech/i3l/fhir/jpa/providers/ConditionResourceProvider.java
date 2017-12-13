@@ -15,6 +15,7 @@ import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenAndListParam;
@@ -64,10 +65,10 @@ public class ConditionResourceProvider extends
 //			@OptionalParam(name="category")
 //			TokenAndListParam theCategory, 
 //  
-//			@Description(shortDefinition="Date related onsets (dateTime and Period)")
-//			@OptionalParam(name="onset")
-//			DateRangeParam theOnset, 
-//  
+			@Description(shortDefinition="Date related onsets (dateTime and Period)")
+			@OptionalParam(name="onset")
+			DateRangeParam theOnset, 
+  
 //			@Description(shortDefinition="Other onsets (boolean, age, range, string)")
 //			@OptionalParam(name="onset-info")
 //			StringAndListParam theOnset_info, 
@@ -145,7 +146,7 @@ public class ConditionResourceProvider extends
 //			paramMap.add("clinicalstatus", theClinicalstatus);
 //			paramMap.add("severity", theSeverity);
 //			paramMap.add("category", theCategory);
-//			paramMap.add("onset", theOnset);
+			paramMap.add("onset", theOnset);
 //			paramMap.add("onset-info", theOnset_info);
 			paramMap.add("encounter", theEncounter);
 //			paramMap.add("asserter", theAsserter);

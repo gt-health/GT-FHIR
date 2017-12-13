@@ -14,6 +14,7 @@ import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
@@ -42,7 +43,6 @@ public class MedicationAdministrationResourceProvider extends
 //			@OptionalParam(name="_tag")
 //			TokenAndListParam theSearchForTag, 
 //
-//  
 //			@Description(shortDefinition="Return dispenses that should be sent to a secific destination")
 //			@OptionalParam(name="destination", targetTypes={  Location.class   } )
 //			ReferenceAndListParam theDestination, 
@@ -55,6 +55,11 @@ public class MedicationAdministrationResourceProvider extends
 //			@OptionalParam(name="identifier")
 //			TokenAndListParam theIdentifier, 
 //  
+			
+			@Description(shortDefinition="Date administration happened (or did not happen)")
+			@OptionalParam(name="effectivetime")
+			DateRangeParam theEffectivetime, 
+
 			@Description(shortDefinition="Returns dispenses of this medicine")
 			@OptionalParam(name="medication", targetTypes={  Medication.class   } )
 			ReferenceAndListParam theMedication, 
@@ -115,6 +120,7 @@ public class MedicationAdministrationResourceProvider extends
 //			paramMap.add("destination", theDestination);
 //			paramMap.add("dispenser", theDispenser);
 //			paramMap.add("identifier", theIdentifier);
+			paramMap.add("effectivetime", theEffectivetime);
 			paramMap.add("medication", theMedication);
 			paramMap.add("patient", thePatient);
 //			paramMap.add("prescription", thePrescription);
