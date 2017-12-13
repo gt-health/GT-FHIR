@@ -17,6 +17,7 @@ import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
@@ -271,7 +272,11 @@ public class PersonComplement extends Person{
 					this.prefixName = next.getPrefix().iterator().next().getValue();
 			}
 			//}
-			
+
+			String personSourceValue = null;
+
+			// FHIR Spec says that ID should not exist in CREATE (POST). But, we allow ID
+			// for GT-FHIR to support some POST with ID presents (internal projects)
 			IdDt myID = patient.getId();
 			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
 				PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
@@ -282,7 +287,7 @@ public class PersonComplement extends Person{
 					if (person != null) {
 						this.setId(person.getId());
 					} 
-					this.setPersonSourceValue(myID.getIdPart());
+					personSourceValue = myID.getIdPart();
 				}
 			} else {
 				// We have no Patient ID. However, we could have a matching patient. Compare 
@@ -309,7 +314,33 @@ public class PersonComplement extends Person{
 					ethnicity.setId(0L);
 					this.setEthnicityConcept(ethnicity);
 				}
-			}	
+			}
+			
+			// In OMOP, we have person source column. 
+			// We will use identifier field as our source column if exists. The identifier better identifies
+			// the identity of this resource across all servers that may have this copy.
+			//
+			// Identifier has many fields. We can't have them all in OMOP. We only have string field and 
+			// size is very limited. So, for now, we only get value part.
+			List<IdentifierDt> identifiers = patient.getIdentifier();
+			
+			// TODO: For now, we choose the first identifier if exists.
+			if (identifiers.isEmpty() == false) {
+				IdentifierDt identifier = identifiers.get(0);
+				if (identifier.getValue().isEmpty() == false) {
+					personSourceValue = identifier.getValue();
+					
+					// If ID is not set, then we see if we have existing patient 
+					// with this identifier.
+					if (this.getId() == null) {
+						PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", personSourceValue);
+						this.setId(person.getId());
+					}
+				}
+			} 
+			
+			if (personSourceValue != null)
+				this.setPersonSourceValue(personSourceValue);
 			
 			
 			if (patient.getActive())

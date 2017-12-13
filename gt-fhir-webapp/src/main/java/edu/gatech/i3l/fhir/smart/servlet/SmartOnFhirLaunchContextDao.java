@@ -34,7 +34,7 @@ public class SmartOnFhirLaunchContextDao<T> extends BaseFhirSystemDao<T> impleme
 		// Get today's date. And, delete any entries that are one day old.
 		EntityManager em = getBaseFhirDao().getEntityManager();
 		Date yesterday = DateUtils.addDays(new Date(), -1);
-		Query q = em.createQuery("DELETE FROM SmartLaunchContext s WHERE s.createdAt < :yesterday");
+		Query q = em.createQuery("DELETE FROM SmartLaunchContext s WHERE s.createdAt < :yesterday or s.createdAt is NULL");
 		q.setParameter("yesterday", yesterday);		
 		q.executeUpdate();		
 	}
