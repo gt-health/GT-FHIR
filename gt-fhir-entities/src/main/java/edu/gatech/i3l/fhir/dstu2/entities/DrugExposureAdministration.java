@@ -1,8 +1,10 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -14,21 +16,30 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.instance.model.Reference;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+import ca.uhn.fhir.model.dstu2.composite.RangeDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
+import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DispenseRequest;
+import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
 import ca.uhn.fhir.model.dstu2.valueset.MedicationAdministrationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
+import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
+import edu.gatech.i3l.omop.mapping.StaticVariables;
 
 @Entity
 @Audited
@@ -45,7 +56,7 @@ public final class DrugExposureAdministration extends DrugExposure {
 	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
-	private Person person;
+	private PersonComplement person;
 	
 	@Column(name="drug_exposure_start_date", nullable=false)
 	@NotNull
@@ -68,11 +79,18 @@ public final class DrugExposureAdministration extends DrugExposure {
 	@NotNull
 	private Concept medication;
 	
-	public Person getPerson() {
+	/**
+	 * @fhir encounter
+	 */
+	@ManyToOne(cascade = { CascadeType.ALL })
+	@JoinColumn(name = "visit_occurrence_id")
+	private VisitOccurrence visitOccurrence;
+
+	public PersonComplement getPerson() {
 		return person;
 	}
 
-	public void setPerson(Person person) {
+	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
 
@@ -132,6 +150,14 @@ public final class DrugExposureAdministration extends DrugExposure {
 		this.endDate = endDate;
 	}
 	
+	public VisitOccurrence getVisitOccurrence() {
+		return visitOccurrence;
+	}
+
+	public void setVisitOccurrence(VisitOccurrence visitOccurrence) {
+		this.visitOccurrence = visitOccurrence;
+	}
+
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
@@ -269,8 +295,118 @@ public final class DrugExposureAdministration extends DrugExposure {
 
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
-		// TODO Auto-generated method stub
-		return null;
+		if (resource instanceof MedicationAdministration) {
+			MedicationAdministration medicationAdministration = (MedicationAdministration) resource;
+			
+			/* Set patient */
+			ResourceReferenceDt patientResource =  medicationAdministration.getPatient();
+			if (patientResource == null) return null; // We have to have a patient
+			
+			PersonComplement person = PersonComplement.searchAndUpdate(patientResource);
+			if (person == null) return null; // We must have a patient
+			
+			this.setPerson(person);
+
+			// We are writing to the database. Keep the source so we know where it is coming from
+			if (medicationAdministration.getId().getIdPartAsLong() != null) {
+				this.setId(medicationAdministration.getId().getIdPartAsLong());
+			} else {
+				// We are creating a new entry. But, before we do that, we need to check if
+				// this data has already been entered. Use its identifier again source value to check 
+				//
+				// See if we have identifier.
+				IdentifierDt identifier = medicationAdministration.getIdentifierFirstRep();
+				String identifierValue = identifier.getValue();
+				if (identifierValue != null && identifierValue.isEmpty() == false) {
+					DrugExposureAdministration existingDrugExposure = 
+							(DrugExposureAdministration) OmopConceptMapping.getInstance().loadEntityBySource(DrugExposureAdministration.class, "DrugExposureAdministration", "drugSourceValue", identifierValue);
+					if (existingDrugExposure != null) {
+						this.setId(existingDrugExposure.getId());
+					}
+					
+					this.setDrugSourceValue(identifierValue);
+				}
+			}
+
+			/* Set drup exposure type */
+			this.drugExposureType = new Concept();
+			this.drugExposureType.setId(Omop4ConceptsFixedIds.MEDICATION_ADMINISTRATION.getConceptId());
+			
+			/* Set date of medication administration */
+			if (medicationAdministration.getEffectiveTime() instanceof DateTimeDt) {
+				DateTimeDt effectiveDateTime = (DateTimeDt) medicationAdministration.getEffectiveTime();
+				this.startDate = effectiveDateTime.getValue();
+			} else if (medicationAdministration.getEffectiveTime() instanceof PeriodDt) {
+				PeriodDt effectivePeriod = (PeriodDt) medicationAdministration.getEffectiveTime();
+				this.startDate = effectivePeriod.getStart();
+				this.endDate = effectivePeriod.getEnd();
+			}
+
+			/* Set VisitOccurrence */
+			ResourceReferenceDt visitResRef = medicationAdministration.getEncounter();
+			if (visitResRef != null) {
+				Long encounterRef = visitResRef.getReference().getIdPartAsLong();
+	//	
+//				WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+//				EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+				if (encounterRef != null) {
+					VisitOccurrence visitOccurrence = VisitOccurrence.searchAndUpdate(encounterRef, startDate, null, this.person);
+					if (visitOccurrence != null)
+						this.setVisitOccurrence(visitOccurrence);					
+				}
+			}
+			
+			/* Set Medication */
+			Concept medication = new Concept();
+			if (medicationAdministration.getMedication() instanceof CodeableConceptDt) {
+				CodeableConceptDt codeDt = (CodeableConceptDt) medicationAdministration.getMedication();
+				CodingDt medCoding = codeDt.getCodingFirstRep();
+				if (medCoding != null) {
+//					this.medication = new Concept();
+//					String systemUri = medCoding.getSystem();
+					String code = medCoding.getCode();
+					medication.setId(OmopConceptMapping.getInstance().get(code));
+				}
+			} else if (medicationAdministration.getMedication() instanceof ResourceReferenceDt) {
+				Reference medicationRef = (Reference) medicationAdministration.getMedication();
+				String medId = medicationRef.getId();
+				if (Pattern.matches(StaticVariables.fpRegex, medId)) {
+					medication.setId(Long.valueOf(medId));
+				}
+			}
+			this.setMedication(medication);
+
+			// OMOP can handle only one dosage.
+//			DrugExposureComplement f_drug = new DrugExposureComplement();
+
+			/* dosageInstruction */
+			Dosage dosage = medicationAdministration.getDosage();
+			SimpleQuantityDt doseQty = dosage.getQuantity();
+			this.setEffectiveDrugDose(doseQty.getValue().doubleValue());
+			this.setDoseUnitSourceValue(doseQty.getUnit());
+
+			String doseUnitCode = null;
+			String doseCode = doseQty.getCode();
+			String doseUnit = doseQty.getUnit();
+			if (doseCode != null && !doseCode.isEmpty()) {
+				doseUnitCode = doseCode;
+			} else if (doseUnit != null && !doseUnit.isEmpty()) {
+				doseUnitCode = doseUnit;
+			}
+				
+			if (doseUnitCode != null && !doseUnitCode.isEmpty()) {
+				Long unitConceptId = OmopConceptMapping.getInstance().get(doseUnitCode);
+				Concept myUnitConcept;
+				if (unitConceptId > 0) {
+					myUnitConcept = new Concept(unitConceptId);
+					this.setDoseUnitConcept(myUnitConcept);
+				}
+			} 
+						
+			return this;
+		} else {
+			return null;
+		}
 	}
 
 }
