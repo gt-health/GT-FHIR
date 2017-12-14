@@ -29,6 +29,7 @@ import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
@@ -248,14 +249,24 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			
 			// We are writing to the database. Keep the source so we know where it is coming from
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-			if (condition.getId() != null) {
-				// See if we already have this in the source field. If so,
-				// then we want update not create
-				ConditionOccurrence origCondition = (ConditionOccurrence) ocm.loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", condition.getId().getIdPart());
-				if (origCondition == null)
-					this.sourceValue = condition.getId().getIdPart();
-				else
-					this.setId(origCondition.getId());
+			if (condition.getId().getIdPartAsLong() != null) {
+				this.setId(condition.getId().getIdPartAsLong());
+			} else {
+				// We are creating a new entry. But, before we do that, we need to check if
+				// this data has already been entered. Use its identifier again source value to check 
+				//
+				// See if we have identifier.
+				IdentifierDt identifier = condition.getIdentifierFirstRep();
+				String identifierValue = identifier.getValue();
+				if (identifierValue != null && identifierValue.isEmpty() == false) {
+					ConditionOccurrence existingConditionOccurrence = 
+							(ConditionOccurrence) ocm.loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", identifierValue);
+					if (existingConditionOccurrence != null) {
+						this.setId(existingConditionOccurrence.getId());
+					}
+					
+					this.setSourceValue(identifierValue);
+				}				
 			}
 
 			Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());

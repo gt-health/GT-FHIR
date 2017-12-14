@@ -16,7 +16,8 @@ public enum Omop4ConceptsFixedIds {
 	PATIENT_SELF_REPORT("Patient Self-Reported Condition", 45905770L),
 	PRESCRIPTION_DISP_PHARMACY("Prescription dispensed in pharmacy", 38000175L),
 	PRESCRIPTION_DISP_MAIL_ORDER("Prescription dispensed through mail order", 38000176L),
-	PRESCRIPTION_WRITTEN("Prescription written", 38000177L);
+	PRESCRIPTION_WRITTEN("Prescription written", 38000177L),
+	MEDICATION_ADMINISTRATION("Physician administered drug (identified from EHR observation)", 43542358L);
 	
 	String conceptName;
 	Long conceptId;
