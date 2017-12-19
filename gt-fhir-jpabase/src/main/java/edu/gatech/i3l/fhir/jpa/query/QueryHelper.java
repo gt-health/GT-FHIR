@@ -33,9 +33,9 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.base.composite.BaseCodingDt;
 import ca.uhn.fhir.model.base.composite.BaseIdentifierDt;
 import ca.uhn.fhir.model.base.composite.BaseQuantityDt;
-import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
+import ca.uhn.fhir.model.dstu2.valueset.QuantityComparatorEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.rest.method.RestSearchParameterTypeEnum;
+import ca.uhn.fhir.rest.api.RestSearchParameterTypeEnum;
 import ca.uhn.fhir.rest.param.CompositeParam;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.DateRangeParam;
@@ -354,7 +354,8 @@ public class QueryHelper {
 							}
 
 							chainValue = new ReferenceParam();
-							chainValue.setValueAsQueryToken(null, resourceId);
+							//TODO: Revisit the line below. Added myContext, null to meet new version of HAPI FHIR's BaseParam.java
+							chainValue.setValueAsQueryToken(myContext, null, null, resourceId);
 							((ReferenceParam) chainValue).setChain(remainingChain);
 						} else {
 							chainValue = toParameterType(param, resourceId);
@@ -715,7 +716,8 @@ public class QueryHelper {
 	protected IQueryParameterType toParameterType(RuntimeSearchParam theParam, String theValueAsQueryToken) {
 		IQueryParameterType qp = toParameterType(theParam);
 	
-		qp.setValueAsQueryToken(null, theValueAsQueryToken);
+		//TODO: Revisit. Added myContext and null for new HAPI FHIR BaseParam.java
+		qp.setValueAsQueryToken(myContext, null, null, theValueAsQueryToken);
 		return qp;
 	}
 

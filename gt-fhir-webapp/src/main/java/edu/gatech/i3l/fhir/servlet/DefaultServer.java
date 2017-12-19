@@ -12,7 +12,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
 import ca.uhn.fhir.rest.server.ETagSupportEnum;
-import ca.uhn.fhir.rest.server.EncodingEnum;
+import ca.uhn.fhir.rest.api.EncodingEnum;
 import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
@@ -39,7 +39,8 @@ public class DefaultServer extends RestfulServer {
 		 */
 		new Thread(OmopConceptMapping.getInstance()).run();
 
-		setFhirContext(new FhirContext(FhirVersionEnum.DSTU2));
+		FhirVersionEnum fhirVersion = FhirVersionEnum.DSTU3;
+		setFhirContext(new FhirContext(fhirVersion));
 
 		// Get the spring context from the web container (it's declared in
 		// web.xml)
@@ -51,7 +52,7 @@ public class DefaultServer extends RestfulServer {
 		 * hapi-fhir-jpaserver-base and contains bean definitions for a resource
 		 * provider for each resource type
 		 */
-		String resourceProviderBeanName = "myResourceProvidersDstu2";
+		String resourceProviderBeanName = "myResourceProvidersDstu3";
 		List<IResourceProvider> beans = myAppCtx.getBean(resourceProviderBeanName, List.class);
 		setResourceProviders(beans);
 

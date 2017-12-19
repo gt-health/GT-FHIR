@@ -57,25 +57,29 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
 import ca.uhn.fhir.model.base.composite.BaseResourceReferenceDt;
-import ca.uhn.fhir.model.base.resource.BaseOperationOutcome.BaseIssue;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.resource.Bundle;
-import ca.uhn.fhir.model.dstu2.resource.OperationOutcome;
-import ca.uhn.fhir.model.dstu2.resource.OperationOutcome.Issue;
-import ca.uhn.fhir.model.dstu2.valueset.BundleTypeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
-import ca.uhn.fhir.model.dstu2.valueset.IssueTypeEnum;
+//import ca.uhn.fhir.model.base.resource.BaseOperationOutcome.BaseIssue;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.OperationOutcome;
+import org.hl7.fhir.dstu3.model.OperationOutcome.OperationOutcomeIssueComponent;
+
+//import ca.uhn.fhir.model.dstu2.resource.OperationOutcome.Issue;
+//import ca.uhn.fhir.model.dstu2.valueset.BundleTypeEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.IssueTypeEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
+import ca.uhn.fhir.parser.json.JsonLikeValue.ScalarType;
+import ca.uhn.fhir.parser.json.JsonLikeValue.ValueType;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.api.ValidationModeEnum;
-import ca.uhn.fhir.rest.server.EncodingEnum;
-import ca.uhn.fhir.rest.server.IBundleProvider;
+import ca.uhn.fhir.rest.api.EncodingEnum;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import ca.uhn.fhir.rest.server.exceptions.PreconditionFailedException;
@@ -220,8 +224,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			if(!violations.isEmpty()){
 				OperationOutcome oo = new OperationOutcome();
 				for (ConstraintViolation<BaseResourceEntity> violation : violations) {
-//					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails(violation.getPropertyPath()+" "+ violation.getMessage());
-					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails((new CodeableConceptDt()).setText(violation.getPropertyPath()+" "+ violation.getMessage()));
+					oo.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.PROCESSING).setDetails((new CodeableConcept()).setText(violation.getPropertyPath()+" "+ violation.getMessage()));
 				}
 				throw new UnprocessableEntityException(myContext, oo);
 			}
@@ -496,12 +499,12 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 							if (previouslyLoadedPids.size() >= baseFhirDao.getConfig().getIncludeLimit()) {
 								OperationOutcome oo = new OperationOutcome();
-								oo.addIssue().setSeverity(IssueSeverityEnum.WARNING)
-										.setDetails("Not all _include resources were actually included as the request surpassed the limit of " + baseFhirDao.getConfig().getIncludeLimit() + " resources");
+								oo.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING)
+										.setDetails((new CodeableConcept()).setText("Not all _include resources were actually included as the request surpassed the limit of " + baseFhirDao.getConfig().getIncludeLimit() + " resources"));
 								retVal.add(0, oo);
 							}
 						}
-
+						
 						return retVal;
 					}
 
@@ -513,8 +516,19 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				return theParams.getCount();
 			}
 
+//			@Override
+//			public int size() {
+//				return pids.size();
+//			}
+
 			@Override
-			public int size() {
+			public String getUuid() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Integer size() {
 				return pids.size();
 			}
 		};
@@ -956,10 +970,10 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		
 		return new IBundleProvider() { 
 			
-			@Override
-			public int size() {
-				return revs.size();
-			}
+//			@Override
+//			public int size() {
+//				return revs.size();
+//			}
 			
 			@Override
 			public Integer preferredPageSize() {
@@ -1001,6 +1015,17 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			@Override
 			public InstantDt getPublished() {
 				return end;
+			}
+
+			@Override
+			public String getUuid() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Integer size() {
+				return revs.size();
 			}
 		};
 	}
@@ -1084,8 +1109,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	protected void preProcessResourceForStorage(T theResource) {
 		if(getContext().getVersion().getVersion() == FhirVersionEnum.DSTU2 && createBundle){
 			Bundle bundle = (Bundle)theResource;
-			if (bundle.getTypeElement().getValueAsEnum() != BundleTypeEnum.DOCUMENT) {
-				String message = "Unable to store a Bundle resource on this server with a Bundle.type value other than '" + BundleTypeEnum.DOCUMENT.getCode() + "' - Value was: " + (bundle.getTypeElement().getValueAsEnum() != null ? bundle.getTypeElement().getValueAsEnum().getCode() : "(missing)");
+			if (bundle.getTypeElement().getValue() != Bundle.BundleType.DOCUMENT) {
+				String message = "Unable to store a Bundle resource on this server with a Bundle.type value other than '" + Bundle.BundleType.DOCUMENT.getDisplay() + "' - Value was: " + (bundle.getTypeElement().getValueAsString() != null ? bundle.getTypeElement().getValueAsString() : "(missing)");
 				throw new UnprocessableEntityException(message);
 			}
 			
@@ -1107,23 +1132,54 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 			@Override
 			public void unknownAttribute(IParseLocation theLocation, String theAttributeName) {
-				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
+				CodeableConcept detailTxt = new CodeableConcept(); 
 				detailTxt.setText("Unknown attribute found: " + theAttributeName);
-				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+				oo.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.INVALID).setDetails(detailTxt);
 			}
 
 			@Override
 			public void unknownElement(IParseLocation theLocation, String theElementName) {
-				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
+				CodeableConcept detailTxt = new CodeableConcept(); 
 				detailTxt.setText("Unknown element found: " + theElementName);
-				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+				oo.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.INVALID).setDetails(detailTxt);
 			}
 
 			@Override
 			public void unexpectedRepeatingElement(IParseLocation theLocation, String theElementName) {
-				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
+				CodeableConcept detailTxt = new CodeableConcept(); 
 				detailTxt.setText("Multiple repetitions of non-repeatable element found: " + theElementName);
-				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+				oo.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.INVALID).setDetails(detailTxt);
+				
+			}
+
+			@Override
+			public void containedResourceWithNoId(IParseLocation arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void incorrectJsonType(IParseLocation arg0, String arg1, ValueType arg2, ScalarType arg3,
+					ValueType arg4, ScalarType arg5) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void invalidValue(IParseLocation arg0, String arg1, String arg2) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void missingRequiredElement(IParseLocation arg0, String arg1) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void unknownReference(IParseLocation arg0, String arg1) {
+				// TODO Auto-generated method stub
 				
 			}
 
@@ -1138,13 +1194,13 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		validator.setValidateAgainstStandardSchematron(true);
 		ValidationResult result = validator.validateWithResult(theResource);
 		OperationOutcome operationOutcome = (OperationOutcome) result.toOperationOutcome();
-		for (BaseIssue next : operationOutcome.getIssue()) {
-			oo.getIssue().add((Issue) next);
+		for (OperationOutcomeIssueComponent next : operationOutcome.getIssue()) {
+			oo.getIssue().add(next);
 		}
 
 		// This method returns a MethodOutcome object
 		MethodOutcome retVal = new MethodOutcome();
-		oo.addIssue().setSeverity(IssueSeverityEnum.INFORMATION).setDetails("Validation succeeded");
+		oo.addIssue().setSeverity(OperationOutcome.IssueSeverity.INFORMATION).setDetails((new CodeableConcept()).setText("Validation succeeded"));
 		retVal.setOperationOutcome(oo);
 		
 		return retVal;

@@ -12,7 +12,7 @@ import javax.persistence.criteria.Root;
 import org.apache.commons.lang3.StringUtils;
 
 import ca.uhn.fhir.model.api.IQueryParameterType;
-import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.QuantityComparatorEnum;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;

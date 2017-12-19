@@ -11,13 +11,13 @@
 	"
 	>
 
-	<bean id="myFhirContextDstu2" class="ca.uhn.fhir.context.FhirContext" factory-method="forDstu2"/>
+	<bean id="myFhirContextDstu3" class="ca.uhn.fhir.context.FhirContext" factory-method="forDstu3"/>
 	<bean id="myBaseDao" class="edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao">
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
-	<bean id="mySystemDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.DefaultFhirSystemDao">
+	<bean id="mySystemDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.DefaultFhirSystemDao">
 		<property name="baseFhirDao" ref="myBaseDao"></property>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	<bean id="mySystemProviderDstu2" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2">
 		<property name="dao" ref="mySystemDaoDstu2"/>
@@ -34,8 +34,8 @@
 	<bean id="myBeanValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 	<!-- The following beans' definitions are ordered alphabetically -->
 
- 	<util:list id="myResourceProvidersDstu2">
-		<ref bean="myConditionRpDstu2"/>
+ 	<util:list id="myResourceProvidersDstu3">
+		<ref bean="myConditionRpDstu3"/>
 		<ref bean="myDeviceRpDstu2"/>
 		<ref bean="myEncounterRpDstu2"/>
 		<!-- <ref bean="myLocationRpDstu2"/> -->
@@ -54,10 +54,10 @@
 
  
     
-	<bean id="myConditionDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ConditionFhirResourceDao">
+	<bean id="myConditionDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.ConditionFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Condition"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Condition"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myConditionRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ConditionResourceProvider">

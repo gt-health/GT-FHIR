@@ -23,7 +23,7 @@ package edu.gatech.i3l.fhir.jpa.dao;
 import java.util.Date;
 import java.util.Map;
 
-import ca.uhn.fhir.rest.server.IBundleProvider;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
 
 /**
  *  @param <T> The bundle type

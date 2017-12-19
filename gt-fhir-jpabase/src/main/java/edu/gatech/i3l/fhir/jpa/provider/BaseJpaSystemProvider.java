@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import ca.uhn.fhir.rest.annotation.History;
 import ca.uhn.fhir.rest.annotation.Since;
-import ca.uhn.fhir.rest.server.IBundleProvider;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 
 public class BaseJpaSystemProvider<T> extends BaseJpaProvider {

@@ -11,7 +11,7 @@ public class FhirContextHelper {
 	private static final Map<FhirVersionEnum, FhirContext> ourRetrievalContexts = new HashMap<FhirVersionEnum, FhirContext>();
 	
 	public static FhirContext getContext(FhirVersionEnum theVersion) {
-		FhirVersionEnum ver = theVersion != null ? theVersion : FhirVersionEnum.DSTU1;
+		FhirVersionEnum ver = theVersion != null ? theVersion : FhirVersionEnum.DSTU3;
 		synchronized (ourRetrievalContexts) {
 			FhirContext retVal = ourRetrievalContexts.get(ver);
 			if (retVal == null) {

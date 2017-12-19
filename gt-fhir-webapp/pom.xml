@@ -113,6 +113,18 @@
 			<artifactId>hibernate-validator</artifactId>
 			<version>${hibernate_validator_version}</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi.fhir/hapi-fhir-testpage-overlay -->
+<!-- 
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-testpage-overlay</artifactId>
+			<version>${hapi_stable_version}</version>
+			<type>war</type>
+			<scope>provided</scope>
+		</dependency>
+
+ -->		
 	</dependencies>
 
 	<build>
@@ -122,6 +134,7 @@
 		<plugins>
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
 				overlay. You can omit it if you are not using that feature. -->
+<!-- 				
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
@@ -134,7 +147,7 @@
 					</overlays>
 				</configuration>
 			</plugin>
-
+ -->
 			<!-- This plugin is just a part of the HAPI internal build process, you 
 				do not need to incude it in your own projects -->
 			<plugin>

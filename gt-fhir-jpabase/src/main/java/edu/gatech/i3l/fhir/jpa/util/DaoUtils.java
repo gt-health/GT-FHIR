@@ -15,10 +15,19 @@ import ca.uhn.fhir.context.RuntimeSearchParam;
 import ca.uhn.fhir.model.api.IQueryParameterAnd;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.InstantDt;
-import ca.uhn.fhir.rest.method.MethodUtil;
-import ca.uhn.fhir.rest.method.QualifiedParamList;
+import ca.uhn.fhir.rest.server.method.MethodUtil;
+import ca.uhn.fhir.rest.api.QualifiedParamList;
+import ca.uhn.fhir.rest.param.DateAndListParam;
 import ca.uhn.fhir.rest.param.DateRangeParam;
-import ca.uhn.fhir.rest.server.Constants;
+import ca.uhn.fhir.rest.param.NumberAndListParam;
+import ca.uhn.fhir.rest.param.QuantityAndListParam;
+import ca.uhn.fhir.rest.param.ReferenceAndListParam;
+import ca.uhn.fhir.rest.param.StringAndListParam;
+import ca.uhn.fhir.rest.param.TokenAndListParam;
+import ca.uhn.fhir.rest.param.UriAndListParam;
+import ca.uhn.fhir.rest.param.ParameterUtil;
+import ca.uhn.fhir.rest.api.Constants;
+import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -99,7 +108,8 @@ public class DaoUtils {
 						throw new InvalidRequestException("Failed to parse match URL[" + theMatchUrl + "] - Can not have more than 2 " + Constants.PARAM_LASTUPDATED + " parameter repetitions");
 					} else {
 						DateRangeParam p1 = new DateRangeParam();
-						p1.setValuesAsQueryTokens(paramList);
+						//TODO: Revisit. Added two nulls for new setValuesAsQueryTokens definition.
+						p1.setValuesAsQueryTokens(null, null, paramList);
 						paramMap.setLastUpdated(p1);
 					}
 				}
@@ -123,7 +133,7 @@ public class DaoUtils {
 				throw new InvalidRequestException("Failed to parse match URL[" + theMatchUrl + "] - Resource type " + resourceDef.getName() + " does not have a parameter with name: " + nextParamName);
 			}
 
-			IQueryParameterAnd<?> param = MethodUtil.parseQueryParams(paramDef, nextParamName, paramList);
+			IQueryParameterAnd<?> param = ParameterUtil.parseQueryParams(null, paramDef.getParamType(), nextParamName, paramList);
 			paramMap.add(nextParamName, param);
 		}
 		return paramMap;
