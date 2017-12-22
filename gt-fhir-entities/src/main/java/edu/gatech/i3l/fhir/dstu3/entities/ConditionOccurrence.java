@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.util.Date;
 
@@ -23,18 +23,22 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
+import org.hl7.fhir.dstu3.model.Condition;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Condition;
-import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
+//import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.resource.Condition;
+//import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -227,7 +231,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		if (resource instanceof Condition) {
 			Condition condition = (Condition) resource;
 			
@@ -399,7 +403,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		theDisplay = conditionConcept.getName();
 //		}
 
-		CodeableConceptDt conditionCodeConcept = new CodeableConceptDt();
+		CodeableConcept conditionCodeConcept = new CodeableConcept();
 		if (theSystem != "") {
 			// Create coding here. We have one coding in this condition as OMOP
 			// allows one coding concept per condition.

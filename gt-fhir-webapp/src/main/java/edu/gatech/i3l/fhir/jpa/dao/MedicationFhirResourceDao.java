@@ -5,7 +5,7 @@ import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
 import ca.uhn.fhir.model.dstu2.resource.Medication;
-import edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept;
+import edu.gatech.i3l.fhir.dstu3.entities.MedicationConcept;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;

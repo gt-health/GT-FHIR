@@ -34,7 +34,8 @@ import org.springframework.web.client.RestTemplate;
 
 //import ca.uhn.fhir.model.dstu.valueset.RestfulOperationTypeEnum;
 import ca.uhn.fhir.rest.api.RestOperationTypeEnum;
-import ca.uhn.fhir.rest.method.RequestDetails;
+//import ca.uhn.fhir.rest.method.RequestDetails;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 
 /**
  * @author MC142

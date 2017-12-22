@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,19 +27,26 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner.PractitionerRole;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.dstu3.model.HumanName;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Practitioner;
+//import org.hl7.fhir.dstu3.model.Practitioner.PractitionerRole;
+//import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
@@ -205,93 +212,94 @@ public class Provider extends BaseResourceEntity {
 		Practitioner practitioner = new Practitioner();
 		practitioner.setId(this.getIdDt());
 		if (this.getProviderName() != null) {
-			HumanNameDt humanName = new HumanNameDt();
+			HumanName humanName = new HumanName();
 			String[] names = this.getProviderName().trim().split(",");
-			List<StringDt> familyNames = new ArrayList<StringDt>();
-			List<StringDt> givenNames = new ArrayList<StringDt>();
-			List<StringDt> suffixes = new ArrayList<StringDt>();
+			String familyName;
+			List<StringType> givenNames = new ArrayList<StringType>();
+			List<StringType> suffixes = new ArrayList<StringType>();
 			if (names.length > 1) {
 				if (names.length > 2) {
-					familyNames.add(new StringDt(names[0].trim()));
-					suffixes.add(new StringDt(names[names.length-1].trim()));
+//					familyNames.add(names[0].trim());
+					familyName = names[0].trim();
+					suffixes.add(new StringType(names[names.length-1].trim()));
 					
 					for (int i=1; i < names.length-1; i++) {
 						String[] subnames = names[i].trim().split(" ");
 						for (int j=0; j < subnames.length; j++) {
-							givenNames.add(new StringDt(subnames[j].trim()));
+							givenNames.add(new StringType(subnames[j].trim()));
 						}
 					}
 				} else {
-					suffixes.add(new StringDt(names[1].trim()));
+					suffixes.add(new StringType(names[1].trim()));
 					String[] subnames = names[0].trim().split(" ");
-					familyNames.add(new StringDt(subnames[subnames.length-1]));
+					familyName = subnames[subnames.length-1];
 					for (int i=0; i < subnames.length-1; i++) {
-						givenNames.add(new StringDt(subnames[i].trim()));
+						givenNames.add(new StringType(subnames[i].trim()));
 					}
 				}
 			} else {
 				names = this.getProviderName().trim().split(" ");
 				if (names.length > 0) {
-					familyNames.add(new StringDt(names[names.length-1].trim()));
+					familyName = names[names.length-1].trim();
 					for (int i=0; i < names.length-1; i++) {
-						givenNames.add(new StringDt(names[i].trim()));
+						givenNames.add(new StringType(names[i].trim()));
 					}
 				} else {
-					familyNames.add(new StringDt(this.getProviderName().trim()));
+					familyName = this.getProviderName().trim();
 				}
 			}
-			humanName.setFamily(familyNames);
+			humanName.setFamily(familyName);
 			humanName.setGiven(givenNames);
 			humanName.setSuffix(suffixes);
-			
-			practitioner.setName(humanName);
+			List<HumanName> humanNames = new ArrayList<HumanName>();
+			humanNames.add(humanName);
+			practitioner.setName(humanNames);
 		}
-		PractitionerRole practitionerRole = new PractitionerRole();
+//		PractitionerRole practitionerRole = new PractitionerRole();
 		
-		if (careSite != null) {
-			ResourceReferenceDt organizationResource = new ResourceReferenceDt(careSite.getIdDt());
-//			List<ResourceReferenceDt> listResourceRef = new ArrayList<ResourceReferenceDt>();
-//			listResourceRef.add(organizationResource);
-			organizationResource.setDisplay(careSite.getCareSiteName());
-			practitionerRole.setManagingOrganization(organizationResource);
-		}
+//		if (careSite != null) {
+//			ResourceReferenceDt organizationResource = new ResourceReferenceDt(careSite.getIdDt());
+////			List<ResourceReferenceDt> listResourceRef = new ArrayList<ResourceReferenceDt>();
+////			listResourceRef.add(organizationResource);
+//			organizationResource.setDisplay(careSite.getCareSiteName());
+//			practitionerRole.setManagingOrganization(organizationResource);
+//		}
 		
-		if (specialtyConcept != null &&
-				specialtyConcept.getId() > 0L) {
-			String systemUriString = specialtyConcept.getVocabulary().getVocabularyReference();
-			String displayString = specialtyConcept.getName();
-			String codeString = specialtyConcept.getConceptCode();
-			
-			CodeableConceptDt specialtyCode = new CodeableConceptDt(systemUriString, codeString);
-			specialtyCode.getCodingFirstRep().setDisplay(displayString);
-			
-			List<CodeableConceptDt> listSpecialtyCode = new ArrayList<CodeableConceptDt>();
-			listSpecialtyCode.add(specialtyCode);
-			practitionerRole.setSpecialty(listSpecialtyCode);
-		}
+//		if (specialtyConcept != null &&
+//				specialtyConcept.getId() > 0L) {
+//			String systemUriString = specialtyConcept.getVocabulary().getVocabularyReference();
+//			String displayString = specialtyConcept.getName();
+//			String codeString = specialtyConcept.getConceptCode();
+//			
+//			CodeableConceptDt specialtyCode = new CodeableConceptDt(systemUriString, codeString);
+//			specialtyCode.getCodingFirstRep().setDisplay(displayString);
+//			
+//			List<CodeableConceptDt> listSpecialtyCode = new ArrayList<CodeableConceptDt>();
+//			listSpecialtyCode.add(specialtyCode);
+//			practitionerRole.setSpecialty(listSpecialtyCode);
+//		}
 		
-		List<PractitionerRole> listPracRole = new ArrayList<PractitionerRole>();
-		listPracRole.add(practitionerRole);
-		
-		practitioner.setPractitionerRole(listPracRole);
+//		List<PractitionerRole> listPracRole = new ArrayList<PractitionerRole>();
+//		listPracRole.add(practitionerRole);
+//		
+//		practitioner.setPractitionerRole(listPracRole);
 		
 		if (this.genderConcept != null){
-			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
-			String gName = this.genderConcept.getName(); 
-			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
-			for (int i = 0; i < values.length; i++) {
-				if(gName.equalsIgnoreCase(values[i].getCode())){
-					admGender = values[i];
-					break;
-				}
+			String gName = this.genderConcept.getName().toLowerCase(); 
+			AdministrativeGender admGender;
+			try {
+				admGender = AdministrativeGender.fromCode(gName);
+				practitioner.setGender(admGender);
+			} catch (FHIRException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			practitioner.setGender(admGender);
 		}
 
 		if (this.yearOfBirth != null) {
 			Calendar cal = Calendar.getInstance();
 			cal.set(Calendar.YEAR, this.yearOfBirth);
-			practitioner.setBirthDate(new DateDt(cal.getTime()));
+			practitioner.setBirthDate(cal.getTime());
 		}
 		return practitioner;
 	}
@@ -313,19 +321,25 @@ public class Provider extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		Practitioner practitioner = (Practitioner) resource;
 		
-		HumanNameDt humanName = practitioner.getName();
-		String familyName = humanName.getFamilyAsSingleString().replace(" ", "_");
-		String givenName = humanName.getGivenAsSingleString();
-		String suffixName = humanName.getSuffixAsSingleString();
-		
-		String omopName = givenName+" "+familyName+", "+suffixName;
-		this.setProviderName(omopName);
-		
+		List<HumanName> humanNames = practitioner.getName();
+		if (humanNames.size() > 0) {
+			HumanName humanName = humanNames.get(0);
+			String familyName = humanName.getFamily().replace(" ", "_");
+			String givenName = humanName.getGivenAsSingleString();
+			String suffixName = humanName.getSuffixAsSingleString();
+			
+			String omopName = givenName+" "+familyName+", "+suffixName;
+			this.setProviderName(omopName);
+		}
 		this.genderConcept = new Concept();
-		this.genderConcept.setId(OmopConceptMapping.getInstance().get(practitioner.getGender().substring(0, 1), OmopConceptMapping.GENDER));
+		if (practitioner.getGender() != AdministrativeGender.NULL) {
+			this.genderConcept.setId(OmopConceptMapping.getInstance().get(practitioner.getGender().toCode().substring(0, 1).toUpperCase(), OmopConceptMapping.GENDER));
+		} else {
+			this.genderConcept.setId(0L);
+		}
 
 		Date birthDate = practitioner.getBirthDate();
 		if (birthDate != null) {
@@ -335,81 +349,81 @@ public class Provider extends BaseResourceEntity {
 			this.setYearOfBirth(year);
 		}
 		
-		PractitionerRole role = practitioner.getPractitionerRoleFirstRep();
-		if (role != null) {
-			// Search this organization from care_site table.
-			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
-
-			ResourceReferenceDt org = role.getManagingOrganization();
-			if (org != null) {
-				StringDt orgDisplay = org.getDisplay();
-				if (orgDisplay != null) {
-					CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-					CriteriaQuery<CareSite> criteria = builder.createQuery(CareSite.class);
-					Root<CareSite> from = criteria.from(CareSite.class);
-					criteria.select(from).where(
-						builder.equal(from.get("careSiteName"),  orgDisplay.getValueAsString())
-					);
-					TypedQuery<CareSite> query = entityManager.createQuery(criteria);
-					List<CareSite> results = query.getResultList();
-					CareSite careSite = null;
-					if (results.size() > 0) {
-						careSite = results.get(0);
-					} else {
-						careSite = new CareSite();
-						careSite.setCareSiteName(orgDisplay.getValueAsString());
-					}					
-					this.setCareSite(careSite);
-				}
-			}
-			
-			CodeableConceptDt specialty = role.getSpecialtyFirstRep();
-			if (specialty != null) {
-				CodingDt specialtyCode = specialty.getCodingFirstRep();
-				String specialtyDisplay = specialtyCode.getDisplay();
-				if (specialtyDisplay != null && !specialtyDisplay.isEmpty()) {
-					CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-					CriteriaQuery<Concept> criteria = builder.createQuery(Concept.class);
-					Root<Concept> from = criteria.from(Concept.class);
-					criteria.select(from).where(
-						builder.equal(from.get("conceptClassId"), OmopConceptMapping.SPECIALTY),
-						builder.equal(from.get("name"), specialtyDisplay)
-					);
-					TypedQuery<Concept> query = entityManager.createQuery(criteria);
-					List<Concept> results = query.getResultList();
-					Concept specialtyConcept = null;
-					if (results.size() > 0) {
-						specialtyConcept = results.get(0);						this.setSpecialtyConcept(specialtyConcept);
-					} else {
-						specialtyConcept = new Concept();
-						specialtyConcept.setId(0L);
-					}
-					this.setSpecialtyConcept(specialtyConcept);
-				}
-			}
-		}
+//		PractitionerRole role = practitioner.getPractitionerRoleFirstRep();
+//		if (role != null) {
+//			// Search this organization from care_site table.
+//			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+//			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
+//
+//			ResourceReferenceDt org = role.getManagingOrganization();
+//			if (org != null) {
+//				StringDt orgDisplay = org.getDisplay();
+//				if (orgDisplay != null) {
+//					CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//					CriteriaQuery<CareSite> criteria = builder.createQuery(CareSite.class);
+//					Root<CareSite> from = criteria.from(CareSite.class);
+//					criteria.select(from).where(
+//						builder.equal(from.get("careSiteName"),  orgDisplay.getValueAsString())
+//					);
+//					TypedQuery<CareSite> query = entityManager.createQuery(criteria);
+//					List<CareSite> results = query.getResultList();
+//					CareSite careSite = null;
+//					if (results.size() > 0) {
+//						careSite = results.get(0);
+//					} else {
+//						careSite = new CareSite();
+//						careSite.setCareSiteName(orgDisplay.getValueAsString());
+//					}					
+//					this.setCareSite(careSite);
+//				}
+//			}
+//			
+//			CodeableConceptDt specialty = role.getSpecialtyFirstRep();
+//			if (specialty != null) {
+//				CodingDt specialtyCode = specialty.getCodingFirstRep();
+//				String specialtyDisplay = specialtyCode.getDisplay();
+//				if (specialtyDisplay != null && !specialtyDisplay.isEmpty()) {
+//					CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//					CriteriaQuery<Concept> criteria = builder.createQuery(Concept.class);
+//					Root<Concept> from = criteria.from(Concept.class);
+//					criteria.select(from).where(
+//						builder.equal(from.get("conceptClassId"), OmopConceptMapping.SPECIALTY),
+//						builder.equal(from.get("name"), specialtyDisplay)
+//					);
+//					TypedQuery<Concept> query = entityManager.createQuery(criteria);
+//					List<Concept> results = query.getResultList();
+//					Concept specialtyConcept = null;
+//					if (results.size() > 0) {
+//						specialtyConcept = results.get(0);						this.setSpecialtyConcept(specialtyConcept);
+//					} else {
+//						specialtyConcept = new Concept();
+//						specialtyConcept.setId(0L);
+//					}
+//					this.setSpecialtyConcept(specialtyConcept);
+//				}
+//			}
+//		}
 		
 		return this;
 	}
 
-	public static Provider searchAndUpdate(ResourceReferenceDt resourceRef) {
+	public static Provider searchAndUpdate(Reference resourceRef) {
 		if (resourceRef == null) return null;
 		
 		// See if this exists.
 		Provider provider = 
-				(Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, resourceRef.getReference().getIdPartAsLong());
+				(Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, resourceRef.getReferenceElement().getIdPartAsLong());
 		if (provider != null) {
 			return provider;
 		} else {
 			// Check source column to see if we have received this before.
 			provider = (Provider) OmopConceptMapping.getInstance()
-					.loadEntityBySource(Provider.class, "Provider", "providerSourceValue", resourceRef.getReference().getIdPart());
+					.loadEntityBySource(Provider.class, "Provider", "providerSourceValue", resourceRef.getReferenceElement().getIdPart());
 			if (provider != null) {
 				return provider;
 			} else {
 				provider = new Provider();
-				provider.setProviderSourceValue(resourceRef.getReference().getIdPart());
+				provider.setProviderSourceValue(resourceRef.getReferenceElement().getIdPart());
 				if (resourceRef.getDisplay() != null)
 					provider.setProviderName(resourceRef.getDisplay().toString());
 				return provider;

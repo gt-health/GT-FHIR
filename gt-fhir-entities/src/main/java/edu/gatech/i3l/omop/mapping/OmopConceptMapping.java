@@ -15,9 +15,9 @@ import javax.persistence.criteria.Root;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
-import edu.gatech.i3l.fhir.dstu2.entities.Concept;
-import edu.gatech.i3l.fhir.dstu2.entities.Location;
-import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
+import edu.gatech.i3l.fhir.dstu3.entities.Concept;
+import edu.gatech.i3l.fhir.dstu3.entities.Location;
+import edu.gatech.i3l.fhir.dstu3.entities.PersonComplement;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 

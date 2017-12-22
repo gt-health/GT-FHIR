@@ -3,6 +3,7 @@ package edu.gatech.i3l.fhir.jpa.providers;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.beans.factory.annotation.Required;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -18,21 +19,21 @@ import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.annotation.Validate;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.ValidationModeEnum;
-import ca.uhn.fhir.rest.server.EncodingEnum;
+import ca.uhn.fhir.rest.api.EncodingEnum;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
 import edu.gatech.i3l.fhir.jpa.provider.BaseJpaProvider;
 
-public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvider implements IResourceProvider {
+public class JpaResourceProviderDstu3<T extends IBaseResource> extends BaseJpaProvider implements IResourceProvider {
 
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(JpaResourceProviderDstu2.class);
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(JpaResourceProviderDstu3.class);
 	private FhirContext myContext;
 	private IFhirResourceDao<T> myDao;
 
-	public JpaResourceProviderDstu2() {}
+	public JpaResourceProviderDstu3() {}
 
-	public JpaResourceProviderDstu2(IFhirResourceDao<T> theDao) {
+	public JpaResourceProviderDstu3(IFhirResourceDao<T> theDao) {
 		myDao = theDao;
 	}
 
@@ -65,7 +66,7 @@ public class JpaResourceProviderDstu2<T extends IResource> extends BaseJpaProvid
 //	}
 
 	@Override
-	public Class<? extends IResource> getResourceType() {
+	public Class<? extends IBaseResource> getResourceType() {
 		return myDao.getResourceType();
 	}
 

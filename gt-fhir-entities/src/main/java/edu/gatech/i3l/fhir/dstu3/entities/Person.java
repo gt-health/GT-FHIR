@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,14 +21,21 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.Address.AddressUse;
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.resource.Patient;
+//import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -323,14 +330,14 @@ public class Person extends BaseResourceEntity{
 		if (this.monthOfBirth != null) mob = this.monthOfBirth; else mob = 1;
 		if (this.dayOfBirth != null) dob = this.dayOfBirth; else dob = 1;
 		calendar.set(yob, mob-1, dob);
-		patient.setBirthDate(new DateDt(calendar.getTime()));
+		patient.setBirthDate(calendar.getTime());
 		
 		if(this.location != null && this.location.getId() != 0L){
 //			PeriodDt period = new PeriodDt();
 //			period.setStart(new DateTimeDt(this.location.getStartDate()));
 //			period.setEnd(new DateTimeDt(this.location.getEndDate()));
 			patient.addAddress()
-				.setUse(AddressUseEnum.HOME)
+				.setUse(AddressUse.HOME)
 				.addLine(this.location.getAddress1())
 				.addLine(this.location.getAddress2())//WARNING check if mapping for lines are correct
 				.setCity(this.location.getCity())
@@ -340,24 +347,22 @@ public class Person extends BaseResourceEntity{
 		}
 		
 		if (this.genderConcept != null) {
-			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
-			String gName = this.genderConcept.getName(); 
-			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
-			for (int i = 0; i < values.length; i++) {
-				if(gName.equalsIgnoreCase(values[i].getCode())){
-					admGender = values[i];
-					break;
-				}
+			String gName = this.genderConcept.getName().toLowerCase(); 
+			AdministrativeGender gender;
+			try {
+				gender = AdministrativeGender.fromCode(gName);
+				patient.setGender(gender);
+			} catch (FHIRException e) {
+				e.printStackTrace();
 			}
-			patient.setGender(admGender);
 		}
 		
 		if (this.provider != null && this.provider.getId() != 0L) {
-			ResourceReferenceDt practitionerResourceRef = new ResourceReferenceDt(this.provider.getIdDt());
-			practitionerResourceRef.setDisplay(this.provider.getProviderName());
-			List<ResourceReferenceDt> pracResourceRefs = new ArrayList<ResourceReferenceDt>();
-			pracResourceRefs.add(practitionerResourceRef);
-			patient.setCareProvider(pracResourceRefs);
+			Reference generalPractitioner = new Reference(this.provider.getIdDt());
+			generalPractitioner.setDisplay(this.provider.getProviderName());
+			List<Reference> generalPractitioners = new ArrayList<Reference>();
+			generalPractitioners.add(generalPractitioner);
+			patient.setGeneralPractitioner(generalPractitioners);
 		}
 		return patient;
 	}
@@ -379,7 +384,7 @@ public class Person extends BaseResourceEntity{
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		if(resource instanceof Patient){
 			Patient patient = (Patient) resource;
 			
@@ -391,7 +396,7 @@ public class Person extends BaseResourceEntity{
 			//TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
 //			this.death = patient.getDeceased(); 
 			this.genderConcept = new Concept();
-			String genderString = patient.getGender();
+			String genderString = patient.getGender().toCode();
 			if (genderString != null) 
 				this.genderConcept.setId(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
 			else
@@ -404,9 +409,9 @@ public class Person extends BaseResourceEntity{
 //				location = new Location();
 //			}
 			
-			List<AddressDt> addresses = patient.getAddress();
+			List<Address> addresses = patient.getAddress();
 			if (addresses != null && addresses.size() > 0) {
-				AddressDt address = addresses.get(0);
+				Address address = addresses.get(0);
 				
 				Location retLocation = Location.searchAndUpdate(address, this.location);
 				if (retLocation != null) {
@@ -447,10 +452,10 @@ public class Person extends BaseResourceEntity{
 //				}
 			}
 			
-			List<ResourceReferenceDt> providers = patient.getCareProvider();
-			if (providers.size() > 0) {
+			List<Reference> generalPractitioners = patient.getGeneralPractitioner();
+			if (generalPractitioners.size() > 0) {
 				// We can handle only one provider.
-				this.setProvider(Provider.searchAndUpdate(providers.get(0)));
+				this.setProvider(Provider.searchAndUpdate(generalPractitioners.get(0)));
 			}
 		}
 		

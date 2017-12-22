@@ -101,7 +101,7 @@ import edu.gatech.i3l.fhir.jpa.util.StopWatch;
  * @author Ismael Sarmento
  */
 @Transactional(propagation = Propagation.REQUIRED)
-public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirResourceDao<T>{
+public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IFhirResourceDao<T>{
 	
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(BaseFhirResourceDao.class);
 	
@@ -251,7 +251,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		return outcome;
 	}
 	
-	private DaoMethodOutcome toMethodOutcome(final BaseResourceEntity entity, IResource theResource) {
+	private DaoMethodOutcome toMethodOutcome(final BaseResourceEntity entity, IBaseResource theResource) {
 		DaoMethodOutcome outcome = new DaoMethodOutcome();
 		outcome.setId(new IdDt(entity.getId()));
 		outcome.setEntity(entity);
@@ -272,7 +272,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		if( entity != null){
 			retVal = (T) entity.getRelatedResource();
 			
-			InstantDt deleted = ResourceMetadataKeyEnum.DELETED_AT.get(retVal);
+			InstantDt deleted = ResourceMetadataKeyEnum.DELETED_AT.get((IResource) retVal);
 			if (deleted != null && !deleted.isEmpty()) {
 				throw new ResourceGoneException("Resource was deleted at " + deleted.getValueAsString());
 			}
@@ -1075,7 +1075,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				return create(theResource, null, thePerformIndexing);
 			}
 		} else {
-			resourceId = theResource.getId();
+			resourceId = theResource.getIdElement(); // getId();
 			if (resourceId == null || isBlank(resourceId.getIdPart())) {
 				throw new InvalidRequestException("Can not update a resource with no ID");
 			}
@@ -1088,8 +1088,8 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				}
 //				validateGivenIdIsAppropriateToRetrieveResource(resourceId, entity);
 			} catch (ResourceNotFoundException e) {
-				if (Character.isDigit(theResource.getId().getIdPart().charAt(0))) {
-					throw new InvalidRequestException(getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedNumericId", theResource.getId().getIdPart()));
+				if (Character.isDigit(theResource.getIdElement().getIdPart().charAt(0))) {  // getId() is replace with getIdElement()
+					throw new InvalidRequestException(getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedNumericId", theResource.getIdElement().getIdPart()));
 				}
 				return doCreate(theResource, null, thePerformIndexing);
 			}

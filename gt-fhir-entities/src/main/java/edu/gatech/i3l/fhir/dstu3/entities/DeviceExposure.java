@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.util.Date;
 
@@ -16,10 +16,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Device;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -221,7 +222,7 @@ public class DeviceExposure extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -3,38 +3,38 @@
  */
 package edu.gatech.i3l.fhir.security;
 
-import java.nio.charset.Charset;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Enumeration;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+//import java.nio.charset.Charset;
+//import java.io.BufferedReader;
+//import java.io.IOException;
+//import java.net.InetAddress;
+//import java.sql.Connection;
+//import java.sql.ResultSet;
+//import java.sql.SQLException;
+//import java.sql.Statement;
+//import java.sql.Timestamp;
+//import java.util.Date;
+//import java.util.Enumeration;
+//
+//import javax.naming.InitialContext;
+//import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
+//import javax.sql.DataSource;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
-import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
-import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+//import org.apache.commons.codec.binary.Base64;
+//import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+//import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+//import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
+//import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
+//import org.springframework.http.HttpEntity;
+//import org.springframework.http.HttpHeaders;
+//import org.springframework.http.HttpMethod;
+//import org.springframework.http.HttpStatus;
+//import org.springframework.http.ResponseEntity;
+//import org.springframework.web.client.RestTemplate;
 
 import ca.uhn.fhir.rest.api.RestOperationTypeEnum;
-import ca.uhn.fhir.rest.method.RequestDetails;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
 

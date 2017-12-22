@@ -2,35 +2,36 @@ package edu.gatech.i3l.fhir.jpa.providers;
 
 import java.util.Set;
 
-import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
-import ca.uhn.fhir.model.dstu2.resource.Encounter;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
+//import org.hl7.fhir.dstu3.model.Encounter;
+//import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Practitioner;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.dstu3.model.Organization;
 import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
-import ca.uhn.fhir.rest.param.DateRangeParam;
+//import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.StringAndListParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenAndListParam;
 import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 
-public class PractitionerResourceProvider extends JpaResourceProviderDstu2<Practitioner> {
+public class PractitionerResourceProvider extends JpaResourceProviderDstu3<Practitioner> {
 
 	@Override
-	public Class<? extends IResource> getResourceType() {
+	public Class<? extends IBaseResource> getResourceType() {
 		return Practitioner.class;
 	}
 
 	@Search()
-	public ca.uhn.fhir.rest.server.IBundleProvider search(
+	public ca.uhn.fhir.rest.api.server.IBundleProvider search(
 			javax.servlet.http.HttpServletRequest theServletRequest,
 	
 			@Description(shortDefinition="The resource identity")
@@ -169,7 +170,7 @@ public class PractitionerResourceProvider extends JpaResourceProviderDstu2<Pract
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 
-			ca.uhn.fhir.rest.server.IBundleProvider retVal = getDao().search(paramMap);
+			ca.uhn.fhir.rest.api.server.IBundleProvider retVal = getDao().search(paramMap);
 			return retVal;
 		} finally {
 			endRequest(theServletRequest);

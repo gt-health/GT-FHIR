@@ -10,7 +10,7 @@
 		<!-- The below classes are in alphabetic order with their simple names -->
 		<class>edu.gatech.i3l.fhir.dstu2.entities.CareSite</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.ConditionOccurrence</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>-->
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure</class>
 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>

@@ -18,7 +18,7 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 public class MedicationDispenseFhirResourceDao extends BaseFhirResourceDao<MedicationDispense> {
 	public MedicationDispenseFhirResourceDao() {
 		super();
-		setResourceEntity(edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed.class);
+		setResourceEntity(edu.gatech.i3l.fhir.dstu3.entities.DrugExposureDispensed.class);
 		setValidateBean(true);
 	}
 

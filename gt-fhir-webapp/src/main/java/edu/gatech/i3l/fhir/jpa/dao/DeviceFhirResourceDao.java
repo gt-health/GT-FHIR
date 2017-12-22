@@ -1,6 +1,6 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
-import ca.uhn.fhir.model.dstu2.resource.Device;
+import org.hl7.fhir.dstu3.model.Device;
 import edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;

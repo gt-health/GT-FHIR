@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -53,7 +54,7 @@ public class DaoUtils {
 		return InstantDt.withCurrentTime();
 	}
 	
-	public static <T extends IResource> Set<Long> processMatchUrl(String theMatchUrl, Class<? extends IResource> theResourceType, FhirContext theContext, IFhirResourceDao<T> dao) {
+	public static <T extends IBaseResource> Set<Long> processMatchUrl(String theMatchUrl, Class<? extends IBaseResource> theResourceType, FhirContext theContext, IFhirResourceDao<T> dao) {
 		RuntimeResourceDefinition resourceDef = theContext.getResourceDefinition(theResourceType); 
 
 		SearchParameterMap paramMap = translateMatchUrl(theMatchUrl, resourceDef);

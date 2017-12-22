@@ -6,12 +6,14 @@ import java.util.Set;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
-import ca.uhn.fhir.model.dstu2.resource.Device;
-import ca.uhn.fhir.model.dstu2.resource.Encounter;
-import ca.uhn.fhir.model.dstu2.resource.Group;
-import ca.uhn.fhir.model.dstu2.resource.Location;
-import ca.uhn.fhir.model.dstu2.resource.Observation;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
+import org.hl7.fhir.dstu3.model.Device;
+import org.hl7.fhir.dstu3.model.Encounter;
+import org.hl7.fhir.dstu3.model.Group;
+import org.hl7.fhir.dstu3.model.Location;
+import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
@@ -29,16 +31,16 @@ import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 // import ca.uhn.fhir.model.api.Bundle;
 
 public class ObservationResourceProvider extends 
-	JpaResourceProviderDstu2<Observation>
+	JpaResourceProviderDstu3<Observation>
 	{
 
 	@Override
-	public Class<? extends IResource> getResourceType() {
+	public Class<? extends IBaseResource> getResourceType() {
 		return Observation.class;
 	}
 
 	@Search()
-	public ca.uhn.fhir.rest.server.IBundleProvider search(
+	public ca.uhn.fhir.rest.api.server.IBundleProvider search(
 			javax.servlet.http.HttpServletRequest theServletRequest,
 	
 			@Description(shortDefinition="The resource identity")
@@ -199,7 +201,7 @@ public class ObservationResourceProvider extends
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 
-			ca.uhn.fhir.rest.server.IBundleProvider retVal = getDao().search(paramMap);
+			ca.uhn.fhir.rest.api.server.IBundleProvider retVal = getDao().search(paramMap);
 			return retVal;
 		} finally {
 			endRequest(theServletRequest);

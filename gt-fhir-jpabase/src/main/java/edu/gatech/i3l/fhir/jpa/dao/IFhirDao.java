@@ -27,9 +27,9 @@ public interface IFhirDao extends IDao{
 
 	List<IBaseResource> loadResourcesById(Set<? extends IIdType> includePids);
 
-	BaseResourceEntity updateEntity(IResource resource, BaseResourceEntity entity, boolean b, Date date);
+	BaseResourceEntity updateEntity(IBaseResource resource, BaseResourceEntity entity, boolean b, Date date);
 	
-	BaseResourceEntity updateEntity(IResource theResource, BaseResourceEntity baseResourceEntity, boolean theUpdateHistory, Date theDeletedTimestampOrNull,
+	BaseResourceEntity updateEntity(IBaseResource theResource, BaseResourceEntity baseResourceEntity, boolean theUpdateHistory, Date theDeletedTimestampOrNull,
 			boolean thePerformIndexing, boolean theUpdateVersion);
 
 	//void validateResourceForStorage(IResource theResource);

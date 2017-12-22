@@ -3,12 +3,14 @@ package edu.gatech.i3l.fhir.jpa.providers;
 
 import java.util.Set;
 
-import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.api.annotation.Description;
-import ca.uhn.fhir.model.dstu2.resource.Medication;
-import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
+import org.hl7.fhir.dstu3.model.Medication;
+import org.hl7.fhir.dstu3.model.MedicationDispense;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
@@ -22,16 +24,16 @@ import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
 // import ca.uhn.fhir.model.api.Bundle;
 
 public class MedicationDispenseResourceProvider extends 
-	JpaResourceProviderDstu2<MedicationDispense>
+	JpaResourceProviderDstu3<MedicationDispense>
 	{
 
 	@Override
-	public Class<? extends IResource> getResourceType() {
+	public Class<? extends IBaseResource> getResourceType() {
 		return MedicationDispense.class;
 	}
 
 	@Search()
-	public ca.uhn.fhir.rest.server.IBundleProvider search(
+	public ca.uhn.fhir.rest.api.server.IBundleProvider search(
 			javax.servlet.http.HttpServletRequest theServletRequest,
 	
 			@Description(shortDefinition="The resource identity")
@@ -134,7 +136,7 @@ public class MedicationDispenseResourceProvider extends
 			paramMap.setSort(theSort);
 			paramMap.setCount(theCount);
 
-			ca.uhn.fhir.rest.server.IBundleProvider retVal = getDao().search(paramMap);
+			ca.uhn.fhir.rest.api.server.IBundleProvider retVal = getDao().search(paramMap);
 			return retVal;
 		} finally {
 			endRequest(theServletRequest);

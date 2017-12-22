@@ -19,6 +19,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
@@ -59,7 +60,7 @@ public class QueryHelper {
 	private EntityManager myEntityManager;
 	
 	private Class<? extends IResourceEntity> myResourceEntity;
-	private Class<? extends IResource> myResourceType;
+	private Class<? extends IBaseResource> myResourceType;
 	private FhirContext myContext;
 	private PredicateBuilder predicateBuilder;
 
@@ -74,7 +75,7 @@ public class QueryHelper {
 	}
 	
 	public QueryHelper( EntityManager theEntityManager, Class<? extends IResourceEntity> theResourceEntity,
-			Class<? extends IResource> theResourceType, FhirContext theContext, BaseFhirDao theBaseFhirDao) { 
+			Class<? extends IBaseResource> theResourceType, FhirContext theContext, BaseFhirDao theBaseFhirDao) { 
 		super();
 		this.myEntityManager = theEntityManager;
 		this.myResourceEntity = theResourceEntity;
@@ -739,11 +740,11 @@ public class QueryHelper {
 		this.myResourceEntity = myResourceEntity;
 	}
 
-	public Class<? extends IResource> getMyResourceType() {
+	public Class<? extends IBaseResource> getMyResourceType() {
 		return myResourceType;
 	}
 
-	public void setMyResourceType(Class<? extends IResource> myResourceType) {
+	public void setMyResourceType(Class<? extends IBaseResource> myResourceType) {
 		this.myResourceType = myResourceType;
 	}
 

@@ -19,7 +19,7 @@
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
-	<bean id="mySystemProviderDstu2" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2">
+	<bean id="mySystemProviderDstu3" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu3">
 		<property name="dao" ref="mySystemDaoDstu2"/>
 	</bean>
 	<bean id="mySmartOnFhirLaunchContext" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextDao">
@@ -36,18 +36,18 @@
 
  	<util:list id="myResourceProvidersDstu3">
 		<ref bean="myConditionRpDstu3"/>
-		<ref bean="myDeviceRpDstu2"/>
-		<ref bean="myEncounterRpDstu2"/>
+		<ref bean="myDeviceRpDstu3"/>
+		<ref bean="myEncounterRpDstu3"/>
 		<!-- <ref bean="myLocationRpDstu2"/> -->
-		<ref bean="myMedicationRpDstu2"/>
-		<ref bean="myMedicationDispenseRpDstu2"/>
-		<ref bean="myMedicationOrderRpDstu2"/>
-		<ref bean="myMedicationAdministrationRpDstu2"/>
-		<ref bean="myObservationRpDstu2"/>
-		<ref bean="myOrganizationRpDstu2"/>
-		<ref bean="myPatientRpDstu2"/>
-		<ref bean="myPractitionerRpDstu2"/>
-		<ref bean="myProcedureRpDstu2"/>
+		<ref bean="myMedicationRpDstu3"/>
+		<ref bean="myMedicationDispenseRpDstu3"/>
+		<ref bean="myMedicationRequestRpDstu3"/>
+		<ref bean="myMedicationAdministrationRpDstu3"/>
+		<ref bean="myObservationRpDstu3"/>
+		<ref bean="myOrganizationRpDstu3"/>
+		<ref bean="myPatientRpDstu3"/>
+		<ref bean="myPractitionerRpDstu3"/>
+		<ref bean="myProcedureRpDstu3"/>
 		<!-- <ref bean="myPersonRpDstu2"/>
 		<ref bean="myRelatedPersonRpDstu2"/>-->
 	</util:list>
@@ -60,31 +60,31 @@
 		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myConditionRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ConditionResourceProvider">
+	<bean id="myConditionRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.ConditionResourceProvider">
 		<property name="dao" ref="myConditionDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 	
-	<bean id="myDeviceDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.DeviceFhirResourceDao">
+	<bean id="myDeviceDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.DeviceFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Device"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Device"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myDeviceRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.DeviceResourceProvider">
+	<bean id="myDeviceRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.DeviceResourceProvider">
 		<property name="dao" ref="myDeviceDaoDstu2"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean>
 
-	<bean id="myEncounterDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.EncounterFhirResourceDao">
+	<bean id="myEncounterDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.EncounterFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Encounter"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Encounter"/>
 		<property name="context" ref="myFhirContextDstu2"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myEncounterRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.EncounterResourceProvider">
-		<property name="dao" ref="myEncounterDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myEncounterRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.EncounterResourceProvider">
+		<property name="dao" ref="myEncounterDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
  
 	<!-- <bean id="myLocationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.LocationFhirResourceDao">
@@ -97,103 +97,103 @@
 		<property name="context" ref="myFhirContextDstu2"/>
 	</bean> -->
 	
-	<bean id="myMedicationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationFhirResourceDao">
+	<bean id="myMedicationDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.MedicationFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Medication"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Medication"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myMedicationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationResourceProvider">
-		<property name="dao" ref="myMedicationDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myMedicationRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.MedicationResourceProvider">
+		<property name="dao" ref="myMedicationDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	
-	<bean id="myMedicationDispenseDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationDispenseFhirResourceDao">
+	<bean id="myMedicationDispenseDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.MedicationDispenseFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationDispense"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.MedicationDispense"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myMedicationDispenseRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationDispenseResourceProvider">
-		<property name="dao" ref="myMedicationDispenseDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myMedicationDispenseRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.MedicationDispenseResourceProvider">
+		<property name="dao" ref="myMedicationDispenseDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	
-	<bean id="myMedicationOrderDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationOrderFhirResourceDao">
+	<bean id="myMedicationRequestDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.MedicationRequestFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationOrder"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.MedicationRequest"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myMedicationOrderRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationOrderResourceProvider">
-		<property name="dao" ref="myMedicationOrderDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myMedicationRequestRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.MedicationRequestResourceProvider">
+		<property name="dao" ref="myMedicationRequestDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 
-	<bean id="myMedicationAdministrationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.MedicationAdministrationFhirResourceDao">
+	<bean id="myMedicationAdministrationDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.MedicationAdministrationFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.MedicationAdministration"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.MedicationAdministration"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myMedicationAdministrationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.MedicationAdministrationResourceProvider">
-		<property name="dao" ref="myMedicationAdministrationDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myMedicationAdministrationRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.MedicationAdministrationResourceProvider">
+		<property name="dao" ref="myMedicationAdministrationDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	
-	<bean id="myObservationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ObservationFhirResourceDao">
+	<bean id="myObservationDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.ObservationFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Observation"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Observation"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myObservationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ObservationResourceProvider">
-		<property name="dao" ref="myObservationDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myObservationRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.ObservationResourceProvider">
+		<property name="dao" ref="myObservationDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
  
- 	<bean id="myOrganizationDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.OrganizationFhirResourceDao">
+ 	<bean id="myOrganizationDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.OrganizationFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Organization"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Organization"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myOrganizationRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.OrganizationResourceProvider">
-		<property name="dao" ref="myOrganizationDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myOrganizationRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.OrganizationResourceProvider">
+		<property name="dao" ref="myOrganizationDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
  
-	<bean id="myPatientDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
+	<bean id="myPatientDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.PatientFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Patient"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Patient"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myPatientRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.PatientResourceProvider">
-		<property name="dao" ref="myPatientDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myPatientRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.PatientResourceProvider">
+		<property name="dao" ref="myPatientDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 
-	<bean id="myPractitionerDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.PractitionerFhirResourceDao">
+	<bean id="myPractitionerDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.PractitionerFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Practitioner"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Practitioner"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myPractitionerRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.PractitionerResourceProvider">
-		<property name="dao" ref="myPractitionerDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myPractitionerRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.PractitionerResourceProvider">
+		<property name="dao" ref="myPractitionerDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 
-	<bean id="myProcedureDaoDstu2" class="edu.gatech.i3l.fhir.jpa.dao.ProcedureFhirResourceDao">
+	<bean id="myProcedureDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.ProcedureFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
-		<property name="resourceType" value="ca.uhn.fhir.model.dstu2.resource.Procedure"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Procedure"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
-	<bean id="myProcedureRpDstu2" class="edu.gatech.i3l.fhir.jpa.providers.ProcedureResourceProvider">
-		<property name="dao" ref="myProcedureDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+	<bean id="myProcedureRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.ProcedureResourceProvider">
+		<property name="dao" ref="myProcedureDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
  
 </beans>

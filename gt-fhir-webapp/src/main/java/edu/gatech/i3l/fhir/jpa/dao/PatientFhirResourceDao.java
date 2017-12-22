@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.rest.param.DateRangeParam;
-import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
+import edu.gatech.i3l.fhir.dstu3.entities.PersonComplement;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;

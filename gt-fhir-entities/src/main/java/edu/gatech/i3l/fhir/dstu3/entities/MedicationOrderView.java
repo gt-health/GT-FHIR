@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_MEDICATION;

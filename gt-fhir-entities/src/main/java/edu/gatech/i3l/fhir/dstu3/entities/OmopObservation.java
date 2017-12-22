@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,40 +31,48 @@ import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
-@Table(name="measurement")
-public class OmopMeasurement extends BaseResourceEntity {
+@Table(name="observation")
+public class OmopObservation extends BaseResourceEntity {
 
 	/**
 	 * 
 	 */
 	private static final String RES_TYPE = "Observation";
-	public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
-	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;		
-
+	
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="measurement_occurrence_seq_gen")
-	@SequenceGenerator(name="measurement_occurrence_seq_gen", sequenceName="measurement_occurrence_id_seq", allocationSize=1)
-	@Column(name = "measurement_id")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="observation_occurrence_seq_gen")
+	@SequenceGenerator(name="observation_occurrence_seq_gen", sequenceName="observation_occurrence_id_seq", allocationSize=1)
+	@Column(name = "observation_id")
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="person_id", nullable=false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
 
-	@Column(name="measurement_source_value")
-	private String sourceValue; 
-
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="measurement_concept_id", nullable=false)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@JoinColumn(name = "observation_concept_id", nullable = false)
 	@NotNull
-	private Concept measurementConcept;
+	private Concept observationConcept;
+
+	@Column(name = "observation_date", nullable = false)
+	@Temporal(TemporalType.DATE)
+	@NotNull
+	private Date date;
+
+	@Column(name = "observation_time")
+	// @Temporal(TemporalType.TIME)
+	private String time;
+
+	@Column(name = "value_as_string")
+	private String valueAsString;
 
 	@Column(name = "value_as_number")
 	private Double valueAsNumber;
@@ -74,33 +82,28 @@ public class OmopMeasurement extends BaseResourceEntity {
 	private Concept valueAsConcept;
 
 	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "unit_concept_id")
-	private Concept unit;
-
-	@Column(name = "range_low")
-	private Double rangeLow;
-
-	@Column(name = "range_high")
-	private Double rangeHigh;
-
-	@Column(name = "measurement_date", nullable = false)
-	@Temporal(TemporalType.DATE)
+	@JoinColumn(name = "observation_type_concept_id", nullable = false)
 	@NotNull
-	private Date date;
+	private Concept type;
 
-	@Column(name = "measurement_time")
-	// @Temporal(TemporalType.TIME)
-	private String time;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "provider_id")
+	private Provider provider;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
-	@JoinColumn(name = "measurement_type_concept_id")
-	private Concept type;
+	@Column(name = "observation_source_value")
+	private String sourceValue;
 
-	@Override
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@JoinColumn(name = "unit_concept_id")
+	private Concept unit;
+
+	@Column(name = "unit_source_value")
+	private String unitSourceValue;
+
 	public Long getId() {
 		return id;
 	}
@@ -108,103 +111,111 @@ public class OmopMeasurement extends BaseResourceEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	public Person getPerson() {
+
+	public String getTime() {
+		return time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	public PersonComplement getPerson() {
 		return person;
 	}
-	
+
 	public void setPerson(PersonComplement person) {
 		this.person = person;
 	}
-	
+
+	public Concept getObservationConcept() {
+		return observationConcept;
+	}
+
+	public void setObservationConcept(Concept observationConcept) {
+		this.observationConcept = observationConcept;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	public String getValueAsString() {
+		return valueAsString;
+	}
+
+	public void setValueAsString(String valueAsString) {
+		this.valueAsString = valueAsString;
+	}
+
+	public Double getValueAsNumber() {
+		return valueAsNumber;
+	}
+
+	public void setValueAsNumber(Double valueAsNumber) {
+		this.valueAsNumber = valueAsNumber;
+	}
+
+	public Concept getValueAsConcept() {
+		return valueAsConcept;
+	}
+
+	public void setValueAsConcept(Concept valueAsConcept) {
+		this.valueAsConcept = valueAsConcept;
+	}
+
+	public Concept getType() {
+		return type;
+	}
+
+	public void setType(Concept type) {
+		this.type = type;
+	}
+
+	public Provider getProvider() {
+		return provider;
+	}
+
+	public void setProvider(Provider provider) {
+		this.provider = provider;
+	}
+
+	public VisitOccurrence getVisitOccurrence() {
+		return visitOccurrence;
+	}
+
+	public void setVisitOccurrence(VisitOccurrence visitOccurrence) {
+		this.visitOccurrence = visitOccurrence;
+	}
+
 	public String getSourceValue() {
 		return sourceValue;
 	}
-	
+
 	public void setSourceValue(String sourceValue) {
 		this.sourceValue = sourceValue;
 	}
 
-	public Concept getMeasurementConcept() {
-		return measurementConcept;
-	}
-	
-	public void setMeasurementConcept(Concept measurementConcept) {
-		this.measurementConcept = measurementConcept;
-	}
-	
-	public Double getValueAsNumber() {
-		return valueAsNumber;
-	}
-	
-	public void setValueAsNumber(Double valueAsNumber) {
-		this.valueAsNumber = valueAsNumber;
-	}
-	
-	public Concept getValueAsConcept() {
-		return valueAsConcept;
-	}
-	
-	public void setValueAsConcept(Concept valueAsConcept) {
-		this.valueAsConcept = valueAsConcept;
-	}
-	
 	public Concept getUnit() {
 		return unit;
 	}
-	
+
 	public void setUnit(Concept unit) {
 		this.unit = unit;
 	}
-	
-	public Double getRangeLow() {
-		return rangeLow;
+
+	public String getUnitSourceValue() {
+		return unitSourceValue;
 	}
-	
-	public void setRangeLow(Double rangeLow) {
-		this.rangeLow =rangeLow;
+
+	public void setUnitSourceValue(String unitSourceValue) {
+		this.unitSourceValue = unitSourceValue;
 	}
-	
-	public Double getRangeHigh() {
-		return rangeHigh;
-	}
-	
-	public void setRangeHigh(Double rangeHigh) {
-		this.rangeHigh = rangeHigh;
-	}
-	
-	public Date getDate() {
-		return date;
-	}
-	
-	public void setDate(Date date) {
-		this.date = date;
-	}
-	
-	public String getTime() {
-		return time;
-	}
-	
-	public void setTime(String time) {
-		this.time = time;
-	}
-	
-	public VisitOccurrence getVisitOccurrence() {
-		return visitOccurrence;
-	}
-	
-	public void setVisitOccurrence (VisitOccurrence visitOccurrence) {
-		this.visitOccurrence = visitOccurrence;
-	}
-	
-	public Concept getType() {
-		return type;
-	}
-	
-	public void setType(Concept type) {
-		this.type = type;
-	}
-	
+
 	@Override
 	public FhirVersionEnum getFhirVersion() {
 		return FhirVersionEnum.DSTU2;
@@ -256,28 +267,27 @@ public class OmopMeasurement extends BaseResourceEntity {
 		if (obs.getId() != null) {
 			// See if we already have this in the source field. If so,
 			// then we want update not create
-			OmopMeasurement origMeasurement = (OmopMeasurement) ocm.loadEntityBySource(OmopMeasurement.class, "OmopMeasurement", "sourceValue", obs.getId().getIdPart());
-			if (origMeasurement == null)
+			OmopObservation origObservation = (OmopObservation) ocm.loadEntityBySource(OmopObservation.class, "OmopObservation", "sourceValue", obs.getId().getIdPart());
+			if (origObservation == null)
 				this.setSourceValue(obs.getId().getIdPart());
 			else
-				this.setId(origMeasurement.getId());
+				this.setId(origObservation.getId());
 		}
 
 		String code = obs.getCode().getCodingFirstRep().getCode();
 		Long obsConceptRef = ocm.get(code);
-		setMeasurementConcept(new Concept());
+		setObservationConcept(new Concept());
 		if(obsConceptRef != null){
-			getMeasurementConcept().setId(obsConceptRef);
+			getObservationConcept().setId(obsConceptRef);
 		} else {
-			getMeasurementConcept().setId(0L);
-			System.out.println("Measurement code not recognized: "+code+". System: "+obs.getCode().getCodingFirstRep().getSystem());
+			getObservationConcept().setId(0L);
+			System.out.println("Observation code not recognized: "+code+". System: "+obs.getCode().getCodingFirstRep().getSystem());
 		}
 
 		/* Set the value of the observation */
+		boolean isValueString = false;
 		IDatatype value = obs.getValue();
 		if (value instanceof QuantityDt) {
-//			Long unitId = ocm.get(((QuantityDt) value).getUnit(), OmopConceptMapping.UCUM_CODE,
-//					OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
 			String unitCode = ((QuantityDt) value).getCode();
 			if (unitCode == null) {
 				unitCode = ((QuantityDt) value).getUnit();
@@ -288,21 +298,19 @@ public class OmopMeasurement extends BaseResourceEntity {
 				this.unit = new Concept();
 				this.unit.setId(unitId);
 			}
-			
-			if (!obs.getReferenceRangeFirstRep().isEmpty())
-				this.rangeHigh = obs.getReferenceRangeFirstRep().getHigh().getValue().doubleValue();
-			if (!obs.getReferenceRangeFirstRep().isEmpty())
-				this.rangeLow = obs.getReferenceRangeFirstRep().getLow().getValue().doubleValue();
-			
 		} else if (value instanceof CodeableConceptDt) {
-//			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(),
-//					OmopConceptMapping.CLINICAL_FINDING);
 			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode());
 			if (valueAsConceptId != null) {
 				this.valueAsConcept = new Concept();
 				this.valueAsConcept.setId(valueAsConceptId);
 			}
-		} 
+		} else if (value instanceof StringDt) {
+			String valueAsString = ((StringDt) value).getValueAsString();
+			if (valueAsString != null) {
+				this.valueAsString = valueAsString;
+				isValueString = true;
+			}
+		}
 		
 		if (obs.getEffective() instanceof DateTimeDt) {
 			this.date = ((DateTimeDt) obs.getEffective()).getValue();
@@ -329,15 +337,25 @@ public class OmopMeasurement extends BaseResourceEntity {
 			List<CodingDt> catCodes = obsCategory.getCoding();
 			for (CodingDt catCode : catCodes) {
 				if (catCode.getCode().equalsIgnoreCase("exam")) {
-					getType().setId(44818701L);
+					if (isValueString)
+						getType().setId(38000281L);
+					else
+						getType().setId(38000280L);
 				} else if (catCode.getCode().equalsIgnoreCase("laboratory")) {
-					getType().setId(44818702L);
+					if (isValueString)
+						getType().setId(38000278L);
+					else
+						getType().setId(38000277L);
+				} else if (catCode.getCode().equalsIgnoreCase("survey")) {
+					getType().setId(45905771L);
+				} else if (catCode.getCode().equalsIgnoreCase("vital-signs")) {
+					getType().setId(38000280L);
+				} else {
+					getType().setId(0L);
 				}
 			}
 		}
-		return this;
 		
+		return this;
 	}
-
-
 }

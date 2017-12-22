@@ -1,4 +1,4 @@
-package edu.gatech.i3l.fhir.dstu2.entities;
+package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.util.List;
 
@@ -16,9 +16,12 @@ import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
@@ -138,7 +141,7 @@ public class Location extends BaseResourceEntity {
 		return location;
 	}
 
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -161,9 +164,9 @@ public class Location extends BaseResourceEntity {
 		return null;
 	}
 	
-	public static Location searchByAddressDt (AddressDt address) {
+	public static Location searchByAddress (Address address) {
 		if (address != null) {
-			List<StringDt> addressLines = address.getLine();
+			List<StringType> addressLines = address.getLine();
 			if (addressLines.size() > 0) {
 				String line1 = addressLines.get(0).getValue();
 				String line2 = null;
@@ -182,11 +185,11 @@ public class Location extends BaseResourceEntity {
 		return null;
 	}
 	
-	public static Location searchAndUpdate (AddressDt address, Location location) {
+	public static Location searchAndUpdate (Address address, Location location) {
 		if (address == null) return null;
 		
 //		location.setAddressUse(address.getUseElement().getValueAsEnum());
-		List<StringDt> addressLines = address.getLine();
+		List<StringType> addressLines = address.getLine();
 		if (addressLines.size() > 0) {
 			String line1 = addressLines.get(0).getValue();
 			String line2 = null;

@@ -1,7 +1,9 @@
 package edu.gatech.i3l.fhir.jpa.entity;
 
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 
@@ -35,13 +37,13 @@ public interface IResourceEntity {
 	 * Creates an object of the Resource type related to this entity and sets each property accordingly.
 	 * @return the related Resource Instance.
 	 */
-	public IResource getRelatedResource();
+	public IBaseResource getRelatedResource();
 	
 	/**
 	 * @param The Resource with the properties used to construct the Entity.
 	 * @return The Entity constructed using the related Resource(method param) properties
 	 */
-	public IResourceEntity constructEntityFromResource(IResource resource);
+	public IResourceEntity constructEntityFromResource(IBaseResource resource);
 	
 	/**
 	 * Version to support History features.

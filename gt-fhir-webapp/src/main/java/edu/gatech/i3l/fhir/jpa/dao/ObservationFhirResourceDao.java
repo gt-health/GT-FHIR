@@ -20,8 +20,8 @@ import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
 import ca.uhn.fhir.model.dstu2.valueset.IssueTypeEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
-import edu.gatech.i3l.fhir.dstu2.entities.OmopMeasurement;
-import edu.gatech.i3l.fhir.dstu2.entities.OmopObservation;
+import edu.gatech.i3l.fhir.dstu3.entities.OmopMeasurement;
+import edu.gatech.i3l.fhir.dstu3.entities.OmopObservation;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
@@ -61,9 +61,9 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 		String code = theResource.getCode().getCodingFirstRep().getCode();
 		String domain = ocm.getDomain(code);
 		if (domain.equalsIgnoreCase("measurement"))
-			myEntityClass = edu.gatech.i3l.fhir.dstu2.entities.OmopMeasurement.class;
+			myEntityClass = edu.gatech.i3l.fhir.dstu3.entities.OmopMeasurement.class;
 		else if (domain.equalsIgnoreCase("observation"))
-			myEntityClass = edu.gatech.i3l.fhir.dstu2.entities.OmopObservation.class;
+			myEntityClass = edu.gatech.i3l.fhir.dstu3.entities.OmopObservation.class;
 		else {
 			OperationOutcome oo = new OperationOutcome();
 			oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CODE).setDetails((new CodeableConceptDt()).setText("Coding System Not Supported. We support Measurement or Observation domain code in OMOP v5"));
@@ -105,7 +105,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 	
 	public ObservationFhirResourceDao() {
 		super();
-		setResourceEntity(edu.gatech.i3l.fhir.dstu2.entities.Observation.class); //TODO set this automatically; this is error prone since we need to remember to set this on each dao class
+		setResourceEntity(edu.gatech.i3l.fhir.dstu3.entities.Observation.class); //TODO set this automatically; this is error prone since we need to remember to set this on each dao class
 		setValidateBean(true);
 	}
 	
@@ -125,7 +125,7 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
 			@Override
 			public Predicate addCommonPredicate(CriteriaBuilder builder, From<? extends IResourceEntity, ? extends IResourceEntity> from) {
 //				builder.asc(from.get("id"));
-				return builder.notEqual(from.get("observationConcept").get("id"), edu.gatech.i3l.fhir.dstu2.entities.Observation.DIASTOLIC_CONCEPT_ID);
+				return builder.notEqual(from.get("observationConcept").get("id"), edu.gatech.i3l.fhir.dstu3.entities.Observation.DIASTOLIC_CONCEPT_ID);
 				//In Omop database, the dictionary is static; that means we can reference id's directly: the id for the vocabulary RxNorm is 8
 			}
 

@@ -32,11 +32,11 @@ public class BaseFhirDao extends AbstractBaseFhirDao{
 		return myEntityManager;
 	}
 
-	public BaseResourceEntity updateEntity(final IResource theResource, BaseResourceEntity entity, boolean theUpdateHistory, Date theDeletedTimestampOrNull) {
+	public BaseResourceEntity updateEntity(final IBaseResource theResource, BaseResourceEntity entity, boolean theUpdateHistory, Date theDeletedTimestampOrNull) {
 		return updateEntity(theResource, entity, theUpdateHistory, theDeletedTimestampOrNull, true, true);
 	}
 
-	public BaseResourceEntity updateEntity(final IResource theResource, BaseResourceEntity entity, boolean theUpdateHistory, Date theDeletedTimestampOrNull, boolean thePerformIndexing,
+	public BaseResourceEntity updateEntity(final IBaseResource theResource, BaseResourceEntity entity, boolean theUpdateHistory, Date theDeletedTimestampOrNull, boolean thePerformIndexing,
 			boolean theUpdateVersion) {
 		entity.constructEntityFromResource(theResource);
 		try{
