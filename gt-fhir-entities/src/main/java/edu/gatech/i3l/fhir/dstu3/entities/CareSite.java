@@ -17,16 +17,22 @@ import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.Address.AddressUse;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.Organization;
+import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
+//import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.resource.Organization;
+//import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.dstu3.entities.ConditionOccurrence;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -155,7 +161,7 @@ public class CareSite extends BaseResourceEntity{
 	}
 
 	@Override
-	public IResource getRelatedResource() {
+	public Organization getRelatedResource() {
 		Organization locationResource = new Organization();
 		locationResource.setId(this.getIdDt());
 		
@@ -168,14 +174,13 @@ public class CareSite extends BaseResourceEntity{
 			String systemUriString = this.placeOfServiceConcept.getVocabulary().getVocabularyReference();
 			String displayString = this.placeOfServiceConcept.getName();
 			
-			CodeableConceptDt typeCodeableConcept = new CodeableConceptDt(systemUriString, codeString);
-			typeCodeableConcept.getCodingFirstRep().setDisplay(displayString);
-			locationResource.setType(typeCodeableConcept);
+			CodeableConcept typeCodeableConcept = new CodeableConcept().addCoding(new Coding(systemUriString, codeString, displayString));
+			locationResource.addType(typeCodeableConcept);
 		}
 		
 		if (this.location != null) {
 			locationResource.addAddress()
-				.setUse(AddressUseEnum.HOME)
+				.setUse(AddressUse.HOME)
 				.addLine(this.location.getAddress1())
 				.addLine(this.location.getAddress2())//WARNING check if mapping for lines are correct
 				.setCity(this.location.getCity())
@@ -196,9 +201,9 @@ public class CareSite extends BaseResourceEntity{
 			if (orgResource.getId() != null) {
 				// See if we already have this in the source field. If so,
 				// then we want update not create
-				ConditionOccurrence origCareSite = (ConditionOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", orgResource.getId().getIdPart());
+				ConditionOccurrence origCareSite = (ConditionOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", orgResource.getIdElement().getIdPart());
 				if (origCareSite == null)
-					this.careSiteSourceValue = orgResource.getId().getIdPart();
+					this.careSiteSourceValue = orgResource.getIdElement().getIdPart();
 				else
 					this.setId(origCareSite.getId());
 			}
@@ -207,9 +212,9 @@ public class CareSite extends BaseResourceEntity{
 			this.setCareSiteName(orgResource.getName());
 			
 			// Organzation.type to Place of Service Concept
-			CodeableConceptDt orgType = orgResource.getType();
-			if (orgType != null) {
-				List<CodingDt> typeCodings = orgType.getCoding();
+			List<CodeableConcept> orgTypes = orgResource.getType();
+			if (orgTypes.size() > 0) {
+				List<Coding> typeCodings = orgTypes.get(0).getCoding();
 				if (typeCodings.size() > 0) {
 					String typeCode = typeCodings.get(0).getCode();
 					Long placeOfServiceId = OmopConceptMapping.getInstance().get(typeCode, OmopConceptMapping.PLACE_OF_SERVICE);
@@ -221,7 +226,7 @@ public class CareSite extends BaseResourceEntity{
 			}
 			
 			// Address to Location ID
-			List<AddressDt> addresses = orgResource.getAddress();
+			List<Address> addresses = orgResource.getAddress();
 			if (addresses.size() > 0) {
 				// We can only store one address.
 				Location retLocation = Location.searchAndUpdate(addresses.get(0), this.location);
@@ -234,23 +239,23 @@ public class CareSite extends BaseResourceEntity{
 		return null;
 	}
 		
-	public static CareSite searchAndUpdate(ResourceReferenceDt resourceRef) {
+	public static CareSite searchAndUpdate(Reference resourceRef) {
 		if (resourceRef == null) return null;
 		
 		// See if this exists.
 		CareSite careSite = 
-				(CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, resourceRef.getReference().getIdPartAsLong());
+				(CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, resourceRef.getReferenceElement().getIdPartAsLong());
 		if (careSite != null) {
 			return careSite;
 		} else {
 			// Check source column to see if we have received this before.
 			careSite = (CareSite) OmopConceptMapping.getInstance()
-					.loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", resourceRef.getReference().getIdPart());
+					.loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", resourceRef.getReferenceElement().getIdPart());
 			if (careSite != null) {
 				return careSite;
 			} else {
 				careSite = new CareSite();
-				careSite.setCareSiteSourceValue(resourceRef.getReference().getIdPart());
+				careSite.setCareSiteSourceValue(resourceRef.getReferenceElement().getIdPart());
 				if (careSite.getCareSiteName() != null)
 					careSite.setCareSiteName(resourceRef.getDisplay().toString());
 				return careSite;

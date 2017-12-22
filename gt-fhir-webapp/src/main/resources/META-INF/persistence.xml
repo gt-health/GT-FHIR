@@ -8,34 +8,34 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 
 		<!-- The below classes are in alphabetic order with their simple names -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.CareSite</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.CareSite</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Concept</class>
 		<class>edu.gatech.i3l.fhir.dstu3.entities.ConditionOccurrence</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>-->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.DeviceExposure</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.DrugExposureAdministration</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.DrugExposure</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.DrugExposureDispensed</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Domain</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationOrderView</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Domain</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.MedicationOrderView</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class> -->
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Location</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Observation</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.OmopMeasurement</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.OmopObservation</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.MedicationConcept</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Observation</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.OmopMeasurement</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.OmopObservation</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Person</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.PersonComplement</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.ProcedureOccurrence</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Provider</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.VisitOccurrence</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.Vocabulary</class>
 
 		<!-- The following classes are for SMART on FHIR Launch Context -->
 		<class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContext</class>

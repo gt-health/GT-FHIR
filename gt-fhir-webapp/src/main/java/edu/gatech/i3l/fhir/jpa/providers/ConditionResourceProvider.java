@@ -68,7 +68,7 @@ public class ConditionResourceProvider extends
 //			TokenAndListParam theCategory, 
 //  
 			@Description(shortDefinition="Date related onsets (dateTime and Period)")
-			@OptionalParam(name="onset")
+			@OptionalParam(name="onset-date")
 			DateRangeParam theOnset, 
   
 //			@Description(shortDefinition="Other onsets (boolean, age, range, string)")

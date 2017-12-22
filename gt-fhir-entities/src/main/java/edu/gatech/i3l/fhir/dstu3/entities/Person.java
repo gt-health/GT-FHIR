@@ -36,7 +36,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 //import ca.uhn.fhir.model.dstu2.resource.Patient;
 //import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 //import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
-import ca.uhn.fhir.model.primitive.DateDt;
+//import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -465,7 +465,7 @@ public class Person extends BaseResourceEntity{
 	@Override
 	public String translateSearchParam(String link) {
 		switch (link) {
-		case Patient.SP_CAREPROVIDER:
+		case Patient.SP_GENERAL_PRACTITIONER:
 			return "provider";
 		default:
 			break;

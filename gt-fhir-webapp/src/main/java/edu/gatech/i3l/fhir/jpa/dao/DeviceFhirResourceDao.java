@@ -1,7 +1,7 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
 import org.hl7.fhir.dstu3.model.Device;
-import edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure;
+import edu.gatech.i3l.fhir.dstu3.entities.DeviceExposure;
 import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 

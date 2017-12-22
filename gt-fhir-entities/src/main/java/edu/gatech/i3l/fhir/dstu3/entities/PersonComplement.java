@@ -13,16 +13,30 @@ import javax.persistence.Table;
 import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
-import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
+
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.ContactPoint;
+import org.hl7.fhir.dstu3.model.DomainResource;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Identifier;
+//import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+//import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
+//import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+//import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.codesystems.V3MaritalStatus;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
+//import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -180,7 +194,8 @@ public class PersonComplement extends Person{
 	@Override
 	public Patient getRelatedResource() {
 		Patient patient = (Patient) super.getRelatedResource();
-		patient.addName().addFamily(this.familyName).addGiven(this.givenName1);
+		HumanName humanName = new HumanName();
+		humanName.setFamily(this.familyName).addGiven(this.givenName1);
 		if(this.givenName2 != null)
 			patient.getName().get(0).addGiven(this.givenName2);
 //		short active = this.active != null ? this.active : 0;
@@ -190,16 +205,26 @@ public class PersonComplement extends Person{
 			patient.setActive(true);
 
 		if (this.maritalStatus != null && !this.maritalStatus.isEmpty()) {
-			patient.setMaritalStatus(MaritalStatusCodesEnum.valueOf(this.maritalStatus.toUpperCase()));
+			CodeableConcept maritalStatusCode = new CodeableConcept();
+			V3MaritalStatus maritalStatus;
+			try {
+				maritalStatus = V3MaritalStatus.fromCode(this.maritalStatus.toUpperCase());
+				Coding coding = new Coding(maritalStatus.getSystem(), maritalStatus.toCode(), maritalStatus.getDisplay());
+				maritalStatusCode.addCoding(coding);
+				patient.setMaritalStatus(maritalStatusCode);
+			} catch (FHIRException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
-		List<ContactPointDt> contactPoints = new ArrayList<ContactPointDt>();
+		List<ContactPoint> contactPoints = new ArrayList<ContactPoint>();
 		if (this.contactPoint1 != null && !this.contactPoint1.isEmpty()) {
 			String[] contactInfo = this.contactPoint1.split(":");
 			if (contactInfo.length == 3) {
-				ContactPointDt contactPoint = new ContactPointDt();
-				contactPoint.setSystem(ContactPointSystemEnum.valueOf(contactInfo[0].toUpperCase()));
-				contactPoint.setUse(ContactPointUseEnum.valueOf(contactInfo[1].toUpperCase()));
+				ContactPoint contactPoint = new ContactPoint();
+				contactPoint.setSystem(ContactPoint.ContactPointSystem.valueOf(contactInfo[0].toUpperCase()));
+				contactPoint.setUse(ContactPoint.ContactPointUse.valueOf(contactInfo[1].toUpperCase()));
 				contactPoint.setValue(contactInfo[2]);
 				contactPoints.add(contactPoint);
 			}
@@ -207,9 +232,9 @@ public class PersonComplement extends Person{
 		if (this.contactPoint2 != null && !this.contactPoint2.isEmpty()) {
 			String[] contactInfo = this.contactPoint2.split(":");
 			if (contactInfo.length == 3) {
-				ContactPointDt contactPoint = new ContactPointDt();
-				contactPoint.setSystem(ContactPointSystemEnum.valueOf(contactInfo[0].toUpperCase()));
-				contactPoint.setUse(ContactPointUseEnum.valueOf(contactInfo[1].toUpperCase()));
+				ContactPoint contactPoint = new ContactPoint();
+				contactPoint.setSystem(ContactPoint.ContactPointSystem.valueOf(contactInfo[0].toUpperCase()));
+				contactPoint.setUse(ContactPoint.ContactPointUse.valueOf(contactInfo[1].toUpperCase()));
 				contactPoint.setValue(contactInfo[2]);
 				contactPoints.add(contactPoint);
 			}
@@ -217,9 +242,9 @@ public class PersonComplement extends Person{
 		if (this.contactPoint3 != null && !this.contactPoint3.isEmpty()) {
 			String[] contactInfo = this.contactPoint3.split(":");
 			if (contactInfo.length == 3) {
-				ContactPointDt contactPoint = new ContactPointDt();
-				contactPoint.setSystem(ContactPointSystemEnum.valueOf(contactInfo[0].toUpperCase()));
-				contactPoint.setUse(ContactPointUseEnum.valueOf(contactInfo[1].toUpperCase()));
+				ContactPoint contactPoint = new ContactPoint();
+				contactPoint.setSystem(ContactPoint.ContactPointSystem.valueOf(contactInfo[0].toUpperCase()));
+				contactPoint.setUse(ContactPoint.ContactPointUse.valueOf(contactInfo[1].toUpperCase()));
 				contactPoint.setValue(contactInfo[2]);
 				contactPoints.add(contactPoint);
 			}
@@ -244,40 +269,30 @@ public class PersonComplement extends Person{
 	 * there is only one name for each {@link Person}.
 	 */
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		super.constructEntityFromResource(resource);
 		
 		if(resource instanceof Patient){
 			Patient patient = (Patient)resource;
 			
-			Iterator<HumanNameDt> iterator = patient.getName().iterator();
-			//while(iterator.hasNext()){
-			if(iterator.hasNext()){
-				HumanNameDt next = iterator.next();
+			Iterator<HumanName> patientIterator = patient.getName().iterator();
+			if(patientIterator.hasNext()){
+				HumanName next = patientIterator.next();
 				this.givenName1 = next.getGiven().get(0).getValue();//the next method was not advancing to the next element, then the need to use the get(index) method
 				if(next.getGiven().size() > 1) //TODO add unit tests, to assure this won't be changed to hasNext
 					this.givenName2 = next.getGiven().get(1).getValue();
-				Iterator<StringDt> family = next.getFamily().iterator();
-				this.familyName = "";
-				while(family.hasNext()){
-					if (this.familyName == "") {
-						this.familyName = this.familyName.concat(family.next().getValue());
-					} else {
-						this.familyName = this.familyName.concat(" "+family.next().getValue());						
-					}
-				}
+				String family = next.getFamily();
 				if(next.getSuffix().iterator().hasNext())
 					this.suffixName = next.getSuffix().iterator().next().getValue();
 				if(next.getPrefix().iterator().hasNext())
 					this.prefixName = next.getPrefix().iterator().next().getValue();
 			}
-			//}
 
 			String personSourceValue = null;
 
 			// FHIR Spec says that ID should not exist in CREATE (POST). But, we allow ID
 			// for GT-FHIR to support some POST with ID presents (internal projects)
-			IdDt myID = patient.getId();
+			IdType myID = patient.getIdElement();
 			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
 				PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
 				if (person != null) {
@@ -293,12 +308,12 @@ public class PersonComplement extends Person{
 				// We have no Patient ID. However, we could have a matching patient. Compare 
 				// name and address.
 				System.out.println("No Patient ID provided");
-				List<AddressDt> addresses = patient.getAddress();
-				AddressDt newAddress = null;
+				List<Address> addresses = patient.getAddress();
+				Address newAddress = null;
 				if (addresses.size() > 0) {
 					newAddress = addresses.get(0);
 				}
-				Long existingID = OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress));
+				Long existingID = OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddress(newAddress));
 				System.out.println("Patient Exists with PID="+existingID);
 				if (existingID != null) {
 					this.setId(existingID);
@@ -322,11 +337,11 @@ public class PersonComplement extends Person{
 			//
 			// Identifier has many fields. We can't have them all in OMOP. We only have string field and 
 			// size is very limited. So, for now, we only get value part.
-			List<IdentifierDt> identifiers = patient.getIdentifier();
+			List<Identifier> identifiers = patient.getIdentifier();
 			
 			// TODO: For now, we choose the first identifier if exists.
 			if (identifiers.isEmpty() == false) {
-				IdentifierDt identifier = identifiers.get(0);
+				Identifier identifier = identifiers.get(0);
 				if (identifier.getValue().isEmpty() == false) {
 					personSourceValue = identifier.getValue();
 					
@@ -348,47 +363,40 @@ public class PersonComplement extends Person{
 			else
 				this.setActive((short)0);
 			
-			BoundCodeableConceptDt<MaritalStatusCodesEnum> maritalStat = patient.getMaritalStatus();
+			CodeableConcept maritalStat = patient.getMaritalStatus();
 			if (maritalStat != null) {
-				Set<MaritalStatusCodesEnum> maritalEnum = maritalStat.getValueAsEnum();
-				if (maritalEnum != null) {
-					for (MaritalStatusCodesEnum myCode : maritalEnum) {
-						System.out.println("MARITAL STATUS:"+myCode.name());
-						this.setMaritalStatus(myCode.name());
-						break;
-					}
+				Coding coding = maritalStat.getCodingFirstRep();
+				if (coding != null) {
+					System.out.println("MARITAL STATUS:"+coding.getCode());
+					this.setMaritalStatus(coding.getCode());
 				}
 			}
 			
 			// Get contact information.
-			List<ContactPointDt> contactPoints = patient.getTelecom();
-			if (contactPoints.size() > 0) {
-				ContactPointDt contactPoint = contactPoints.get(0);
-				String system = contactPoint.getSystem();
-				String use = contactPoint.getUse();
+			List<ContactPoint> contactPoints = patient.getTelecom();
+			Iterator<ContactPoint> contactIterator = contactPoints.iterator();
+			int index = 0;
+			while (contactIterator.hasNext()) {
+				ContactPoint contactPoint = contactIterator.next();
+				String system = contactPoint.getSystem().getSystem();
+				String use = contactPoint.getUse().toCode();
 				String value = contactPoint.getValue();
-				this.setContactPoint1(system+":"+use+":"+value);
-			}
-			if (contactPoints.size() > 1) {
-				ContactPointDt contactPoint = contactPoints.get(1);
-				String system = contactPoint.getSystem();
-				String use = contactPoint.getUse();
-				String value = contactPoint.getValue();
-				this.setContactPoint2(system+":"+use+":"+value);
-			}
-			if (contactPoints.size() > 2) {
-				ContactPointDt contactPoint = contactPoints.get(2);
-				String system = contactPoint.getSystem();
-				String use = contactPoint.getUse();
-				String value = contactPoint.getValue();
-				this.setContactPoint3(system+":"+use+":"+value);
+				if (index == 0) {
+					this.setContactPoint1(system+":"+use+":"+value);
+				} else if (index == 1) {
+					this.setContactPoint2(system+":"+use+":"+value);
+				} else {
+					this.setContactPoint3(system+":"+use+":"+value);
+					break;
+				}
+				index++;
 			}
 			
 			//MARITAL STATUS
 //			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(patient.getMaritalStatus().getText(), OmopConceptMapping.MARITAL_STATUS));
 		} else {
 			ourLog.error("There was not possible to construct the entity ? using the resource ?. It should be used the resource ?.",
-					this.getClass().getSimpleName(), resource.getResourceName(), getResourceType());
+					this.getClass().getSimpleName(), ((DomainResource)resource).getResourceType().toString(), getResourceType());
 		}
 		return this;
 	}
@@ -428,10 +436,10 @@ public class PersonComplement extends Person{
 		}
 	}
 		
-	public static PersonComplement searchAndUpdate(ResourceReferenceDt patientResourceRef) {
+	public static PersonComplement searchAndUpdate(Reference patientResourceRef) {
 		if (patientResourceRef == null) return null;
 				
-		Long patientRef = patientResourceRef.getReference().getIdPartAsLong();
+		Long patientRef = patientResourceRef.getReferenceElement().getIdPartAsLong();
 		PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance()
 				.loadEntityById(PersonComplement.class, patientRef);
 		if (person != null) {

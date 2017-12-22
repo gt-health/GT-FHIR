@@ -4,6 +4,7 @@
 package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,12 +25,21 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import org.hl7.fhir.dstu3.model.Condition;
+import org.hl7.fhir.dstu3.model.Condition.ConditionVerificationStatus;
+import org.hl7.fhir.dstu3.model.DateTimeType;
+import org.hl7.fhir.dstu3.model.Identifier;
+import org.hl7.fhir.dstu3.model.Period;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.Type;
+import org.hl7.fhir.dstu3.model.codesystems.ConditionCategory;
+import org.hl7.fhir.exceptions.FHIRException;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IDatatype;
+//import ca.uhn.fhir.model.api.IDatatype;
 //import ca.uhn.fhir.model.api.IResource;
 //import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 //import ca.uhn.fhir.model.dstu2.composite.CodingDt;
@@ -39,8 +49,8 @@ import ca.uhn.fhir.model.api.IDatatype;
 //import ca.uhn.fhir.model.dstu2.resource.Condition;
 //import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
 //import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.primitive.DateTimeDt;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -236,7 +246,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			Condition condition = (Condition) resource;
 			
 			/* Set patient */
-			ResourceReferenceDt patientResource =  condition.getPatient();
+			Reference patientResource =  condition.getSubject();
 			if (patientResource == null) return null; // We have to have a patient
 			
 //			Long patientRef = patientResource.getReference().getIdPartAsLong();
@@ -253,14 +263,14 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			
 			// We are writing to the database. Keep the source so we know where it is coming from
 			OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-			if (condition.getId().getIdPartAsLong() != null) {
-				this.setId(condition.getId().getIdPartAsLong());
+			if (condition.getIdElement().getIdPartAsLong() != null) {
+				this.setId(condition.getIdElement().getIdPartAsLong());
 			} else {
 				// We are creating a new entry. But, before we do that, we need to check if
 				// this data has already been entered. Use its identifier again source value to check 
 				//
 				// See if we have identifier.
-				IdentifierDt identifier = condition.getIdentifierFirstRep();
+				Identifier identifier = condition.getIdentifierFirstRep();
 				String identifierValue = identifier.getValue();
 				if (identifierValue != null && identifierValue.isEmpty() == false) {
 					ConditionOccurrence existingConditionOccurrence = 
@@ -282,19 +292,19 @@ public class ConditionOccurrence extends BaseResourceEntity {
 				System.out.println("Condition code not recognized: "+condition.getCode().getCodingFirstRep().getCode()+". System: "+condition.getCode().getCodingFirstRep().getSystem());
 			}
 			
-			IDatatype onSetDate = condition.getOnset();
-			if (onSetDate instanceof DateTimeDt) {
-				DateTimeDt dateTimeDt = (DateTimeDt) onSetDate;
-				this.startDate = dateTimeDt.getValue();
-			} else if (onSetDate instanceof PeriodDt) {
-				PeriodDt periodDt = (PeriodDt) onSetDate;
-				this.startDate = periodDt.getStart();
-				this.endDate = periodDt.getEnd();
+			Type onSetDate = condition.getOnset();
+			if (onSetDate instanceof DateTimeType) {
+				DateTimeType dateTimeType = (DateTimeType) onSetDate;
+				this.startDate = dateTimeType.getValue();
+			} else if (onSetDate instanceof Period) {
+				Period period = (Period) onSetDate;
+				this.startDate = period.getStart();
+				this.endDate = period.getEnd();
 			}
 
-			ResourceReferenceDt encounterResource = condition.getEncounter();
+			Reference encounterResource = condition.getContext();
 			if (encounterResource != null) {
-				Long encounterReference = encounterResource.getReference().getIdPartAsLong();
+				Long encounterReference = encounterResource.getReferenceElement().getIdPartAsLong();
 				if (encounterReference != null) {
 					VisitOccurrence visitOccurrence = VisitOccurrence
 							.searchAndUpdate(encounterReference, startDate, endDate, this.person);
@@ -305,10 +315,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			}
 			
 			this.conditionTypeConcept = new Concept();
-			ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt<ConditionCategoryCodesEnum> condCategory = condition.getCategory();
-			CodingDt condCatCoding = condCategory.getCodingFirstRep();
-			if (condCatCoding != null) {
-				if (condCatCoding.getCode().equalsIgnoreCase(ConditionCategoryCodesEnum.COMPLAINT.getCode())) {
+			List<CodeableConcept> condCategories = condition.getCategory();
+			CodeableConcept condCategory = condCategories.get(0);
+			if (!condCategory.isEmpty()) {
+				Coding condCatCoding = condCategory.getCodingFirstRep();
+				
+				if (condCatCoding.getCode().equalsIgnoreCase(ConditionCategory.PROBLEMLISTITEM.toCode())) {
 					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId());
 				} else {
 					this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
@@ -320,11 +332,10 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// this.stopReason = stopReason; NOTE: no FHIR parameter for
 			// stopReason.
 
-			IdDt asserterReference = condition.getAsserter().getReference();
-			ResourceReferenceDt asserterResRef = condition.getAsserter();
-			if (asserterResRef != null && asserterReference.getIdPartAsLong() != null && asserterReference.getResourceType() != null 
-					&& asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
-				Long providerId = asserterReference.getIdPartAsLong();					
+			Reference asserterResRef = condition.getAsserter();
+			if (!asserterResRef.isEmpty() && asserterResRef.getReferenceElement().getIdPartAsLong() != null && asserterResRef.getReferenceElement().getResourceType() != null 
+					&& asserterResRef.getReferenceElement().getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
+				Long providerId = asserterResRef.getReferenceElement().getIdPartAsLong();					
 				if (providerId != null) {
 					Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, providerId);
 					if (provider != null) {
@@ -334,7 +345,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 						provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", providerId.toString());
 						if (provider == null) {
 							this.provider = new Provider();
-							this.provider.setProviderName(asserterResRef.getDisplay().getValueAsString());
+							this.provider.setProviderName(asserterResRef.getDisplay());
 							this.provider.setProviderSourceValue(providerId.toString());
 						} else {
 							this.setProvider(provider);
@@ -359,9 +370,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		condition.setId(this.getIdDt());
 
 		// Set patient reference to Patient (note: in dstu1, this was subject.)
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+//		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+//		patientReference.setDisplay(this.person.getNameAsSingleString());
+		Reference patientReference = new Reference();
+		patientReference.setReference(Person.RES_TYPE+"/"+this.person.getId());
 		patientReference.setDisplay(this.person.getNameAsSingleString());
-		condition.setPatient(patientReference);
+		condition.setSubject(patientReference);
 
 		// Set encounter if exists.
 		if (encounter != null && encounter.getId() > 0) {
@@ -369,14 +383,16 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// we just create this reference resource manually. When encounter
 			// is implemented, we
 			// will get it from visit_occurrence class.
-			ResourceReferenceDt encounterReference = new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.encounter.getId()));
-			condition.setEncounter(encounterReference);
+			Reference encounterReference = new Reference();
+			encounterReference.setReference(VisitOccurrence.RES_TYPE+"/"+this.encounter.getId());
+			condition.setContext(encounterReference);
 		}
 
 		// Set asserter if exists
 		// This can be either Patient or Practitioner.
 		if (provider != null && provider.getId() > 0) {
-			ResourceReferenceDt practitionerReference = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, provider.getId()));
+			Reference practitionerReference = new Reference();
+			practitionerReference.setReference(Provider.RESOURCE_TYPE+"/"+provider.getId());
 			practitionerReference.setDisplay(this.provider.getProviderName());
 			condition.setAsserter(practitionerReference);
 		}
@@ -409,8 +425,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 			// allows one coding concept per condition.
 			// In the future, if we want to allow multiple coding concepts here,
 			// we need to do it here.
-			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(theDisplay);
+			Coding coding = new Coding(theSystem, theCode, theDisplay);
 			conditionCodeConcept.addCoding(coding);
 		}
 
@@ -438,29 +453,37 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		// We may have only one date if this condition did not end. If ended, we
 		// have
 		// a period. First, check if endDate is available.
-		DateTimeDt startDateDt = new DateTimeDt(startDate);
+		DateTimeType startDateDt = new DateTimeType(startDate);
 		if (endDate == null) {
 			// Date
 			condition.setOnset(startDateDt);
 		} else {
 			// Period
-			DateTimeDt endDateDt = new DateTimeDt(endDate);
-			PeriodDt periodDt = new PeriodDt();
-			periodDt.setStart(startDateDt);
-			periodDt.setEnd(endDateDt);
+			Period periodDt = new Period();
+			periodDt.setStart(startDate);
+			periodDt.setEnd(endDate);
 			condition.setOnset(periodDt);
 		}
 		
 		// Category
 		Concept myCat = this.getConditionConcept();
-		if (myCat.getId() == Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId()) {
-			condition.setCategory(ConditionCategoryCodesEnum.COMPLAINT);
-		} else {
-			condition.setCategory(ConditionCategoryCodesEnum.FINDING);
+		CodeableConcept categoryCodeableConcept = new CodeableConcept();
+		ConditionCategory category;
+		try {
+			if (myCat.getId() == Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId()) {
+				category = ConditionCategory.fromCode(ConditionCategory.PROBLEMLISTITEM.toCode());
+			} else {
+				category = ConditionCategory.fromCode(ConditionCategory.ENCOUNTERDIAGNOSIS.toCode());
+			}
+			categoryCodeableConcept.addCoding((new Coding(category.getSystem(), category.toCode(), category.getDisplay())));
+			condition.addCategory(categoryCodeableConcept);
+		} catch (FHIRException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
+		
 		// VerficationStutus 
-		condition.setVerificationStatus(ConditionVerificationStatusEnum.CONFIRMED);
+		condition.setVerificationStatus(ConditionVerificationStatus.CONFIRMED);
 
 		return condition;
 	}
@@ -482,7 +505,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 		switch (link) {
 		case Condition.SP_CODE:
 			return "conditionConcept.conceptCode";
-		case Condition.SP_ONSET:
+		case Condition.SP_ONSET_DATE:
 			return "startDate";
 		case Condition.SP_ENCOUNTER:
 			return "encounter";

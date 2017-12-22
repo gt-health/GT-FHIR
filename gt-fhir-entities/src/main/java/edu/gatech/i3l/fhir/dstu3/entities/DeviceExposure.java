@@ -16,13 +16,18 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.Device;
+import org.hl7.fhir.dstu3.model.Device.DeviceUdiComponent;
+import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 //import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Device;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.resource.Device;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -190,12 +195,14 @@ public class DeviceExposure extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResource getRelatedResource() {
+	public IBaseResource getRelatedResource() {
 		Device deviceRes = new Device();
 		
 		deviceRes.setId(this.getIdDt());
 		if (this.person != null) {
-			deviceRes.setPatient(new ResourceReferenceDt(this.person.getIdDt()));
+			Reference patientReference = new Reference();
+			patientReference.setReference(Person.RES_TYPE+"/"+this.person.getId());
+			deviceRes.setPatient(patientReference);
 		}
 		
 		if (this.deviceConcept != null) {
@@ -203,20 +210,24 @@ public class DeviceExposure extends BaseResourceEntity {
 			String codeStr = this.deviceConcept.getConceptCode();
 			String displayStr = this.deviceConcept.getName();
 			
-			CodeableConceptDt devTypeCode = new CodeableConceptDt(systemUriStr, codeStr);
-			devTypeCode.getCodingFirstRep().setDisplay(displayStr);
-			deviceRes.setType(devTypeCode);
+			CodeableConcept devTypeCodeable = new CodeableConcept();
+			devTypeCodeable.addCoding(new Coding(systemUriStr, codeStr, displayStr));
+			deviceRes.setType(devTypeCodeable);
 		}
 		
 		if (this.uniqueDeviceId != null && !this.uniqueDeviceId.isEmpty()) {
-			deviceRes.setUdi(this.uniqueDeviceId);
+			DeviceUdiComponent udiComponent = new DeviceUdiComponent();
+			udiComponent.setDeviceIdentifier(this.uniqueDeviceId);
+			deviceRes.setUdi(udiComponent);
 		}
 		
+		Reference ownerReference = new Reference();
 		if (this.provider != null) {
-			deviceRes.setOwner(new ResourceReferenceDt(this.provider.getCareSite().getIdDt()));
+			ownerReference.setReference(CareSite.RES_TYPE+"/"+this.provider.getCareSite().getId());
 		} else if (this.visitOccurrence != null) {
-			deviceRes.setOwner(new ResourceReferenceDt(this.visitOccurrence.getCareSite().getIdDt()));
+			ownerReference.setReference(CareSite.RES_TYPE+"/"+this.visitOccurrence.getCareSite().getId());
 		}
+		deviceRes.setOwner(ownerReference);
 				
 		return deviceRes;
 	}

@@ -906,7 +906,7 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 		TypedQuery<IResourceEntity> q = myEntityManager.createQuery(cq);
 		for (IResourceEntity entity : q.getResultList()) { 
 			//Class<? extends IBaseResource> resourceType = baseFhirDao.getContext().getResourceDefinition(next.getResourceType()).getImplementingClass();
-			IResource resource = entity.getRelatedResource();
+			IResource resource = (IResource) entity.getRelatedResource();
 			Integer index = position.get(entity.getId());
 			if (index == null) {
 				ourLog.warn("Got back unexpected resource PID {}", entity.getId());
@@ -1002,7 +1002,7 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 							for (int i = 0; i < resEntities.size(); i++) {
 								BaseResourceEntity entity = (BaseResourceEntity) resEntities.get(i);//WARNING works only for instances of BaseResourceEntity
 								entity.setVersion(revs.get(i).longValue());
-								IResource resource = entity.getRelatedResource();
+								IBaseResource resource = entity.getRelatedResource();
 								retVal.add(resource);
 								
 							}
