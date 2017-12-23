@@ -5,10 +5,10 @@ import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_MEDICATION;
 import static ca.uhn.fhir.model.dstu2.resource.MedicationOrder.SP_PATIENT;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+//import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
@@ -21,21 +21,30 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
-import org.hl7.fhir.instance.model.Reference;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.Dosage;
+import org.hl7.fhir.dstu3.model.MedicationRequest;
+import org.hl7.fhir.dstu3.model.MedicationRequest.MedicationRequestDispenseRequestComponent;
+import org.hl7.fhir.dstu3.model.Period;
+import org.hl7.fhir.dstu3.model.Range;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.SimpleQuantity;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.RangeDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
-import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
-import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DispenseRequest;
-import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+//import ca.uhn.fhir.model.dstu2.composite.RangeDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
+//import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
+//import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DispenseRequest;
+//import ca.uhn.fhir.model.dstu2.resource.MedicationOrder.DosageInstruction;
+//import ca.uhn.fhir.model.primitive.DateTimeDt;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
@@ -45,7 +54,7 @@ import edu.gatech.i3l.omop.mapping.StaticVariables;
 @Entity
 @Audited
 @DiscriminatorValue("PrescriptionWritten")
-public final class MedicationOrderView extends DrugExposure {
+public final class MedicationRequestView extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationOrder";
 
@@ -263,25 +272,20 @@ public final class MedicationOrderView extends DrugExposure {
 	}
 
 	@Override
-	public IResource getRelatedResource() {
-		MedicationOrder resource = new MedicationOrder();
+	public MedicationRequest getRelatedResource() {
+		MedicationRequest resource = new MedicationRequest();
 		resource.setId(this.getIdDt());
-		resource.setDateWritten(new DateTimeDt(this.startDate));
+		resource.setAuthoredOn(this.startDate);
 		/* Begin Setting Dispense */
 		// ResourceReferenceDt medicationRef = new ResourceReferenceDt(new
 		// IdDt("Medication", this.medication.getId()));
 
 		// Adding medication to Contained.
-		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(),
-				this.getMedication().getConceptCode());
-		medCoding.setDisplay(this.getMedication().getName());
-
-		List<CodingDt> codingList = new ArrayList<CodingDt>();
-		codingList.add(medCoding);
-		CodeableConceptDt codeDt = new CodeableConceptDt();
-		codeDt.setCoding(codingList);
-
-		resource.setMedication(codeDt);
+		Coding medCoding = new Coding(this.getMedication().getVocabulary().getSystemUri(),
+				this.getMedication().getConceptCode(), this.getMedication().getName());
+		CodeableConcept medCodeable = new CodeableConcept();
+		medCodeable.addCoding(medCoding);
+		resource.setMedication(medCodeable);
 		
 //		
 //		Medication medResource = new Medication();
@@ -298,63 +302,67 @@ public final class MedicationOrderView extends DrugExposure {
 		// End of contained medication.
 
 		// resource.setMedication(medicationRef);
-		DispenseRequest dispense = new DispenseRequest();
-		dispense.setMedication(codeDt);
+		MedicationRequestDispenseRequestComponent dispenseRequest = new MedicationRequest.MedicationRequestDispenseRequestComponent();
+//		dispense.setMedication(medCodeable);
 		
 		// dispense.setMedication(medicationRef);
 //		dispense.setMedication(medRefDt);
 
 		if (this.refills != null)
-			dispense.setNumberOfRepeatsAllowed(this.refills);
+			dispenseRequest.setNumberOfRepeatsAllowed(this.refills);
 		if (this.quantity != null) {
-			dispense.setQuantity(new SimpleQuantityDt(this.quantity.doubleValue()));
+			SimpleQuantity dispenseSimpleQuantity = new SimpleQuantity();
+			dispenseSimpleQuantity.setValue(this.quantity.doubleValue());
+			dispenseRequest.setQuantity(dispenseSimpleQuantity);
 		}
 		// setting validity
 		Calendar c = Calendar.getInstance();
 		c.setTime(this.startDate);
-		PeriodDt period = new PeriodDt();
-		period.setStart(new DateTimeDt(c.getTime()));
+		Period period = new Period();
+		period.setStart(this.startDate);
 		if (this.endDate != null) {
-			c.setTime(this.endDate);
-			period.setEnd(new DateTimeDt(c.getTime()));
+//			c.setTime(this.endDate);
+			period.setEnd(this.endDate);
+		} else {
+			if (this.daysSupply != null) {
+				c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
+				period.setEnd(c.getTime());
+			}
 		}
-		if (this.daysSupply != null) {
-			c.add(Calendar.DAY_OF_MONTH, this.daysSupply);
-			period.setEnd(new DateTimeDt(c.getTime()));
-		}
-		dispense.setValidityPeriod(period);
+		dispenseRequest.setValidityPeriod(period);
 
-		resource.setDispenseRequest(dispense);
+		resource.setDispenseRequest(dispenseRequest);
 		/* End Setting Dispense */
 		if (this.visitOccurrence != null) {
-			resource.setEncounter(
-					new ResourceReferenceDt(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId())));
+			Reference visitReference = new Reference(VisitOccurrence.RES_TYPE+"/"+this.getVisitOccurrence().getId());
+			resource.setContext(visitReference);
 		}
-		ResourceReferenceDt patientRef = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId()));
+		Reference patientRef = new Reference(Person.RES_TYPE+"/"+this.getPerson().getId());
 		patientRef.setDisplay(this.person.getNameAsSingleString());
-		resource.setPatient(patientRef);
+		resource.setSubject(patientRef);
 		
 //		if (this.relevantCondition != null)
 //			// FIXME the reference above doesn't corresponde to a
 //			// ResourceEntity; it should be a reference to Resource Condition
 //			resource.setReason(new ResourceReferenceDt(new IdDt("Condition", this.relevantCondition.getId())));
 		if (this.prescribingProvider != null) {
-			ResourceReferenceDt prescriberRef = new ResourceReferenceDt(new IdDt(Provider.RESOURCE_TYPE, this.prescribingProvider.getId()));
-			prescriberRef.setDisplay(this.prescribingProvider.getProviderName());
-			resource.setPrescriber(prescriberRef);
+			Reference recoderRef = new Reference(Provider.RESOURCE_TYPE+"/"+this.getPrescribingProvider().getId());
+			recoderRef.setDisplay(this.prescribingProvider.getProviderName());
+			resource.setRecorder(recoderRef);
 		}
 
         Double doseValue = this.getEffectiveDrugDose();
         if (doseValue != null && doseValue >= 0.0)  {
-        	DosageInstruction dosage = new DosageInstruction();
+        	Dosage dosage = new Dosage();
         	Concept myUnitConcept = this.getDoseUnitConcept();
-        	SimpleQuantityDt dose;
+        	SimpleQuantity dose = new SimpleQuantity();
+    		dose.setValue(doseValue);
         	if (myUnitConcept != null) {
-        		dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", myUnitConcept.getName());
+//        		dose = new SimpleQuantityDt(doseValue, "http://unitsofmeasure.org", myUnitConcept.getName());
         		dose.setCode(myUnitConcept.getConceptCode());
-        	} else {
-        		dose = new SimpleQuantityDt(doseValue);
+        		dose.setSystem("http://unitsofmeasure.org");
         	}
+        	
 			dosage.setDose(dose);
 			resource.addDosageInstruction(dosage);
         }
@@ -378,26 +386,26 @@ public final class MedicationOrderView extends DrugExposure {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
-		MedicationOrder medicationOrder = (MedicationOrder) resource;
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
+		MedicationRequest medicationRequest = (MedicationRequest) resource;
 		
 		/* Set patient */
-		ResourceReferenceDt patientResource =  medicationOrder.getPatient();
-		if (patientResource == null) return null; // We have to have a patient
+		Reference patientRef =  medicationRequest.getSubject();
+		if (patientRef == null || patientRef.isEmpty()) return null; // We have to have a patient
 		
 //		Long patientRef = patientResource.getReference().getIdPartAsLong();
-		PersonComplement person = PersonComplement.searchAndUpdate(patientResource);
+		PersonComplement person = PersonComplement.searchAndUpdate(patientRef);
 		if (person == null) return null; // We must have a patient
 		
 		this.setPerson(person);
 
 		// We are writing to the database. Keep the source so we know where it is coming from
-		if (medicationOrder.getId() != null) {
+		if (medicationRequest.getId() != null && !medicationRequest.isEmpty()) {
 			// See if we already have this in the source field. If so,
 			// then we want update not create
-			MedicationOrderView origMed = (MedicationOrderView) OmopConceptMapping.getInstance().loadEntityBySource(MedicationOrderView.class, "MedicationOrderView", "drugSourceValue", medicationOrder.getId().getIdPart());
+			MedicationRequestView origMed = (MedicationRequestView) OmopConceptMapping.getInstance().loadEntityBySource(MedicationRequestView.class, "MedicationRequestView", "drugSourceValue", medicationRequest.getIdElement().getIdPart());
 			if (origMed == null)
-				this.setDrugSourceValue(medicationOrder.getId().getIdPart());
+				this.setDrugSourceValue(medicationRequest.getIdElement().getIdPart());
 			else
 				this.setId(origMed.getId());
 		}
@@ -407,7 +415,7 @@ public final class MedicationOrderView extends DrugExposure {
 		this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_WRITTEN.getConceptId());
 		
 		/* Set start date of prescription */
-		this.startDate = medicationOrder.getDateWritten();
+		this.startDate = medicationRequest.getAuthoredOn();
 		
 
 //		if (patientRef != null) {
@@ -433,9 +441,9 @@ public final class MedicationOrderView extends DrugExposure {
 //		}
 
 		/* Set VisitOccurrence */
-		ResourceReferenceDt visitResRef = medicationOrder.getEncounter();
-		if (visitResRef != null) {
-			Long encounterRef = visitResRef.getReference().getIdPartAsLong();
+		Reference visitRef = medicationRequest.getContext();
+		if (visitRef != null && !visitRef.isEmpty()) {
+			Long encounterRef = visitRef.getReferenceElement().getIdPartAsLong();
 //	
 //			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
 //			EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
@@ -468,18 +476,18 @@ public final class MedicationOrderView extends DrugExposure {
 		
 		/* Set Medication */
 		Concept medication = new Concept();
-		if (medicationOrder.getMedication() instanceof CodeableConceptDt) {
-			CodeableConceptDt codeDt = (CodeableConceptDt) medicationOrder.getMedication();
-			CodingDt medCoding = codeDt.getCodingFirstRep();
-			if (medCoding != null) {
+		if (medicationRequest.getMedication() instanceof CodeableConcept) {
+			CodeableConcept codeDt = (CodeableConcept) medicationRequest.getMedication();
+			Coding medCoding = codeDt.getCodingFirstRep();
+			if (medCoding != null && !medCoding.isEmpty()) {
 //				this.medication = new Concept();
 //				String systemUri = medCoding.getSystem();
 				String code = medCoding.getCode();
 				medication.setId(OmopConceptMapping.getInstance().get(code));
 			}
-		} else if (medicationOrder.getMedication() instanceof ResourceReferenceDt) {
-			Reference medicationRef = (Reference) medicationOrder.getMedication();
-			String medId = medicationRef.getId();
+		} else if (medicationRequest.getMedication() instanceof Reference) {
+			Reference medicationRef = (Reference) medicationRequest.getMedication();
+			String medId = medicationRef.getReferenceElement().getIdPart();
 			if (Pattern.matches(StaticVariables.fpRegex, medId)) {
 				medication.setId(Long.valueOf(medId));
 			}
@@ -490,11 +498,11 @@ public final class MedicationOrderView extends DrugExposure {
 //		DrugExposureComplement f_drug = new DrugExposureComplement();
 
 		/* dosageInstruction */
-		DosageInstruction dosageInstruction = medicationOrder.getDosageInstructionFirstRep();
-		if (dosageInstruction.getDose() instanceof RangeDt) {
+		Dosage dosageInstruction = medicationRequest.getDosageInstructionFirstRep();
+		if (dosageInstruction.getDose() instanceof Range) {
 			// This is doseRange
-		} else if (dosageInstruction.getDose() instanceof SimpleQuantityDt) {
-			SimpleQuantityDt doseQty = (SimpleQuantityDt) dosageInstruction.getDose();
+		} else if (dosageInstruction.getDose() instanceof SimpleQuantity) {
+			SimpleQuantity doseQty = (SimpleQuantity) dosageInstruction.getDose();
 			this.setEffectiveDrugDose(doseQty.getValue().doubleValue());
 			this.setDoseUnitSourceValue(doseQty.getUnit());
 
@@ -522,16 +530,12 @@ public final class MedicationOrderView extends DrugExposure {
 //		this.setComplement(f_drug);
 
 		/* dispense */
-		DispenseRequest dispenseRequest = medicationOrder.getDispenseRequest();
+		MedicationRequestDispenseRequestComponent dispenseRequest = medicationRequest.getDispenseRequest();
 		if (dispenseRequest != null) {
 			Integer refills = dispenseRequest.getNumberOfRepeatsAllowed();
-			if (refills != null) {
-				this.setRefills(refills);
-			} else {
-				this.setRefills(0);
-			}
+			this.setRefills(refills);
 
-			SimpleQuantityDt qty = dispenseRequest.getQuantity();
+			SimpleQuantity qty = dispenseRequest.getQuantity();
 			if (qty != null) {
 				this.setQuantity(qty.getValue());
 			} else {
@@ -539,20 +543,18 @@ public final class MedicationOrderView extends DrugExposure {
 			}
 
 			if (this.startDate == null) {
-				PeriodDt validPeriod = dispenseRequest.getValidityPeriod();
+				Period validPeriod = dispenseRequest.getValidityPeriod();
 				if (validPeriod != null) {
 					this.startDate = validPeriod.getStart();
 				}
 			}
 		}
 		
-		ResourceReferenceDt medOrderRef = medicationOrder.getPrescriber();
-		if (medOrderRef != null) {
-			if (!medOrderRef.isEmpty()) {
-				Provider provider = Provider.searchAndUpdate(medOrderRef);
-				if (provider != null) {
-					this.setPrescribingProvider(provider);
-				}
+		Reference medRecorderRef = medicationRequest.getRecorder();
+		if (medRecorderRef != null && !medRecorderRef.isEmpty()) {
+			Provider provider = Provider.searchAndUpdate(medRecorderRef);
+			if (provider != null) {
+				this.setPrescribingProvider(provider);
 			}
 			
 //		 	Long prescriberID = medOrderRef.getReference().getIdPartAsLong();

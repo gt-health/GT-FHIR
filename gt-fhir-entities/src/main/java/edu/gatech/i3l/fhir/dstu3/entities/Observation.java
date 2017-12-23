@@ -29,22 +29,33 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.DateTimeType;
+import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
+import org.hl7.fhir.dstu3.model.Observation.ObservationStatus;
+import org.hl7.fhir.dstu3.model.Period;
+import org.hl7.fhir.dstu3.model.Quantity;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.dstu3.model.Type;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
-import ca.uhn.fhir.model.dstu2.resource.Observation.Component;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+//import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
+//import ca.uhn.fhir.model.dstu2.resource.Observation.Component;
 //import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
 //import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
@@ -60,7 +71,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 public class Observation extends BaseResourceEntity {
 
 	private static final String RES_TYPE = "Observation";
-	private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
+	private static final ObservationStatus STATUS = ObservationStatus.FINAL;
 	public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
 	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;	
 
@@ -308,19 +319,19 @@ public class Observation extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		System.out.println("Trying to write to Observation View Table");
 		// TODO: This is view, which is read-only. We need to come up with a way to write
 		// to either measurement or observation tables in OMOP. We may write them manually
 		// and just return null for this. But then, response will not be correct. Revisit this.
-		ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
+		org.hl7.fhir.dstu3.model.Observation observation = (org.hl7.fhir.dstu3.model.Observation) resource;
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 
-		if (observation.getEffective() instanceof DateTimeDt) {
-			this.date = ((DateTimeDt) observation.getEffective()).getValue();
+		if (observation.getEffective() instanceof DateTimeType) {
+			this.date = ((DateTimeType) observation.getEffective()).getValue();
 			SimpleDateFormat timeFormat = new SimpleDateFormat ("HH:mm:ss");
-			this.time = timeFormat.format(((DateTimeDt) observation.getEffective()).getValue());
-		} else if (observation.getEffective() instanceof PeriodDt) {
+			this.time = timeFormat.format(((DateTimeType) observation.getEffective()).getValue());
+		} else if (observation.getEffective() instanceof Period) {
 			// TODO: we need to handle period. We can probably use
 			// we can use range_low and range_high. These are only available in Measurement
 		}
@@ -329,25 +340,25 @@ public class Observation extends BaseResourceEntity {
 		 * Set subject: currently supporting only type Person TODO create
 		 * entity-complement to specify other types of subjects
 		 */
-		IdDt reference = observation.getSubject().getReference();
-		if (reference.getIdPartAsLong() != null) {
-			if ("Patient".equals(reference.getResourceType())) {
+		Reference subjectReference = observation.getSubject();
+		if (subjectReference != null && !subjectReference.isEmpty()) {
+			if ("Patient".equals(subjectReference.getReferenceElement().getResourceType())) {
 				this.person = new PersonComplement();
-				this.person.setId(reference.getIdPartAsLong());
-			} else if ("Group".equals(reference.getResourceType())) {
+				this.person.setId(subjectReference.getReferenceElement().getIdPartAsLong());
+			} else if ("Group".equals(subjectReference.getReferenceElement().getResourceType())) {
 				//
-			} else if ("Device".equals(reference.getResourceType())) {
+			} else if ("Device".equals(subjectReference.getReferenceElement().getResourceType())) {
 				//
-			} else if ("Location".equals(reference.getResourceType())) {
+			} else if ("Location".equals(subjectReference.getReferenceElement().getResourceType())) {
 				//
 			}
 		}
 
 		/* Set visit occurrence */
-		Long visitOccurrenceId = observation.getEncounter().getReference().getIdPartAsLong();
-		if (visitOccurrenceId != null) {
+		Reference visitRef = observation.getContext();
+		if (visitRef != null && !visitRef.isEmpty()) {
 			this.visitOccurrence = new VisitOccurrence();
-			this.visitOccurrence.setId(visitOccurrenceId);
+			this.visitOccurrence.setId(visitRef.getReferenceElement().getIdPartAsLong());
 		}
 
 		Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(),
@@ -374,26 +385,26 @@ public class Observation extends BaseResourceEntity {
 		}
 
 		/* Set the value of the observation */
-		IDatatype value = observation.getValue();
-		if (value instanceof QuantityDt) {
-			Long unitId = ocm.get(((QuantityDt) value).getUnit(), OmopConceptMapping.UCUM_CODE,
+		Type value = observation.getValue();
+		if (value instanceof Quantity) {
+			Long unitId = ocm.get(((Quantity) value).getUnit(), OmopConceptMapping.UCUM_CODE,
 					OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
-			this.valueAsNumber = ((QuantityDt) value).getValue();
+			this.valueAsNumber = ((Quantity) value).getValue();
 			if (unitId != null) {
 				this.unit = new Concept();
 				this.unit.setId(unitId);
 			}
 			this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
 			this.rangeLow = observation.getReferenceRangeFirstRep().getLow().getValue();
-		} else if (value instanceof CodeableConceptDt) {
-			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(),
+		} else if (value instanceof CodeableConcept) {
+			Long valueAsConceptId = ocm.get(((CodeableConcept) value).getCodingFirstRep().getCode(),
 					OmopConceptMapping.CLINICAL_FINDING);
 			if (valueAsConceptId != null) {
 				this.valueAsConcept = new Concept();
 				this.valueAsConcept.setId(valueAsConceptId);
 			}
 		} else {
-			this.valueAsString = ((StringDt) value).getValue();
+			this.valueAsString = ((StringType) value).getValue();
 		}
 
 		// quick solution.
@@ -409,7 +420,7 @@ public class Observation extends BaseResourceEntity {
 
 	@Override
 	public IResource getRelatedResource() {
-		ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
+		org.hl7.fhir.dstu3.model.Observation observation = new org.hl7.fhir.dstu3.model.Observation();
 		observation.setId(this.getIdDt());
 
 		String systemUriString = this.observationConcept.getVocabulary().getSystemUri();
@@ -429,31 +440,31 @@ public class Observation extends BaseResourceEntity {
 		// public static final Long DIASTOLIC_CONCEPT_ID = new Long(3012888);		
 		if (SYSTOLIC_CONCEPT_ID.equals(this.observationConcept.getId())) {
 			// Set coding for systolic and diastolic observation
-			systemUriString = "http://loinc.org";
-			codeString = "55284-4";
-			displayString = "Blood pressure systolic & diastolic";
+			Coding obsCoding = new Coding("http://loinc.org", "55284-4", "Blood pressure systolic & diastolic");
+			CodeableConcept obsCode = new CodeableConcept();
+			obsCode.addCoding(obsCoding);
+			observation.setCode(obsCode);
 			
-			List<Component> components = new ArrayList<Component>();
 			// First we add systolic component.
-			Component comp = new Component();
-			CodeableConceptDt componentCode = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(),
-					this.observationConcept.getConceptCode());
-			componentCode.getCodingFirstRep().setDisplay(this.observationConcept.getName());
-			comp.setCode(componentCode);
+			ObservationComponentComponent obsComponent1 = new ObservationComponentComponent();
 			
-			IDatatype compValue = null;
+			CodeableConcept componentCode = new CodeableConcept();
+			Coding componentCoding = new Coding(this.getObservationConcept().getVocabulary().getSystemUri(), this.getObservationConcept().getConceptCode(), this.getObservationConcept().getName());
+			obsComponent1.setCode(componentCode);
+			
+			Type compValue = null;
 			if (this.valueAsNumber != null) {
-				QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
+				Quantity quantity = new Quantity(this.valueAsNumber.doubleValue());
 				// Unit is defined as a concept code in omop v4, then unit and code are the same in this case
 				if (this.unit != null) {
 					quantity.setUnit(this.unit.getConceptCode());
 					quantity.setCode(this.unit.getConceptCode());
 					quantity.setSystem(this.unit.getVocabulary().getSystemUri());
 				}
-				compValue = quantity;
-				comp.setValue(compValue);
-				components.add(comp);
+				obsComponent1.setValue(quantity);
 			}
+			
+			observation.addComponent(obsComponent1);
 			
 			// Now search for diastolic component.
 			WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();

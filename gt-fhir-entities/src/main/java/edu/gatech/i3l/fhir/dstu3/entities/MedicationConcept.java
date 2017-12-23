@@ -20,10 +20,16 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
-import ca.uhn.fhir.model.dstu2.resource.Medication;
+//import ca.uhn.fhir.model.api.IResource;
+
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
+import org.hl7.fhir.dstu3.model.Medication;
+import org.hl7.fhir.dstu3.model.Narrative;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -193,15 +199,18 @@ public final class MedicationConcept extends BaseResourceEntity{
 	}
 
 	@Override
-	public IResource getRelatedResource() {
+	public Medication getRelatedResource() {
 		Medication resource = new Medication();
 		resource.setId(new IdDt(this.getId()));
-		CodeableConceptDt code = new CodeableConceptDt(this.getVocabulary().getSystemUri(), this.getConceptCode());
-		code.getCodingFirstRep().setDisplay(this.getName());
-		resource.setCode(code); 
-		NarrativeDt narrative = new NarrativeDt();
-		narrative.setDiv(this.toString());
+		CodeableConcept medCodeable = new CodeableConcept();
+		Coding medCoding = new Coding(this.getVocabulary().getSystemUri(), this.getConceptCode(), this.getName());
+		medCodeable.addCoding(medCoding);
+		resource.setCode(medCodeable); 
+		
+		Narrative narrative = new Narrative();
+		narrative.setDivAsString(this.toString());
 		resource.setText(narrative);
+		
 		return resource;
 	}
 
@@ -210,7 +219,7 @@ public final class MedicationConcept extends BaseResourceEntity{
 	 */
 	//TODO somehow we should be able to send message back in an OperationOutcome
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		return null;
 	}
 

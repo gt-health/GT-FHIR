@@ -18,7 +18,7 @@
 		<class>edu.gatech.i3l.fhir.dstu3.entities.DrugExposureDispensed</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class> -->
 		<class>edu.gatech.i3l.fhir.dstu3.entities.Domain</class>
-		<class>edu.gatech.i3l.fhir.dstu3.entities.MedicationOrderView</class>
+		<class>edu.gatech.i3l.fhir.dstu3.entities.MedicationRequestView</class>
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class> -->
 <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class> -->
 		<class>edu.gatech.i3l.fhir.dstu3.entities.Location</class>

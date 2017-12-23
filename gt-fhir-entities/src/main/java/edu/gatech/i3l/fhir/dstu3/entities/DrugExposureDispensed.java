@@ -1,9 +1,9 @@
 package edu.gatech.i3l.fhir.dstu3.entities;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,16 +15,23 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
-import ca.uhn.fhir.model.dstu2.resource.MedicationDispense;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.api.IResource;
+
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
+import org.hl7.fhir.dstu3.model.MedicationDispense;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.SimpleQuantity;
+
+//import ca.uhn.fhir.model.primitive.DateTimeDt;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
@@ -140,49 +147,48 @@ public final class DrugExposureDispensed extends DrugExposure{
 	}
 
 	@Override
-	public IResource getRelatedResource() {
-		ca.uhn.fhir.model.dstu2.resource.MedicationDispense resource = new ca.uhn.fhir.model.dstu2.resource.MedicationDispense();
+	public MedicationDispense getRelatedResource() {
+		MedicationDispense resource = new MedicationDispense();
 		resource.setId(this.getIdDt());
-		resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
+		Reference patientReference = new Reference(Person.RES_TYPE+"/"+this.getPerson().getId());
+		resource.setSubject(patientReference);
 		// resource.setMedication(new ResourceReferenceDt(new IdDt("Medication", this.medication.getId())));
 		// we return medication with contained codeable concept instead of reference.
 	
 		// Adding medication to Contained.
-		CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
-		medCoding.setDisplay(this.getMedication().getName());
-		
-		List<CodingDt> codingList = new ArrayList<CodingDt>();
-		codingList.add(medCoding);
-		CodeableConceptDt codeDt = new CodeableConceptDt();
-		codeDt.setCoding(codingList);
-
-		resource.setMedication(codeDt);
+		Coding medCoding = new Coding(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode(), this.getMedication().getName());
+		CodeableConcept medCodeable = new CodeableConcept();
+		medCodeable.addCoding(medCoding);
+		resource.setMedication(medCodeable);
 		
 //		CodeableConceptDt medCodeableConcept = new CodeableConceptDt(this.getMedication().getVocabulary().getSystemUri(), 
 //				this.getMedication().getConceptCode());
 //		//medCodeableConcept.getCodingFirstRep().setDisplay(this.medication.getName());
 //		resource.setMedication(medCodeableConcept);
 		
-		resource.setWhenPrepared(new DateTimeDt(this.startDate));
+		resource.setWhenPrepared(this.startDate);
 		if (this.quantity != null){
 			Concept unitConcept = this.getDoseUnitConcept();
-			SimpleQuantityDt quantity;
+			SimpleQuantity quantity = new SimpleQuantity();
+			quantity.setValue(this.quantity.doubleValue());
 			if (unitConcept != null) {
-				quantity = new SimpleQuantityDt(this.quantity.doubleValue(), "http://unitsofmeasure.org", unitConcept.getConceptCode());
-			} else {
-				quantity = new SimpleQuantityDt(this.quantity.doubleValue());
+				quantity.setUnit(unitConcept.getConceptCode());
+				quantity.setSystem("http://unitsofmeasure.org");
 			}
 			resource.setQuantity(quantity);
 		}
-		if (this.daysSupply != null)
-			resource.setDaysSupply(new SimpleQuantityDt(this.daysSupply));
+		if (this.daysSupply != null) {
+			SimpleQuantity supplySimpleQuantity = new SimpleQuantity();
+			supplySimpleQuantity.setValue(this.daysSupply);
+			resource.setDaysSupply(supplySimpleQuantity);
+		}
 		
 		return resource;
 								
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		ca.uhn.fhir.model.dstu2.resource.MedicationDispense medicationDispense = (ca.uhn.fhir.model.dstu2.resource.MedicationDispense) resource;
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 		
@@ -195,17 +201,17 @@ public final class DrugExposureDispensed extends DrugExposure{
 			this.drugExposureType.setId(Omop4ConceptsFixedIds.PRESCRIPTION_DISP_PHARMACY.getConceptId());
 		}
 		/* Set drug concept(medication) */
-		if (medicationDispense.getMedication() instanceof CodeableConceptDt) {
-			Long valueAsConceptId = ocm.get(((CodeableConceptDt) 
+		if (medicationDispense.getMedication() instanceof CodeableConcept) {
+			Long valueAsConceptId = ocm.get(((CodeableConcept) 
 					medicationDispense.getMedication()).getCodingFirstRep().getCode(),
 					OmopConceptMapping.CLINICAL_FINDING);
 			if (valueAsConceptId != null){
 				this.medication = new Concept();
 				this.medication.setConceptCode(valueAsConceptId.toString());
 			}
-		} else if (medicationDispense.getMedication() instanceof ResourceReferenceDt) {
-			ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationDispense.getMedication();
-			Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
+		} else if (medicationDispense.getMedication() instanceof Reference) {
+			Reference medicationRef = (Reference) medicationDispense.getMedication();
+			Long medicationRefId = medicationRef.getReferenceElement().getIdPartAsLong();
 			if(medicationRef != null){
 				this.medication = new Concept();
 				this.medication.setId(medicationRefId);
