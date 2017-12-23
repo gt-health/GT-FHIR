@@ -35,9 +35,20 @@ import org.hibernate.envers.Audited;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Encounter;
+
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.Encounter;
+import org.hl7.fhir.dstu3.model.Encounter.EncounterParticipantComponent;
+import org.hl7.fhir.dstu3.model.Encounter.EncounterStatus;
+import org.hl7.fhir.dstu3.model.Period;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.Encounter.EncounterClass;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import ca.uhn.fhir.model.dstu2.resource.Encounter.Participant;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
@@ -247,11 +258,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		Encounter encounter = (Encounter) resource;
 		
-		ResourceReferenceDt patientReference = (ResourceReferenceDt) encounter.getPatient();
-		if (patientReference == null) return null; // We have to have a patient
+		Reference patientReference = encounter.getSubject();
+		if (patientReference == null || patientReference.isEmpty()) return null; // We have to have a patient
 
 		PersonComplement person = PersonComplement.searchAndUpdate(patientReference);
 		if (person == null) return null; // We must have a patient
@@ -259,12 +270,12 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.setPerson(person);
 		
 		// We are writing to the database. Keep the source so we know where it is coming from
-		if (encounter.getId() != null) {
+		if (encounter.getIdElement().getId() != null) {
 			// See if we already have this in the source field. If so,
 			// then we want update not create
-			VisitOccurrence origVisit = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounter.getId().getIdPart());
+			VisitOccurrence origVisit = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounter.getIdElement().getIdPart());
 			if (origVisit == null)
-				this.setVisitSourceValue(encounter.getId().getIdPart());
+				this.setVisitSourceValue(encounter.getIdElement().getIdPart());
 			else
 				this.setId(origVisit.getId());
 		}
@@ -293,7 +304,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 		
 		/* Set Period */
 		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
-		PeriodDt tempPeriod = encounter.getPeriod();
+		Period tempPeriod = encounter.getPeriod();
 		if (tempPeriod != null) {
 			Date tempDate = tempPeriod.getStart();
 			if (tempDate != null) { 
@@ -318,10 +329,10 @@ public class VisitOccurrence extends BaseResourceEntity {
 		 * - ER: Emergency Room Visit
 		 * - LTCP: Long Term Care Visit
 		 * - */
-		String classElement = encounter.getClassElement();
+		Coding classCoding = encounter.getClass_();
 		String classType2Use = null;
-		if (classElement != null && !classElement.isEmpty()) {
-			String classLowerString = classElement.toLowerCase();
+		if (classCoding != null && !classCoding.isEmpty()) {
+			String classLowerString = classCoding.getCode().toLowerCase();
 			if (classLowerString.contains("inpatient")) {
 				classType2Use = "ip";
 			} else if (classLowerString.contains("outpatient")) {
@@ -344,10 +355,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.setVisitTypeConcept(visitTypeConcept);
 		
 		/* Set care site */
-		Participant participant = encounter.getParticipantFirstRep();
-		if (participant != null){
-			ResourceReferenceDt individualRef = participant.getIndividual();
-			if (individualRef != null) {
+		EncounterParticipantComponent participant = new EncounterParticipantComponent();
+//		Participant participant = encounter.getParticipantFirstRep();
+		if (participant != null && !participant.isEmpty()){
+			Reference individualRef = participant.getIndividual();
+			if (individualRef != null && !individualRef.isEmpty()) {
 				this.setProvider(Provider.searchAndUpdate(individualRef));
 				
 //				Long provider_id = individualRef.getReference().getIdPartAsLong();
@@ -369,11 +381,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 //				} 
 			}			
 		}
-		ResourceReferenceDt careSiteResourceRef = encounter.getServiceProvider();
-		if (careSiteResourceRef != null) {
-			Long careSiteRef = careSiteResourceRef.getReference().getIdPartAsLong();
-			if (careSiteRef != null && careSiteRef > 0L) {
-				this.setCareSite(CareSite.searchAndUpdate(careSiteResourceRef));
+		Reference careSiteRef = encounter.getServiceProvider();
+		if (careSiteRef != null && !careSiteRef.isEmpty()) {
+			Long careSiteRefId = careSiteRef.getReferenceElement().getIdPartAsLong();
+			if (careSiteRefId != null && careSiteRefId > 0L) {
+				this.setCareSite(CareSite.searchAndUpdate(careSiteRef));
 			}
 		}
 		
@@ -401,41 +413,52 @@ public class VisitOccurrence extends BaseResourceEntity {
 		
 		encounter.setId(this.getIdDt());
 		
-		if (this.visitConcept != null) {
-			String visitString = this.visitConcept.getName().toLowerCase();
-			if (visitString.contains("inpatient")) {
-				encounter.setClassElement(EncounterClassEnum.INPATIENT);			
-			} else if (visitString.toLowerCase().contains("outpatient")) {
-				encounter.setClassElement(EncounterClassEnum.OUTPATIENT);			
-			} else if (visitString.toLowerCase().contains("ambulatory")
-					|| visitString.toLowerCase().contains("office")) {
-				encounter.setClassElement(EncounterClassEnum.AMBULATORY);			
-			} else if (visitString.toLowerCase().contains("home")) {
-				encounter.setClassElement(EncounterClassEnum.HOME);			
-			} else if (visitString.toLowerCase().contains("emergency")) {
-				encounter.setClassElement(EncounterClassEnum.EMERGENCY);			
-			} else if (visitString.toLowerCase().contains("field")) {
-				encounter.setClassElement(EncounterClassEnum.FIELD);			
-			} else if (visitString.toLowerCase().contains("daytime")) {
-				encounter.setClassElement(EncounterClassEnum.DAYTIME);			
-			} else if (visitString.toLowerCase().contains("virtual")) {
-				encounter.setClassElement(EncounterClassEnum.VIRTUAL);			
+		try {
+			EncounterClass classCodingCode;
+			if (this.visitConcept != null) {
+				String visitString = this.visitConcept.getName().toLowerCase();
+				if (visitString.contains("inpatient")) {
+					classCodingCode = EncounterClass.fromCode("inpatient");
+				} else if (visitString.toLowerCase().contains("outpatient")) {
+					classCodingCode = EncounterClass.fromCode("outpatient");
+				} else if (visitString.toLowerCase().contains("ambulatory")
+						|| visitString.toLowerCase().contains("office")) {
+					classCodingCode = EncounterClass.fromCode("ambulatory");
+				} else if (visitString.toLowerCase().contains("home")) {
+					classCodingCode = EncounterClass.fromCode("home");
+				} else if (visitString.toLowerCase().contains("emergency")) {
+					classCodingCode = EncounterClass.fromCode("emergency");			
+				} else if (visitString.toLowerCase().contains("field")) {
+					classCodingCode = EncounterClass.fromCode("field");	
+				} else if (visitString.toLowerCase().contains("daytime")) {
+					classCodingCode = EncounterClass.fromCode("daytime");	
+				} else if (visitString.toLowerCase().contains("virtual")) {
+					classCodingCode = EncounterClass.fromCode("virtual");	
+				} else {
+					classCodingCode = EncounterClass.fromCode("other");	
+				}
+				
+				Coding classCoding = new Coding(classCodingCode.getSystem(), classCodingCode.toCode(), classCodingCode.getDisplay());
+				encounter.setClass_(classCoding);
 			} else {
-				encounter.setClassElement(EncounterClassEnum.OTHER);
+				classCodingCode = EncounterClass.fromCode("other");	
+				Coding classCoding = new Coding(classCodingCode.getSystem(), classCodingCode.toCode(), classCodingCode.getDisplay());
+				encounter.setClass_(classCoding);			
 			}
-		} else {
-			encounter.setClassElement(EncounterClassEnum.OTHER);			
+		} catch (FHIRException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		encounter.setStatus(EncounterStateEnum.FINISHED);
+		encounter.setStatus(EncounterStatus.FINISHED);
 		
 		// set Patient Reference
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(Person.RES_TYPE, person.getId()));
+		Reference patientReference = new Reference(Person.RES_TYPE+"/"+this.getPerson().getId());
 		patientReference.setDisplay(person.getNameAsSingleString());
-		encounter.setPatient(patientReference);
+		encounter.setSubject(patientReference);
 		
 		// set Period
-		PeriodDt visitPeriod = new PeriodDt();
+		Period visitPeriod = new Period();
 //		visitPeriod.setStartWithSecondsPrecision(startDate);
 //		visitPeriod.setEndWithSecondsPrecision(endDate);
 		DateFormat dateOnlyFormat = new SimpleDateFormat("yyyy/MM/dd");
@@ -448,7 +471,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			}
 			String dateTimeString = dateOnlyFormat.format(startDate)+" "+timeString;
 			Date DateTime = dateFormat.parse(dateTimeString);
-			visitPeriod.setStartWithSecondsPrecision(DateTime);
+			visitPeriod.setStart(DateTime, TemporalPrecisionEnum.SECOND);
 
 			// For end Date
 			timeString = "00:00:00";
@@ -457,7 +480,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			}
 			dateTimeString = dateOnlyFormat.format(endDate)+" "+timeString;
 			DateTime = dateFormat.parse(dateTimeString);
-			visitPeriod.setEndWithSecondsPrecision(DateTime);
+			visitPeriod.setEnd(DateTime, TemporalPrecisionEnum.SECOND);
 			
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -469,28 +492,26 @@ public class VisitOccurrence extends BaseResourceEntity {
 		// we get some information from care site.
 //		CareSite careSite = getCareSite();
 //		System.out.println("CareSite ID="+careSite.getId());
-		if (careSite != null) {
+		if (this.getCareSite() != null) {
 			// set Location
 //			encounter.getLocationFirstRep().getLocation().setReference(new IdDt(CareSite.RES_TYPE, careSite.getId()));
 			
 			// set serviceProvider
 //			Provider prov = this.getProvider();
 //			if (provider != null) {
-			ResourceReferenceDt serviceProviderReference = new ResourceReferenceDt(new IdDt(CareSite.RES_TYPE, careSite.getId()));
-			serviceProviderReference.setDisplay(careSite.getCareSiteName());
+			Reference serviceProviderReference = new Reference(CareSite.RES_TYPE+"/"+careSite.getId());
+			serviceProviderReference.setDisplay(this.getCareSite().getCareSiteName());
 			encounter.setServiceProvider(serviceProviderReference);
 //			}
 		}
 		
-		if (provider != null) {
-			Encounter.Participant participant = new Encounter.Participant();
-			ResourceReferenceDt individualReference = new ResourceReferenceDt(provider.getIdDt());
-			individualReference.setDisplay(provider.getProviderName());
-			participant.setIndividual(individualReference);
+		if (this.getProvider() != null) {
+			EncounterParticipantComponent participantComp = new EncounterParticipantComponent();
+			Reference individualReference = new Reference(Provider.RESOURCE_TYPE+"/"+this.getProvider().getId());
+			individualReference.setDisplay(this.getProvider().getProviderName());
+			participantComp.setIndividual(individualReference);
 			
-			List<Encounter.Participant> listParticipant = new ArrayList<Encounter.Participant>();
-			listParticipant.add(participant);
-			encounter.setParticipant(listParticipant);
+			encounter.addParticipant(participantComp);
 		}
 		
 		return encounter;

@@ -21,14 +21,21 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Procedure;
-import ca.uhn.fhir.model.dstu2.valueset.ProcedureStatusEnum;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.DateTimeType;
+import org.hl7.fhir.dstu3.model.Procedure;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
+//import ca.uhn.fhir.model.dstu2.valueset.ProcedureStatusEnum;
+//import ca.uhn.fhir.model.primitive.DateTimeDt;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -239,41 +246,40 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResource getRelatedResource() {
+	public Procedure getRelatedResource() {
 		Procedure procedure = new Procedure();
 		
 		procedure.setId(this.getIdDt());
 		
 		// Set patient 
-		ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(person.getResourceType(), person.getId()));
+		Reference subjectRef = new Reference(Person.RES_TYPE+"/"+this.getPerson().getId());
 		String patientName = "";
-		if (person.getGivenName1() != null && !person.getGivenName1().isEmpty()) {
-			patientName = person.getGivenName1();
+		if (this.getPerson().getGivenName1() != null && !this.getPerson().getGivenName1().isEmpty()) {
+			patientName = this.getPerson().getGivenName1();
 		}
-		if (person.getGivenName2() != null && !person.getGivenName2().isEmpty()) {
-			patientName += " "+person.getGivenName2();
+		if (this.getPerson().getGivenName2() != null && !this.getPerson().getGivenName2().isEmpty()) {
+			patientName += " "+this.getPerson().getGivenName2();
 		}
-		if (person.getFamilyName() != null && !person.getFamilyName().isEmpty()) {
-			patientName += " "+person.getFamilyName();
+		if (this.getPerson().getFamilyName() != null && !this.getPerson().getFamilyName().isEmpty()) {
+			patientName += " "+this.getPerson().getFamilyName();
 		}
-		patientReference.setDisplay(patientName);
-		procedure.setSubject(patientReference);
+		subjectRef.setDisplay(patientName);
+		procedure.setSubject(subjectRef);
 		
 		//TODO: revisit this. For now just set to in-progress
-		procedure.setStatus(ProcedureStatusEnum.IN_PROGRESS);
+		procedure.setStatus(Procedure.ProcedureStatus.INPROGRESS);
 		
-		String theSystem = procedureConcept.getVocabulary().getSystemUri();
-		String theCode = procedureConcept.getConceptCode();
+		String theSystem = this.procedureConcept.getVocabulary().getSystemUri();
+		String theCode = this.procedureConcept.getConceptCode();
 
-		CodeableConceptDt procedureCodeConcept = new CodeableConceptDt();
-		if (theSystem != "") {
+		CodeableConcept procedureCodeConcept = new CodeableConcept();
+		if (theSystem != "" && !theSystem.isEmpty()) {
 			// Create coding here. We have one coding in this condition as OMOP
 			// allows one coding concept per condition.
 			// In the future, if we want to allow multiple coding concepts here,
 			// we need to do it here.
-			CodingDt coding = new CodingDt(theSystem, theCode);
-			coding.setDisplay(procedureConcept.getName());
-			procedureCodeConcept.addCoding(coding);
+			Coding codeCoding = new Coding(theSystem, theCode, this.procedureConcept.getName());
+			procedureCodeConcept.addCoding(codeCoding);
 			procedure.setCode(procedureCodeConcept);
 		}
 
@@ -291,7 +297,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 
 		//procedure.setType(procedureCodeConcept);
 		
-		DateTimeDt DateDt = new DateTimeDt(date);
+		DateTimeType DateDt = new DateTimeType(this.date);
 		procedure.setPerformed(DateDt);
 		
 		//TODO: where is code??? For now, I put it in the Note. This is CPT code.
@@ -302,7 +308,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
 		// TODO CREATE UPDATE not implemented
 		return null;
 	}

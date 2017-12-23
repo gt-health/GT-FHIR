@@ -21,15 +21,24 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.DateTimeType;
+import org.hl7.fhir.dstu3.model.Period;
+import org.hl7.fhir.dstu3.model.Quantity;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.Type;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.model.api.IDatatype;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
+//import ca.uhn.fhir.model.api.IDatatype;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+//import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+//import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+//import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
+//import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+//import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -228,17 +237,18 @@ public class OmopMeasurement extends BaseResourceEntity {
 	}
 
 	@Override
-	public IResource getRelatedResource() {
+	public org.hl7.fhir.dstu3.model.Observation getRelatedResource() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public IResourceEntity constructEntityFromResource(IResource resource) {
-		ca.uhn.fhir.model.dstu2.resource.Observation obs = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
-		ResourceReferenceDt subjectReference = obs.getSubject();
-		if (subjectReference != null) {
-			if ("Patient".equals(subjectReference.getReference().getResourceType())) {
+	public IResourceEntity constructEntityFromResource(IBaseResource resource) {
+		org.hl7.fhir.dstu3.model.Observation obs = (org.hl7.fhir.dstu3.model.Observation) resource;
+		
+		Reference subjectReference = obs.getSubject();
+		if (subjectReference != null && !subjectReference.isEmpty()) {
+			if ("Patient".equals(subjectReference.getReferenceElement().getResourceType())) {
 				PersonComplement person = PersonComplement.searchAndUpdate(subjectReference);
 				if (person == null) return null; // We must have a patient
 				this.setPerson(person);
@@ -253,12 +263,12 @@ public class OmopMeasurement extends BaseResourceEntity {
 
 		// We are writing to the database. Keep the source so we know where it is coming from
 		OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-		if (obs.getId() != null) {
+		if (obs.getIdElement().getId() != null && !obs.getIdElement().getId().isEmpty()) {
 			// See if we already have this in the source field. If so,
 			// then we want update not create
-			OmopMeasurement origMeasurement = (OmopMeasurement) ocm.loadEntityBySource(OmopMeasurement.class, "OmopMeasurement", "sourceValue", obs.getId().getIdPart());
+			OmopMeasurement origMeasurement = (OmopMeasurement) ocm.loadEntityBySource(OmopMeasurement.class, "OmopMeasurement", "sourceValue", obs.getIdElement().getIdPart());
 			if (origMeasurement == null)
-				this.setSourceValue(obs.getId().getIdPart());
+				this.setSourceValue(obs.getIdElement().getIdPart());
 			else
 				this.setId(origMeasurement.getId());
 		}
@@ -274,16 +284,16 @@ public class OmopMeasurement extends BaseResourceEntity {
 		}
 
 		/* Set the value of the observation */
-		IDatatype value = obs.getValue();
-		if (value instanceof QuantityDt) {
+		Type value = obs.getValue();
+		if (value instanceof Quantity) {
 //			Long unitId = ocm.get(((QuantityDt) value).getUnit(), OmopConceptMapping.UCUM_CODE,
 //					OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
-			String unitCode = ((QuantityDt) value).getCode();
+			String unitCode = ((Quantity) value).getCode();
 			if (unitCode == null) {
-				unitCode = ((QuantityDt) value).getUnit();
+				unitCode = ((Quantity) value).getUnit();
 			}
 			Long unitId = ocm.get(unitCode);
-			this.valueAsNumber = ((QuantityDt) value).getValue().doubleValue();
+			this.valueAsNumber = ((Quantity) value).getValue().doubleValue();
 			if (unitId != null) {
 				this.unit = new Concept();
 				this.unit.setId(unitId);
@@ -294,50 +304,51 @@ public class OmopMeasurement extends BaseResourceEntity {
 			if (!obs.getReferenceRangeFirstRep().isEmpty())
 				this.rangeLow = obs.getReferenceRangeFirstRep().getLow().getValue().doubleValue();
 			
-		} else if (value instanceof CodeableConceptDt) {
+		} else if (value instanceof CodeableConcept) {
 //			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(),
 //					OmopConceptMapping.CLINICAL_FINDING);
-			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode());
+			Long valueAsConceptId = ocm.get(((CodeableConcept) value).getCodingFirstRep().getCode());
 			if (valueAsConceptId != null) {
 				this.valueAsConcept = new Concept();
 				this.valueAsConcept.setId(valueAsConceptId);
 			}
 		} 
 		
-		if (obs.getEffective() instanceof DateTimeDt) {
-			this.date = ((DateTimeDt) obs.getEffective()).getValue();
+		if (obs.getEffective() instanceof DateTimeType) {
+			this.date = ((DateTimeType) obs.getEffective()).getValue();
 			SimpleDateFormat timeFormat = new SimpleDateFormat ("HH:mm:ss");
-			this.time = timeFormat.format(((DateTimeDt) obs.getEffective()).getValue());
-		} else if (obs.getEffective() instanceof PeriodDt) {
+			this.time = timeFormat.format(((DateTimeType) obs.getEffective()).getValue());
+		} else if (obs.getEffective() instanceof Period) {
 			// TODO: we need to handle period. We can probably use
 			// we can use range_low and range_high. These are only available in Measurement
 		}
 
 		/* Set visit occurrence */
-		Long visitOccurrenceId = obs.getEncounter().getReference().getIdPartAsLong();
-		if (visitOccurrenceId != null) {
-			this.visitOccurrence = new VisitOccurrence();
-			this.visitOccurrence.setId(visitOccurrenceId);
+		Reference visitRef = obs.getContext();
+		if (visitRef != null && !visitRef.isEmpty()) {
+			this.setVisitOccurrence(new VisitOccurrence());
+			this.getVisitOccurrence().setId(visitRef.getReferenceElement().getIdPartAsLong());
 		}
 
 		/* measture type concept id - this is required field in OMOP v5. */
 		setType (new Concept());
-		CodeableConceptDt obsCategory = obs.getCategory();
+//		CodeableConceptDt obsCategory = obs.getCategory();
+		CodeableConcept obsCategory = obs.getCategoryFirstRep();
 		if (obsCategory.isEmpty()) {
 			getType().setId(0L);
 		} else {
-			List<CodingDt> catCodes = obsCategory.getCoding();
-			for (CodingDt catCode : catCodes) {
-				if (catCode.getCode().equalsIgnoreCase("exam")) {
+			List<Coding> catCodeCodings = obsCategory.getCoding();
+			for (Coding catCodeCoding : catCodeCodings) {
+				if (catCodeCoding.getCode().equalsIgnoreCase("exam")) {
 					getType().setId(44818701L);
-				} else if (catCode.getCode().equalsIgnoreCase("laboratory")) {
+					break;
+				} else if (catCodeCoding.getCode().equalsIgnoreCase("laboratory")) {
 					getType().setId(44818702L);
+					break;
 				}
 			}
 		}
-		return this;
 		
+		return this;
 	}
-
-
 }
