@@ -20,14 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
+//import javax.json.Json;
+//import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
+//import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -35,34 +36,44 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.HttpEntityWrapper;
+import org.hl7.fhir.dstu3.model.CapabilityStatement;
+import org.hl7.fhir.dstu3.model.CapabilityStatement.CapabilityStatementRestComponent;
+import org.hl7.fhir.dstu3.model.CapabilityStatement.CapabilityStatementRestResourceComponent;
+import org.hl7.fhir.dstu3.model.CapabilityStatement.CapabilityStatementRestResourceSearchParamComponent;
+import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.instance.model.Bundle;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.thymeleaf.TemplateEngine;
 
+import com.google.gson.stream.JsonWriter;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
-import ca.uhn.fhir.model.api.Bundle;
-import ca.uhn.fhir.model.api.BundleEntry;
+//import ca.uhn.fhir.model.api.Bundle;
+//import ca.uhn.fhir.model.api.BundleEntry;
 import ca.uhn.fhir.model.api.ExtensionDt;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
 //import ca.uhn.fhir.model.dstu.resource.Conformance.RestQuery;
-import ca.uhn.fhir.model.dstu2.resource.Conformance;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
 //import ca.uhn.fhir.model.dstu2.resource.Conformance.RestQuery;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResource;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam;
-import ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ResourceTypeEnum;
-import ca.uhn.fhir.model.primitive.BoundCodeDt;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResource;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam;
+//import ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.ResourceTypeEnum;
+//import ca.uhn.fhir.model.primitive.BoundCodeDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.DecimalDt;
 import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.model.primitive.StringDt;
-import ca.uhn.fhir.narrative.INarrativeGenerator;
+//import ca.uhn.fhir.model.primitive.StringDt;
+//import ca.uhn.fhir.narrative.INarrativeGenerator;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.rest.client.impl.GenericClient;
 import ca.uhn.fhir.rest.client.api.IClientInterceptor;
@@ -72,6 +83,9 @@ import ca.uhn.fhir.rest.client.apache.ApacheHttpResponse;
 import ca.uhn.fhir.rest.client.api.IHttpRequest;
 import ca.uhn.fhir.rest.client.api.IHttpResponse;
 import ca.uhn.fhir.rest.gclient.ICreateTyped;
+import ca.uhn.fhir.rest.gclient.IHistory;
+import ca.uhn.fhir.rest.gclient.IHistoryTyped;
+import ca.uhn.fhir.rest.gclient.IHistoryUntyped;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.gclient.IUntypedQuery;
 import ca.uhn.fhir.rest.gclient.NumberClientParam.IMatches;
@@ -125,7 +139,7 @@ public class Controller {
 
 		long start = System.currentTimeMillis();
 		try {
-			client.conformance();
+			client.fetchConformance().ofType(org.hl7.fhir.dstu3.model.CapabilityStatement.class).execute();
 		} catch (Exception e) {
 			returnsResource = handleClientException(client, e, theModel);
 		}
@@ -171,7 +185,8 @@ public class Controller {
 
 		long start = System.currentTimeMillis();
 		try {
-			client.delete((Class<? extends IResource>) def.getImplementingClass(), new IdDt(id));
+//			client.delete((Class<? extends IResource>) def.getImplementingClass(), new IdDt(id));
+			client.delete().resourceById(new IdDt(id)).execute();
 		} catch (Exception e) {
 			returnsResource = handleClientException(client, e, theModel);
 		}
@@ -183,56 +198,56 @@ public class Controller {
 		return "result";
 	}
 
-	@RequestMapping(value = { "/get-tags" })
-	public String actionGetTags(HttpServletRequest theReq, HomeRequest theRequest, BindingResult theBindingResult, ModelMap theModel) {
-		addCommonParams(theReq, theRequest, theModel);
-
-		CaptureInterceptor interceptor = new CaptureInterceptor();
-		GenericClient client = theRequest.newClient(theReq, getContext(theRequest), myConfig, interceptor);
-
-		Class<? extends IResource> resType = null;
-		ResultType returnsResource = ResultType.TAGLIST;
-		String outcomeDescription = "Tag List";
-
-		long start = System.currentTimeMillis();
-		try {
-			if (isNotBlank(theReq.getParameter(PARAM_RESOURCE))) {
-				RuntimeResourceDefinition def;
-				try {
-					def = getResourceType(theRequest, theReq);
-				} catch (ServletException e) {
-					theModel.put("errorMsg", e.toString());
-					return "resource";
-				}
-
-				resType = (Class<? extends IResource>) def.getImplementingClass();
-				String id = theReq.getParameter("resource-tags-id");
-				if (isNotBlank(id)) {
-					String vid = theReq.getParameter("resource-tags-vid");
-					if (isNotBlank(vid)) {
-						client.getTags().forResource(resType, id, vid).execute();
-						ourLog.info(logPrefix(theModel) + "Got tags for type " + def.getName() + " ID " + id + " version" + vid);
-					} else {
-						client.getTags().forResource(resType, id).execute();
-						ourLog.info(logPrefix(theModel) + "Got tags for type " + def.getName() + " ID " + id);
-					}
-				} else {
-					client.getTags().forResource(resType).execute();
-					ourLog.info(logPrefix(theModel) + "Got tags for type " + def.getName());
-				}
-			} else {
-				client.getTags().execute();
-				ourLog.info(logPrefix(theModel) + "Got tags for server");
-			}
-		} catch (Exception e) {
-			returnsResource = handleClientException(client, e, theModel);
-		}
-		long delay = System.currentTimeMillis() - start;
-
-		processAndAddLastClientInvocation(client, returnsResource, theModel, delay, outcomeDescription, interceptor, theRequest);
-
-		return "result";
-	}
+//	@RequestMapping(value = { "/get-tags" })
+//	public String actionGetTags(HttpServletRequest theReq, HomeRequest theRequest, BindingResult theBindingResult, ModelMap theModel) {
+//		addCommonParams(theReq, theRequest, theModel);
+//
+//		CaptureInterceptor interceptor = new CaptureInterceptor();
+//		GenericClient client = theRequest.newClient(theReq, getContext(theRequest), myConfig, interceptor);
+//
+//		Class<? extends IResource> resType = null;
+//		ResultType returnsResource = ResultType.TAGLIST;
+//		String outcomeDescription = "Tag List";
+//
+//		long start = System.currentTimeMillis();
+//		try {
+//			if (isNotBlank(theReq.getParameter(PARAM_RESOURCE))) {
+//				RuntimeResourceDefinition def;
+//				try {
+//					def = getResourceType(theRequest, theReq);
+//				} catch (ServletException e) {
+//					theModel.put("errorMsg", e.toString());
+//					return "resource";
+//				}
+//
+//				resType = (Class<? extends IResource>) def.getImplementingClass();
+//				String id = theReq.getParameter("resource-tags-id");
+//				if (isNotBlank(id)) {
+//					String vid = theReq.getParameter("resource-tags-vid");
+//					if (isNotBlank(vid)) {
+//						client.getTags().forResource(resType, id, vid).execute();
+//						ourLog.info(logPrefix(theModel) + "Got tags for type " + def.getName() + " ID " + id + " version" + vid);
+//					} else {
+//						client.getTags().forResource(resType, id).execute();
+//						ourLog.info(logPrefix(theModel) + "Got tags for type " + def.getName() + " ID " + id);
+//					}
+//				} else {
+//					client.getTags().forResource(resType).execute();
+//					ourLog.info(logPrefix(theModel) + "Got tags for type " + def.getName());
+//				}
+//			} else {
+//				client.getTags().execute();
+//				ourLog.info(logPrefix(theModel) + "Got tags for server");
+//			}
+//		} catch (Exception e) {
+//			returnsResource = handleClientException(client, e, theModel);
+//		}
+//		long delay = System.currentTimeMillis() - start;
+//
+//		processAndAddLastClientInvocation(client, returnsResource, theModel, delay, outcomeDescription, interceptor, theRequest);
+//
+//		return "result";
+//	}
 
 	@RequestMapping(value = { "/history-server" })
 	public String actionHistoryServer(final HttpServletRequest theReq, final HomeRequest theRequest, final BindingResult theBindingResult, final ModelMap theModel) {
@@ -258,6 +273,7 @@ public class Controller {
 		addCommonParams(theReq, theRequest, theModel);
 
 		CaptureInterceptor interceptor = new CaptureInterceptor();
+		FhirContext context = getContext(theRequest);
 		GenericClient client = theRequest.newClient(theReq, getContext(theRequest), myConfig, interceptor);
 
 		String url = defaultString(theReq.getParameter("page-url"));
@@ -274,7 +290,8 @@ public class Controller {
 		long start = System.currentTimeMillis();
 		try {
 			ourLog.info(logPrefix(theModel) + "Loading paging URL: {}", url);
-			client.loadPage().url(url).execute();
+			Class<? extends IBaseBundle> bundleType = (Class<? extends IBaseBundle>) context.getResourceDefinition("Bundle").getImplementingClass();
+			client.loadPage().byUrl(url).andReturnBundle(bundleType).execute();
 		} catch (Exception e) {
 			returnsResource = handleClientException(client, e, theModel);
 		}
@@ -345,15 +362,19 @@ public class Controller {
 		TreeSet<String> includes = new TreeSet<String>();
 		TreeSet<String> revIncludes = new TreeSet<String>();
 		TreeSet<String> sortParams = new TreeSet<String>();
-		List<RestQuery> queries = new ArrayList<RestQuery>();
+//		List<RestQuery> queries = new ArrayList<RestQuery>();
 		boolean haveSearchParams = false;
 		List<List<String>> queryIncludes = new ArrayList<List<String>>();
 
 		switch (theRequest.getFhirVersion(myConfig)) {
 //		case DEV:
-		case DSTU2:
-			haveSearchParams = extractSearchParamsDev(conformance, resourceName, includes, revIncludes, sortParams, queries, haveSearchParams, queryIncludes);
+//		case DSTU2:
+//			haveSearchParams = extractSearchParamsDev(conformance, resourceName, includes, revIncludes, sortParams, queries, haveSearchParams, queryIncludes);
+//			break;
+		case DSTU3:
+			haveSearchParams = extractSearchParamsDstu3CapabilityStatement(conformance, resourceName, includes, revIncludes, sortParams, haveSearchParams, queryIncludes);
 			break;
+
 //		case DSTU1:
 //			haveSearchParams = extractSearchParamsDstu1(conformance, resourceName, includes, sortParams, queries, haveSearchParams, queryIncludes);
 //			break;
@@ -363,7 +384,7 @@ public class Controller {
 
 		theModel.put("includes", includes);
 		theModel.put("revincludes", revIncludes);
-		theModel.put("queries", queries);
+		theModel.put("queries", Collections.emptyList());
 		theModel.put("haveSearchParams", haveSearchParams);
 		theModel.put("queryIncludes", queryIncludes);
 		theModel.put("sortParams", sortParams);
@@ -384,14 +405,21 @@ public class Controller {
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = { "/search" })
-	public String actionSearch(HttpServletRequest theReq, HomeRequest theRequest, BindingResult theBindingResult, ModelMap theModel) {
+	public String actionSearch(HttpServletRequest theReq, HomeRequest theRequest, BindingResult theBindingResult, ModelMap theModel) throws IOException {
 		addCommonParams(theReq, theRequest, theModel);
 
 		StringWriter clientCodeJsonStringWriter = new StringWriter();
-		JsonGenerator clientCodeJsonWriter = Json.createGenerator(clientCodeJsonStringWriter);
-		clientCodeJsonWriter.writeStartObject();
-		clientCodeJsonWriter.write("action", "search");
-		clientCodeJsonWriter.write("base", (String) theModel.get("base"));
+//		JsonGenerator clientCodeJsonWriter = Json.createGenerator(clientCodeJsonStringWriter);
+		JsonWriter clientCodeJsonWriter = new JsonWriter(clientCodeJsonStringWriter);
+
+//		clientCodeJsonWriter.writeStartObject();
+//		clientCodeJsonWriter.write("action", "search");
+//		clientCodeJsonWriter.write("base", (String) theModel.get("base"));
+		clientCodeJsonWriter.beginObject();
+		clientCodeJsonWriter.name("action");
+		clientCodeJsonWriter.value("search");
+		clientCodeJsonWriter.name("base");
+		clientCodeJsonWriter.value((String) theModel.get("base"));
 
 		CaptureInterceptor interceptor = new CaptureInterceptor();
 		GenericClient client = theRequest.newClient(theReq, getContext(theRequest), myConfig, interceptor);
@@ -405,27 +433,44 @@ public class Controller {
 				theModel.put("errorMsg", e.toString());
 				return "resource";
 			}
-			clientCodeJsonWriter.write("resource", theReq.getParameter("resource"));
+			clientCodeJsonWriter.name("resource");
+			clientCodeJsonWriter.value(theReq.getParameter("resource"));
+
+//			clientCodeJsonWriter.write("resource", theReq.getParameter("resource"));
 		} else {
 			query = search.forAllResources();
-			clientCodeJsonWriter.writeNull("resource");
+//			clientCodeJsonWriter.writeNull("resource");
+			
+			clientCodeJsonWriter.name("resource");
+			clientCodeJsonWriter.nullValue();
+
 		}
 
-		if (client.getPrettyPrint() != null) {
-			clientCodeJsonWriter.write("pretty", client.getPrettyPrint().toString());
+		if (client.isPrettyPrint()) {
+			clientCodeJsonWriter.name("pretty");
+			clientCodeJsonWriter.value("true");
+//			clientCodeJsonWriter.write("pretty", client.getPrettyPrint().toString());
 		} else {
-			clientCodeJsonWriter.writeNull("pretty");
+			clientCodeJsonWriter.name("pretty");
+			clientCodeJsonWriter.nullValue();
+//			clientCodeJsonWriter.writeNull("pretty");
 		}
 
 		if (client.getEncoding() != null) {
-			clientCodeJsonWriter.write("format", client.getEncoding().getRequestContentType());
+//			clientCodeJsonWriter.write("format", client.getEncoding().getRequestContentType());
+			clientCodeJsonWriter.name("format");
+			clientCodeJsonWriter.value(client.getEncoding().getRequestContentType());
 		} else {
-			clientCodeJsonWriter.writeNull("format");
+//			clientCodeJsonWriter.writeNull("format");
+			clientCodeJsonWriter.name("format");
+			clientCodeJsonWriter.nullValue();
 		}
 
 		String outcomeDescription = "Search for Resources";
 
-		clientCodeJsonWriter.writeStartArray("params");
+		clientCodeJsonWriter.name("params");
+//
+//		clientCodeJsonWriter.writeStartArray("params");
 		int paramIdx = -1;
 		while (true) {
 			paramIdx++;
@@ -436,31 +481,41 @@ public class Controller {
 				break;
 			}
 		}
-		clientCodeJsonWriter.writeEnd();
+//		clientCodeJsonWriter.writeEnd();
+		clientCodeJsonWriter.endArray();
 
-		clientCodeJsonWriter.writeStartArray("includes");
+//		clientCodeJsonWriter.writeStartArray("includes");
+		clientCodeJsonWriter.name("includes");
+		clientCodeJsonWriter.beginArray();
 		String[] incValues = theReq.getParameterValues(Constants.PARAM_INCLUDE);
 		if (incValues != null) {
 			for (String next : incValues) {
 				if (isNotBlank(next)) {
 					query.include(new Include(next));
-					clientCodeJsonWriter.write(next);
+//					clientCodeJsonWriter.write(next);
+					clientCodeJsonWriter.value(next);
+
 				}
 			}
 		}
-		clientCodeJsonWriter.writeEnd();
+//		clientCodeJsonWriter.writeEnd();
+		clientCodeJsonWriter.endArray();
 
-		clientCodeJsonWriter.writeStartArray("revincludes");
+//		clientCodeJsonWriter.writeStartArray("revincludes");
+		clientCodeJsonWriter.name("revincludes");
+		clientCodeJsonWriter.beginArray();
 		String[] revIncValues = theReq.getParameterValues(Constants.PARAM_REVINCLUDE);
 		if (revIncValues != null) {
 			for (String next : revIncValues) {
 				if (isNotBlank(next)) {
 					query.revInclude(new Include(next));
-					clientCodeJsonWriter.write(next);
+//					clientCodeJsonWriter.write(next);
+					clientCodeJsonWriter.value(next);
 				}
 			}
 		}
-		clientCodeJsonWriter.writeEnd();
+//		clientCodeJsonWriter.writeEnd();
+		clientCodeJsonWriter.endArray();
 
 		String limit = theReq.getParameter("resource-search-limit");
 		if (isNotBlank(limit)) {
@@ -469,10 +524,17 @@ public class Controller {
 				return "resource";
 			}
 			int limitInt = Integer.parseInt(limit);
-			query.limitTo(limitInt);
-			clientCodeJsonWriter.write("limit", limit);
+//			query.limitTo(limitInt);
+			query.count(limitInt);
+
+//			clientCodeJsonWriter.write("limit", limit);
+			clientCodeJsonWriter.name("limit");
+			clientCodeJsonWriter.value(limit);
+
 		} else {
-			clientCodeJsonWriter.writeNull("limit");
+//			clientCodeJsonWriter.writeNull("limit");
+			clientCodeJsonWriter.name("limit");
+			clientCodeJsonWriter.nullValue();
 		}
 
 		String[] sort = theReq.getParameterValues("sort_by");
@@ -506,7 +568,8 @@ public class Controller {
 
 		processAndAddLastClientInvocation(client, returnsResource, theModel, delay, outcomeDescription, interceptor, theRequest);
 
-		clientCodeJsonWriter.writeEnd();
+//		clientCodeJsonWriter.writeEnd();
+		clientCodeJsonWriter.endObject();
 		clientCodeJsonWriter.close();
 		String clientCodeJson = clientCodeJsonStringWriter.toString();
 		theModel.put("clientCodeJson", clientCodeJson);
@@ -526,9 +589,9 @@ public class Controller {
 		Bundle bundle;
 		try {
 			if (body.startsWith("{")) {
-				bundle = getContext(theRequest).newJsonParser().parseBundle(body);
+//				bundle = getContext(theRequest).newJsonParser().parseBundle(body);
 			} else if (body.startsWith("<")) {
-				bundle = getContext(theRequest).newXmlParser().parseBundle(body);
+//				bundle = getContext(theRequest).newXmlParser().parseBundle(body);
 			} else {
 				theModel.put("errorMsg", "Message body does not appear to be a valid FHIR resource instance document. Body should start with '<' (for XML encoding) or '{' (for JSON encoding).");
 				return "home";
@@ -542,8 +605,11 @@ public class Controller {
 		ResultType returnsResource = ResultType.BUNDLE;
 		long start = System.currentTimeMillis();
 		try {
-			ourLog.info(logPrefix(theModel) + "Executing transaction with {} resources", bundle.size());
-			client.transaction().withBundle(bundle).execute();
+//			ourLog.info(logPrefix(theModel) + "Executing transaction with {} resources", bundle.size());
+			ourLog.info(logPrefix(theModel) + "Executing transaction");
+//			client.transaction().withBundle(bundle).execute();
+			client.transaction().withBundle(body).execute();
+
 		} catch (Exception e) {
 			returnsResource = handleClientException(client, e, theModel);
 		}
@@ -655,9 +721,9 @@ public class Controller {
 				} else {
 					outcomeDescription = "Create Resource";
 					ICreateTyped create = client.create().resource(body);
-					if (isNotBlank(id)) {
-						create.withId(id);
-					}
+//					if (isNotBlank(id)) {
+//						create.withId(id);
+//					}
 					create.execute();
 				}
 			}
@@ -713,7 +779,28 @@ public class Controller {
 		long start = System.currentTimeMillis();
 		try {
 			ourLog.info(logPrefix(theModel) + "Retrieving history for type {} ID {} since {}", new Object[] { type, id, since });
-			client.history(type, id, since, limit);
+//			client.history(type, id, since, limit);
+			IHistory hist0 = client.history();
+			IHistoryUntyped hist1;
+			if (isNotBlank(id)) {
+				hist1 = hist0.onInstance(new IdDt(theRequest.getResource(), id));
+			} else if (type != null) {
+				hist1 = hist0.onType(type);
+			} else {
+				hist1 = hist0.onServer();
+			}
+
+			IHistoryTyped<?> hist2;
+			hist2 = hist1.andReturnBundle(client.getFhirContext().getResourceDefinition("Bundle").getImplementingClass(IBaseBundle.class));
+
+			if (since != null) {
+				hist2.since(since);
+			}
+			if (limit != null) {
+				hist2.count(limit);
+			}
+
+			hist2.execute();
 		} catch (Exception e) {
 			returnsResource = handleClientException(client, e, theModel);
 		}
@@ -723,19 +810,19 @@ public class Controller {
 
 	}
 
-	private boolean extractSearchParamsDev(IResource theConformance, String resourceName, TreeSet<String> includes, TreeSet<String> theRevIncludes, TreeSet<String> sortParams, List<RestQuery> queries, boolean haveSearchParams,
-			List<List<String>> queryIncludes) {
-		ca.uhn.fhir.model.dstu2.resource.Conformance conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) theConformance;
-		for (ca.uhn.fhir.model.dstu2.resource.Conformance.Rest nextRest : conformance.getRest()) {
-			for (ca.uhn.fhir.model.dstu2.resource.Conformance.RestResource nextRes : nextRest.getResource()) {
+	private boolean extractSearchParamsDstu3CapabilityStatement(IBaseResource theConformance, String resourceName, TreeSet<String> includes, TreeSet<String> theRevIncludes, TreeSet<String> sortParams,
+			boolean haveSearchParams, List<List<String>> queryIncludes) {
+		CapabilityStatement conformance = (org.hl7.fhir.dstu3.model.CapabilityStatement) theConformance;
+		for (CapabilityStatementRestComponent nextRest : conformance.getRest()) {
+			for (CapabilityStatementRestResourceComponent nextRes : nextRest.getResource()) {
 				if (nextRes.getTypeElement().getValue().equals(resourceName)) {
-					for (StringDt next : nextRes.getSearchInclude()) {
+					for (StringType next : nextRes.getSearchInclude()) {
 						if (next.isEmpty() == false) {
 							includes.add(next.getValue());
 						}
 					}
-					for (ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam next : nextRes.getSearchParam()) {
-						if (next.getTypeElement().getValueAsEnum() != ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum.COMPOSITE) {
+					for (CapabilityStatementRestResourceSearchParamComponent next : nextRes.getSearchParam()) {
+						if (next.getTypeElement().getValue() != org.hl7.fhir.dstu3.model.Enumerations.SearchParamType.COMPOSITE) {
 							sortParams.add(next.getNameElement().getValue());
 						}
 					}
@@ -745,13 +832,8 @@ public class Controller {
 				} else {
 					// It's a different resource from the one we're searching, so
 					// scan for revinclude candidates
-					for (ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam next : nextRes.getSearchParam()) {
-						if (next.getTypeElement().getValueAsEnum() == ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum.REFERENCE) {
-							for (BoundCodeDt<ResourceTypeEnum> nextTargetType : next.getTarget()) {
-								if (nextTargetType.getValue().equals(resourceName)) {
-									theRevIncludes.add(nextRes.getTypeElement().getValue() + ":" + next.getName());
-								}
-							}
+					for (CapabilityStatementRestResourceSearchParamComponent next : nextRes.getSearchParam()) {
+						if (next.getTypeElement().getValue() == org.hl7.fhir.dstu3.model.Enumerations.SearchParamType.REFERENCE) {
 						}
 					}
 				}
@@ -759,7 +841,44 @@ public class Controller {
 		}
 		return haveSearchParams;
 	}
-
+	
+//	private boolean extractSearchParamsDev(IResource theConformance, String resourceName, TreeSet<String> includes, TreeSet<String> theRevIncludes, TreeSet<String> sortParams, List<RestQuery> queries, boolean haveSearchParams,
+//			List<List<String>> queryIncludes) {
+//		ca.uhn.fhir.model.dstu2.resource.Conformance conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) theConformance;
+//		for (ca.uhn.fhir.model.dstu2.resource.Conformance.Rest nextRest : conformance.getRest()) {
+//			for (ca.uhn.fhir.model.dstu2.resource.Conformance.RestResource nextRes : nextRest.getResource()) {
+//				if (nextRes.getTypeElement().getValue().equals(resourceName)) {
+//					for (StringDt next : nextRes.getSearchInclude()) {
+//						if (next.isEmpty() == false) {
+//							includes.add(next.getValue());
+//						}
+//					}
+//					for (ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam next : nextRes.getSearchParam()) {
+//						if (next.getTypeElement().getValueAsEnum() != ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum.COMPOSITE) {
+//							sortParams.add(next.getNameElement().getValue());
+//						}
+//					}
+//					if (nextRes.getSearchParam().size() > 0) {
+//						haveSearchParams = true;
+//					}
+//				} else {
+//					// It's a different resource from the one we're searching, so
+//					// scan for revinclude candidates
+//					for (ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam next : nextRes.getSearchParam()) {
+//						if (next.getTypeElement().getValueAsEnum() == ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum.REFERENCE) {
+//							for (BoundCodeDt<ResourceTypeEnum> nextTargetType : next.getTarget()) {
+//								if (nextTargetType.getValue().equals(resourceName)) {
+//									theRevIncludes.add(nextRes.getTypeElement().getValue() + ":" + next.getName());
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return haveSearchParams;
+//	}
+//
 //	private boolean extractSearchParamsDstu1(IResource theConformance, String resourceName, TreeSet<String> includes, TreeSet<String> sortParams, List<RestQuery> queries, boolean haveSearchParams,
 //			List<List<String>> queryIncludes) {
 //		Conformance conformance = (Conformance) theConformance;
@@ -1000,7 +1119,110 @@ public class Controller {
 		return returnsResource;
 	}
 
-	private boolean handleSearchParam(String paramIdxString, HttpServletRequest theReq, IQuery theQuery, JsonGenerator theClientCodeJsonWriter) {
+//	private boolean handleSearchParam(String paramIdxString, HttpServletRequest theReq, IQuery theQuery, JsonGenerator theClientCodeJsonWriter) {
+//		String nextName = theReq.getParameter("param." + paramIdxString + ".name");
+//		if (isBlank(nextName)) {
+//			return false;
+//		}
+//
+//		String nextQualifier = StringUtils.defaultString(theReq.getParameter("param." + paramIdxString + ".qualifier"));
+//		String nextType = theReq.getParameter("param." + paramIdxString + ".type");
+//
+//		List<String> parts = new ArrayList<String>();
+//		for (int i = 0; i < 5; i++) {
+//			parts.add(defaultString(theReq.getParameter("param." + paramIdxString + "." + i)));
+//		}
+//
+//		List<String> values;
+//		boolean addToWhere = true;
+//		if ("token".equals(nextType)) {
+//			if (isBlank(parts.get(1))) {
+//				return true;
+//			}
+//			addToWhere = false;
+//			if (isBlank(parts.get(0))) {
+//				values = Collections.singletonList(parts.get(1));
+//				theQuery.where(new TokenClientParam(nextName + nextQualifier).exactly().code(parts.get(1)));
+//			} else {
+//				values = Collections.singletonList(parts.get(0) + "|" + parts.get(1));
+//				theQuery.where(new TokenClientParam(nextName + nextQualifier).exactly().systemAndCode(parts.get(0), parts.get(1)));
+//			}
+//		} else if ("date".equals(nextType)) {
+//			values = new ArrayList<String>();
+//			if (isNotBlank(parts.get(1))) {
+//				values.add(StringUtils.join(parts.get(0), parts.get(1)));
+//			}
+//			if (isNotBlank(parts.get(3))) {
+//				values.add(StringUtils.join(parts.get(2), parts.get(3)));
+//			}
+//			if (values.isEmpty()) {
+//				return true;
+//			}
+//		} else if ("quantity".equals(nextType)) {
+//			values = new ArrayList<String>();
+//			addToWhere = false;
+//
+//			QuantityClientParam param = new QuantityClientParam(nextName);
+//			IMatches<IAndUnits> matcher;
+//			if ("~".equals(parts.get(0))) {
+//				matcher = param.approximately();
+//			} else if ("=".equals(parts.get(0))) {
+//				matcher = param.exactly();
+//			} else if (">=".equals(parts.get(0))) {
+//				matcher = param.greaterThanOrEquals();
+//			} else if ("<=".equals(parts.get(0))) {
+//				matcher = param.lessThanOrEquals();
+//			} else if (">".equals(parts.get(0))) {
+//				matcher = param.greaterThan();
+//			} else if ("<".equals(parts.get(0))) {
+//				matcher = param.lessThan();
+//			} else {
+//				throw new Error("Unknown qualifier: " + parts.get(0));
+//			}
+//			IAndUnits number = matcher.number(parts.get(1));
+//
+//			if (isBlank(parts.get(3))) {
+//				theQuery.where(number.andNoUnits());
+//			} else if (isBlank(parts.get(2))) {
+//				theQuery.where(number.andUnits(parts.get(3)));
+//			} else {
+//				theQuery.where(number.andUnits(parts.get(2), parts.get(3)));
+//			}
+//
+//			values.add(parts.get(0) + parts.get(1) + "|" + parts.get(2) + "|" + parts.get(3));
+//
+//			if (values.isEmpty()) {
+//				return true;
+//			}
+//		} else {
+//			values = Collections.singletonList(StringUtils.join(parts, ""));
+//			if (isBlank(values.get(0))) {
+//				return true;
+//			}
+//		}
+//
+//		for (String nextValue : values) {
+//
+//			theClientCodeJsonWriter.writeStartObject();
+//			theClientCodeJsonWriter.write("type", nextType);
+//			theClientCodeJsonWriter.write("name", nextName);
+//			theClientCodeJsonWriter.write("qualifier", nextQualifier);
+//			theClientCodeJsonWriter.write("value", nextValue);
+//			theClientCodeJsonWriter.writeEnd();
+//			if (addToWhere) {
+//				theQuery.where(new StringClientParam(nextName + nextQualifier).matches().value(nextValue));
+//			}
+//
+//		}
+//
+//		if (StringUtils.isNotBlank(theReq.getParameter("param." + paramIdxString + ".0.name"))) {
+//			handleSearchParam(paramIdxString + ".0", theReq, theQuery, theClientCodeJsonWriter);
+//		}
+//
+//		return true;
+//	}
+
+	private boolean handleSearchParam(String paramIdxString, HttpServletRequest theReq, IQuery theQuery, JsonWriter theClientCodeJsonWriter) throws IOException {
 		String nextName = theReq.getParameter("param." + paramIdxString + ".name");
 		if (isBlank(nextName)) {
 			return false;
@@ -1084,12 +1306,16 @@ public class Controller {
 
 		for (String nextValue : values) {
 
-			theClientCodeJsonWriter.writeStartObject();
-			theClientCodeJsonWriter.write("type", nextType);
-			theClientCodeJsonWriter.write("name", nextName);
-			theClientCodeJsonWriter.write("qualifier", nextQualifier);
-			theClientCodeJsonWriter.write("value", nextValue);
-			theClientCodeJsonWriter.writeEnd();
+			theClientCodeJsonWriter.beginObject();
+			theClientCodeJsonWriter.name("type");
+			theClientCodeJsonWriter.value(nextType);
+			theClientCodeJsonWriter.name("name");
+			theClientCodeJsonWriter.value(nextName);
+			theClientCodeJsonWriter.name("qualifier");
+			theClientCodeJsonWriter.value(nextQualifier);
+			theClientCodeJsonWriter.name("value");
+			theClientCodeJsonWriter.value(nextValue);
+			theClientCodeJsonWriter.endObject();
 			if (addToWhere) {
 				theQuery.where(new StringClientParam(nextName + nextQualifier).matches().value(nextValue));
 			}
@@ -1102,7 +1328,7 @@ public class Controller {
 
 		return true;
 	}
-
+	
 	private IResource loadAndAddConf(HttpServletRequest theServletRequest, final HomeRequest theRequest, final ModelMap theModel) {
 		switch (theRequest.getFhirVersion(myConfig)) {
 //		case DEV:
@@ -1179,7 +1405,7 @@ public class Controller {
 
 		ca.uhn.fhir.model.dstu2.resource.Conformance conformance;
 		try {
-			conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) client.conformance();
+			conformance = (ca.uhn.fhir.model.dstu2.resource.Conformance) client.fetchConformance();
 		} catch (Exception e) {
 			ourLog.warn("Failed to load conformance statement", e);
 			theModel.put("errorMsg", "Failed to load conformance statement, error was: " + e.toString());
@@ -1312,7 +1538,7 @@ public class Controller {
 						resultDescription.append("JSON resource");
 					} else if (theResultType == ResultType.BUNDLE) {
 						resultDescription.append("JSON bundle");
-						bundle = getContext(theRequest).newJsonParser().parseBundle(resultBody);
+						bundle = (Bundle) getContext(theRequest).newJsonParser().parseResource(resultBody);
 					}
 					break;
 				case XML:
@@ -1323,7 +1549,7 @@ public class Controller {
 						resultDescription.append("XML resource");
 					} else if (theResultType == ResultType.BUNDLE) {
 						resultDescription.append("XML bundle");
-						bundle = getContext(theRequest).newXmlParser().parseBundle(resultBody);
+						bundle = (Bundle) getContext(theRequest).newXmlParser().parseResource(resultBody);
 					}
 					break;
 				}

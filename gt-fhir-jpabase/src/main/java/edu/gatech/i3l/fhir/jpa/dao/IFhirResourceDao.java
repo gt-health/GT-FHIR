@@ -24,12 +24,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import ca.uhn.fhir.model.api.IQueryParameterType;
-import ca.uhn.fhir.model.api.TagList;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.api.TagList;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.ValidationModeEnum;
 import ca.uhn.fhir.rest.api.EncodingEnum;
@@ -106,6 +107,6 @@ public interface IFhirResourceDao<T extends IBaseResource> extends IDao {
 	/**
 	 * Not supported in DSTU1!
 	 */
-	MethodOutcome validate(T theResource, IdDt theId, String theRawResource, EncodingEnum theEncoding, ValidationModeEnum theMode, String theProfile);
+	MethodOutcome validate(T theResource, IdType theId, String theRawResource, EncodingEnum theEncoding, ValidationModeEnum theMode, String theProfile);
 
 }

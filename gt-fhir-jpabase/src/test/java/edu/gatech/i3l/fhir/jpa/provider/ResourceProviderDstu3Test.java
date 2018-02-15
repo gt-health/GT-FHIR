@@ -70,11 +70,11 @@ import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Bundle.Entry;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
-import ca.uhn.fhir.model.dstu2.resource.DiagnosticOrder;
-import ca.uhn.fhir.model.dstu2.resource.DocumentManifest;
-import ca.uhn.fhir.model.dstu2.resource.DocumentReference;
+//import ca.uhn.fhir.model.dstu2.resource.DiagnosticOrder;
+//import ca.uhn.fhir.model.dstu2.resource.DocumentManifest;
+//import ca.uhn.fhir.model.dstu2.resource.DocumentReference;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
-import ca.uhn.fhir.model.dstu2.resource.ImagingStudy;
+//import ca.uhn.fhir.model.dstu2.resource.ImagingStudy;
 import ca.uhn.fhir.model.dstu2.resource.Location;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
@@ -93,17 +93,17 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.UnsignedIntDt;
 import ca.uhn.fhir.model.primitive.UriDt;
-import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
-import ca.uhn.fhir.model.valueset.BundleTypeEnum;
+//import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
+//import ca.uhn.fhir.model.valueset.BundleTypeEnum;
 import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.api.ServerValidationModeEnum;
-import ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor;
+//import ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.gclient.StringClientParam;
-import ca.uhn.fhir.rest.gclient.TokenClientParam;
-import ca.uhn.fhir.rest.param.DateRangeParam;
+//import ca.uhn.fhir.rest.gclient.TokenClientParam;
+//import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.api.Constants;
 import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
@@ -113,17 +113,17 @@ import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import edu.gatech.i3l.fhir.jpa.dao.BaseJpaTest;
 import edu.gatech.i3l.fhir.jpa.dao.DaoConfig;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
-import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
+import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu3;
 import edu.gatech.i3l.fhir.jpa.testutil.RandomServerPortProvider;
 
-public class ResourceProviderDstu2Test extends BaseJpaTest {
+public class ResourceProviderDstu3Test extends BaseJpaTest {
 
 	private static ClassPathXmlApplicationContext ourAppCtx;
 	private static IGenericClient ourClient;
 	private static FhirContext ourCtx = FhirContext.forDstu2();
 	private static DaoConfig ourDaoConfig;
 	private static CloseableHttpClient ourHttpClient;
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ResourceProviderDstu2Test.class);
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ResourceProviderDstu3Test.class);
 	private static IFhirResourceDao<Organization> ourOrganizationDao;
 	private static int ourPort;
 	// private static IFhirResourceDao<Observation> ourObservationDao;
@@ -306,7 +306,7 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 	public void testBundleCreate() throws Exception {
 		IGenericClient client = ourClient;
 
-		String resBody = IOUtils.toString(ResourceProviderDstu2Test.class.getResource("/document-father.json"));
+		String resBody = IOUtils.toString(ResourceProviderDstu3Test.class.getResource("/document-father.json"));
 		IIdType id = client.create().resource(resBody).execute().getId();
 
 		ourLog.info("Created: {}", id);
@@ -320,7 +320,7 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 	public void testBundleCreateWithTypeTransaction() throws Exception {
 		IGenericClient client = ourClient;
 
-		String resBody = IOUtils.toString(ResourceProviderDstu2Test.class.getResource("/document-father.json"));
+		String resBody = IOUtils.toString(ResourceProviderDstu3Test.class.getResource("/document-father.json"));
 		resBody = resBody.replace("\"type\": \"document\"", "\"type\": \"transaction\"");
 		try {
 			client.create().resource(resBody).execute().getId();
@@ -720,7 +720,7 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 	@Test
 	public void testEverythingPatientDoesntRepeatPatient() throws Exception {
 		ca.uhn.fhir.model.dstu2.resource.Bundle b;
-		b = ourCtx.newJsonParser().parseResource(ca.uhn.fhir.model.dstu2.resource.Bundle.class, new InputStreamReader(ResourceProviderDstu2Test.class.getResourceAsStream("/bug147-bundle.json")));
+		b = ourCtx.newJsonParser().parseResource(ca.uhn.fhir.model.dstu2.resource.Bundle.class, new InputStreamReader(ResourceProviderDstu3Test.class.getResourceAsStream("/bug147-bundle.json")));
 
 		ca.uhn.fhir.model.dstu2.resource.Bundle resp = ourClient.transaction().withBundle(b).execute();
 		List<IdDt> ids = new ArrayList<IdDt>();
@@ -1506,7 +1506,7 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 	@Test
 	public void testValueSetExpandOperation() throws IOException {
 
-		ValueSet upload = ourCtx.newXmlParser().parseResource(ValueSet.class, new InputStreamReader(ResourceProviderDstu2Test.class.getResourceAsStream("/extensional-case-2.xml")));
+		ValueSet upload = ourCtx.newXmlParser().parseResource(ValueSet.class, new InputStreamReader(ResourceProviderDstu3Test.class.getResourceAsStream("/extensional-case-2.xml")));
 		IIdType vsid = ourClient.create().resource(upload).execute().getId().toUnqualifiedVersionless();
 
 		HttpGet get = new HttpGet(ourServerBase + "/ValueSet/" + vsid.getIdPart() + "/$expand");
@@ -1616,7 +1616,7 @@ public class ResourceProviderDstu2Test extends BaseJpaTest {
 
 		restServer.getFhirContext().setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 
-		JpaSystemProviderDstu2 systemProv = ourAppCtx.getBean(JpaSystemProviderDstu2.class, "mySystemProviderDstu2");
+		JpaSystemProviderDstu3 systemProv = ourAppCtx.getBean(JpaSystemProviderDstu3.class, "mySystemProviderDstu2");
 		restServer.setPlainProviders(systemProv);
 
 		restServer.setPagingProvider(new FifoMemoryPagingProvider(10));

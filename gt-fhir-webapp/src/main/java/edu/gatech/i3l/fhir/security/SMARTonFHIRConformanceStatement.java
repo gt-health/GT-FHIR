@@ -10,22 +10,23 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import ca.uhn.fhir.model.api.ExtensionDt;
-import ca.uhn.fhir.model.dstu2.resource.Bundle;
-import ca.uhn.fhir.model.dstu2.resource.Conformance;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.RestSecurity;
-import ca.uhn.fhir.model.dstu2.valueset.RestfulSecurityServiceEnum;
+import ca.uhn.fhir.model.dstu.resource.Conformance;
+//import ca.uhn.fhir.model.dstu2.resource.Bundle;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
+//import ca.uhn.fhir.model.dstu2.resource.Conformance.RestSecurity;
+//import ca.uhn.fhir.model.dstu2.valueset.RestfulSecurityServiceEnum;
 import ca.uhn.fhir.model.primitive.StringDt;
 import ca.uhn.fhir.model.primitive.UriDt;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
-import edu.gatech.i3l.fhir.jpa.provider.JpaConformanceProviderDstu2;
+import edu.gatech.i3l.fhir.jpa.provider.JpaConformanceProviderDstu3;
 
 /**
  * @author mc142local
  *
  */
-public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu2 {
+public class SMARTonFHIRConformanceStatement extends JpaConformanceProviderDstu3 {
 
 	// static String authorizeURI =
 	// "http://fhir-registry.smarthealthit.org/Profile/oauth-uris#authorize";

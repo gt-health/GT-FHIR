@@ -26,12 +26,16 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.IntegerType;
+import org.hl7.fhir.dstu3.model.Parameters;
+import org.hl7.fhir.dstu3.model.StringType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import ca.uhn.fhir.model.api.annotation.Description;
-import ca.uhn.fhir.model.dstu2.resource.Bundle;
-import ca.uhn.fhir.model.dstu2.resource.Parameters;
+//import ca.uhn.fhir.model.dstu2.resource.Bundle;
+//import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.primitive.IntegerDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import ca.uhn.fhir.rest.annotation.Operation;
@@ -40,10 +44,10 @@ import ca.uhn.fhir.rest.annotation.Transaction;
 import ca.uhn.fhir.rest.annotation.TransactionParam;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 
-public class JpaSystemProviderDstu2 extends BaseJpaSystemProvider<Bundle> {
+public class JpaSystemProviderDstu3 extends BaseJpaSystemProvider<Bundle> {
 
 	@Autowired()
-	@Qualifier("mySystemDaoDstu2")
+	@Qualifier("mySystemDaoDstu3")
 	private IFhirSystemDao<Bundle> mySystemDao;
 	
 	//@formatter:off
@@ -150,7 +154,7 @@ public class JpaSystemProviderDstu2 extends BaseJpaSystemProvider<Bundle> {
 		Map<String, Long> counts = mySystemDao.getResourceCounts();
 		counts = new TreeMap<String, Long>(counts);
 		for (Entry<String, Long> nextEntry : counts.entrySet()) {
-			retVal.addParameter().setName(new StringDt(nextEntry.getKey())).setValue(new IntegerDt(nextEntry.getValue().intValue()));
+			retVal.addParameter().setNameElement(new StringType(nextEntry.getKey())).setValue(new IntegerType(nextEntry.getValue().intValue()));
 		}
 		
 		return retVal;

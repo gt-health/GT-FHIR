@@ -9,13 +9,14 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceException;
 
+import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.server.exceptions.ForbiddenOperationException;
 import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -49,7 +50,7 @@ public class BaseFhirDao extends AbstractBaseFhirDao{
 			myEntityManager.flush();
 	
 			if (theResource != null) {
-				theResource.setId(new IdDt(entity.getId()));
+				theResource.setId(new IdType(entity.getId()));
 			}
 		} catch (PersistenceException e){
 			Throwable cause = e.getCause();

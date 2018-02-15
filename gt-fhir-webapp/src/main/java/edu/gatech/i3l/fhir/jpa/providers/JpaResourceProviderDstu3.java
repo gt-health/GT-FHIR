@@ -3,12 +3,13 @@ package edu.gatech.i3l.fhir.jpa.providers;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.beans.factory.annotation.Required;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.Delete;
@@ -71,7 +72,7 @@ public class JpaResourceProviderDstu3<T extends IBaseResource> extends BaseJpaPr
 	}
 
 	@Read(version = true)
-	public T read(HttpServletRequest theRequest, @IdParam IdDt theId) {
+	public T read(HttpServletRequest theRequest, @IdParam IdType theId) {
 		startRequest(theRequest);
 		try {
 			return myDao.read(theId);
@@ -104,7 +105,7 @@ public class JpaResourceProviderDstu3<T extends IBaseResource> extends BaseJpaPr
 	}
 
 	@Delete
-	public MethodOutcome delete(HttpServletRequest theRequest, @IdParam IdDt theResource, @ConditionalUrlParam String theConditional) {
+	public MethodOutcome delete(HttpServletRequest theRequest, @IdParam IdType theResource, @ConditionalUrlParam String theConditional) {
 		startRequest(theRequest);
 		try {
 			if (theConditional != null) {
@@ -118,7 +119,7 @@ public class JpaResourceProviderDstu3<T extends IBaseResource> extends BaseJpaPr
 	}
 
 	@Update
-	public MethodOutcome update(HttpServletRequest theRequest, @ResourceParam T theResource, @IdParam IdDt theId, @ConditionalUrlParam String theConditional) {
+	public MethodOutcome update(HttpServletRequest theRequest, @ResourceParam T theResource, @IdParam IdType theId, @ConditionalUrlParam String theConditional) {
 		startRequest(theRequest);
 		try {
 			if (theConditional != null) {
@@ -143,7 +144,7 @@ public class JpaResourceProviderDstu3<T extends IBaseResource> extends BaseJpaPr
 	}
 		
 	@Validate
-	public MethodOutcome validate(@ResourceParam T theResource, @IdParam IdDt theId, @ResourceParam String theRawResource, @ResourceParam EncodingEnum theEncoding, @Validate.Mode ValidationModeEnum theMode,
+	public MethodOutcome validate(@ResourceParam T theResource, @IdParam IdType theId, @ResourceParam String theRawResource, @ResourceParam EncodingEnum theEncoding, @Validate.Mode ValidationModeEnum theMode,
 			@Validate.Profile String theProfile) {
 		return getDao().validate(theResource, theId, theRawResource, theEncoding, theMode, theProfile);
 	}

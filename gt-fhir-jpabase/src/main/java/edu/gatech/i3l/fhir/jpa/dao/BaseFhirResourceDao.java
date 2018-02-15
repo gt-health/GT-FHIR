@@ -59,15 +59,17 @@ import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
 import ca.uhn.fhir.model.base.composite.BaseResourceReferenceDt;
 //import ca.uhn.fhir.model.base.resource.BaseOperationOutcome.BaseIssue;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.OperationOutcome.OperationOutcomeIssueComponent;
+import org.hl7.fhir.dstu3.model.Reference;
 
 //import ca.uhn.fhir.model.dstu2.resource.OperationOutcome.Issue;
 //import ca.uhn.fhir.model.dstu2.valueset.BundleTypeEnum;
 //import ca.uhn.fhir.model.dstu2.valueset.IssueSeverityEnum;
 //import ca.uhn.fhir.model.dstu2.valueset.IssueTypeEnum;
-import ca.uhn.fhir.model.primitive.IdDt;
+//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
 import ca.uhn.fhir.parser.IParser;
@@ -253,11 +255,11 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 	
 	private DaoMethodOutcome toMethodOutcome(final BaseResourceEntity entity, IBaseResource theResource) {
 		DaoMethodOutcome outcome = new DaoMethodOutcome();
-		outcome.setId(new IdDt(entity.getId()));
+		outcome.setId(new IdType(entity.getId()));
 		outcome.setEntity(entity);
 		outcome.setResource(theResource);
 		if (theResource != null) {
-			theResource.setId(new IdDt(entity.getId()));
+			theResource.setId(new IdType(entity.getId()));
 		}
 		return outcome;
 	}
@@ -440,7 +442,7 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 								previouslyLoadedPids.add(next.getIdElement().toUnqualifiedVersionless());
 							}
 
-							Set<IdDt> includePids = new HashSet<IdDt>();
+							Set<IdType> includePids = new HashSet<IdType>();
 							do {
 								includePids.clear();
 
@@ -450,10 +452,10 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 										RuntimeResourceDefinition def = baseFhirDao.getContext().getResourceDefinition(nextResource);
 										List<Object> values = null;
 										switch (baseFhirDao.getContext().getVersion().getVersion()) {
-										case DSTU2:
+										case DSTU3:
 											if ("*".equals(next.getValue())) {
 												values = new ArrayList<Object>();
-												values.addAll(t.getAllPopulatedChildElementsOfType(nextResource, BaseResourceReferenceDt.class));
+												values.addAll(t.getAllPopulatedChildElementsOfType(nextResource, Reference.class));
 											} else if (next.getValue().startsWith(def.getName() + ":")) {
 												values = new ArrayList<Object>();
 												RuntimeSearchParam sp = def.getSearchParam(next.getValue().substring(next.getValue().indexOf(':')+1));
@@ -474,18 +476,18 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 											if (object == null) {
 												continue;
 											}
-											if (!(object instanceof BaseResourceReferenceDt)) {
+											if (!(object instanceof Reference)) {
 												throw new InvalidRequestException("Path '" + next.getValue() + "' produced non ResourceReferenceDt value: " + object.getClass());
 											}
-											BaseResourceReferenceDt rr = (BaseResourceReferenceDt) object;
+											Reference rr = (Reference) object;
 											if (rr.getReference().isEmpty()) {
 												continue;
 											}
-											if (rr.getReference().isLocal()) {
-												continue;
-											}
+//											if (rr.getReference().isLocal()) {
+//												continue;
+//											}
 
-											IdDt nextId = rr.getReference().toUnqualified();
+											IdType nextId = new IdType (rr.getReference());
 											if (!previouslyLoadedPids.contains(nextId)) {
 												includePids.add(nextId);
 												previouslyLoadedPids.add(nextId);
@@ -802,7 +804,7 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 					} else {
 						for (IQueryParameterType next : nextValue) {
 							String value = next.getValueAsQueryToken(myContext);
-							IdDt valueId = new IdDt(value);
+							IdType valueId = new IdType(value);
 							try {
 								if (DaoUtils.isValidPid(valueId)) {
 									long valueLong =  valueId.getIdPartAsLong();
@@ -1124,7 +1126,7 @@ public abstract class BaseFhirResourceDao<T extends IBaseResource> implements IF
 	}
 
 	@Override
-	public MethodOutcome validate(T theResource, IdDt theId, String theRawResource, EncodingEnum theEncoding, ValidationModeEnum theMode, String theProfile) {
+	public MethodOutcome validate(T theResource, IdType theId, String theRawResource, EncodingEnum theEncoding, ValidationModeEnum theMode, String theProfile) {
 		final OperationOutcome oo = new OperationOutcome();
 
 		IParser parser = theEncoding.newParser(getBaseFhirDao().getContext());

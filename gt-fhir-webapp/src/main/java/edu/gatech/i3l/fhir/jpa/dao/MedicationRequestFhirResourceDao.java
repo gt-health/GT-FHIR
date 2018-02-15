@@ -9,10 +9,10 @@ import edu.gatech.i3l.fhir.jpa.query.AbstractPredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 
 @Transactional(propagation = Propagation.REQUIRED)
-public class MedicationOrderFhirResourceDao extends BaseFhirResourceDao<MedicationOrder>{
+public class MedicationRequestFhirResourceDao extends BaseFhirResourceDao<MedicationOrder>{
 	
 
-	public MedicationOrderFhirResourceDao() {
+	public MedicationRequestFhirResourceDao() {
 		super();
 		setResourceEntity(MedicationRequestView.class);
 		setValidateBean(true);

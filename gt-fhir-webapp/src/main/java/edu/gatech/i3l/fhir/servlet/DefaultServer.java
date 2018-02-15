@@ -18,7 +18,7 @@ import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
-import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
+import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu3;
 import edu.gatech.i3l.fhir.security.SMARTonFHIRConformanceStatement;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -61,7 +61,7 @@ public class DefaultServer extends RestfulServer {
 		 * transaction, and global history.
 		 */
 		Object systemProvider;
-		systemProvider = myAppCtx.getBean("mySystemProviderDstu2", JpaSystemProviderDstu2.class);
+		systemProvider = myAppCtx.getBean("mySystemProviderDstu3", JpaSystemProviderDstu3.class);
 		setPlainProviders(systemProvider);
 
 		/*
@@ -69,7 +69,7 @@ public class DefaultServer extends RestfulServer {
 		 * parameters, etc for this server. The JPA version adds resource counts
 		 * to the exported statement, so it is a nice addition.
 		 */
-		IFhirSystemDao<Bundle> systemDao = myAppCtx.getBean("mySystemDaoDstu2", IFhirSystemDao.class);
+		IFhirSystemDao<Bundle> systemDao = myAppCtx.getBean("mySystemDaoDstu3", IFhirSystemDao.class);
 		// JpaConformanceProviderDstu2 confProvider = new
 		// JpaConformanceProviderDstu2(this, systemDao);
 		SMARTonFHIRConformanceStatement confProvider = new SMARTonFHIRConformanceStatement(this, systemDao);

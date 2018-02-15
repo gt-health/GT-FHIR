@@ -19,7 +19,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.instance.model.api.IDomainResource;
+//import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
@@ -30,11 +30,11 @@ import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import ca.uhn.fhir.context.RuntimeSearchParam;
 import ca.uhn.fhir.model.api.IPrimitiveDatatype;
 import ca.uhn.fhir.model.api.IQueryParameterType;
-import ca.uhn.fhir.model.api.IResource;
+//import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.base.composite.BaseCodingDt;
 import ca.uhn.fhir.model.base.composite.BaseIdentifierDt;
 import ca.uhn.fhir.model.base.composite.BaseQuantityDt;
-import ca.uhn.fhir.model.dstu2.valueset.QuantityComparatorEnum;
+//import ca.uhn.fhir.model.dstu2.valueset.QuantityComparatorEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.RestSearchParameterTypeEnum;
 import ca.uhn.fhir.rest.param.CompositeParam;
@@ -540,6 +540,9 @@ public class QueryHelper {
 			}
 			case DATE: {
 				retVal = createPredicateDate(builder, valueJoin, left.getName(), leftValue);
+				break;
+			}
+			default: {
 				break;
 			}
 		}

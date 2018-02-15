@@ -35,7 +35,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.google.gson.Gson;
 
-import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
+import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu3;
 import edu.gatech.i3l.fhir.security.Authorization;
 
 /**

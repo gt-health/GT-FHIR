@@ -19,6 +19,7 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
+
 	<properties>
 		<parent_version>2.0-SNAPSHOT</parent_version>
 	</properties>
@@ -134,7 +135,7 @@
 		<plugins>
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
 				overlay. You can omit it if you are not using that feature. -->
-<!-- 				
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
@@ -147,7 +148,7 @@
 					</overlays>
 				</configuration>
 			</plugin>
- -->
+
 			<!-- This plugin is just a part of the HAPI internal build process, you 
 				do not need to incude it in your own projects -->
 			<plugin>

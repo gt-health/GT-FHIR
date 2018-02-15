@@ -20,11 +20,11 @@
 		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	<bean id="mySystemProviderDstu3" class="edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu3">
-		<property name="dao" ref="mySystemDaoDstu2"/>
+		<property name="dao" ref="mySystemDaoDstu3"/>
 	</bean>
 	<bean id="mySmartOnFhirLaunchContext" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextDao">
 		<property name="baseFhirDao" ref="myBaseDao"></property>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	<bean id="mySmartService" class="edu.gatech.i3l.fhir.smart.servlet.SmartOnFhirLaunchContextProvider">
 		<property name="dao" ref="mySmartOnFhirLaunchContext"/>
@@ -61,25 +61,25 @@
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myConditionRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.ConditionResourceProvider">
-		<property name="dao" ref="myConditionDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="dao" ref="myConditionDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 	
 	<bean id="myDeviceDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.DeviceFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Device"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myDeviceRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.DeviceResourceProvider">
-		<property name="dao" ref="myDeviceDaoDstu2"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="dao" ref="myDeviceDaoDstu3"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 	</bean>
 
 	<bean id="myEncounterDaoDstu3" class="edu.gatech.i3l.fhir.jpa.dao.EncounterFhirResourceDao">
 		<property name="beanValidator" ref="myBeanValidator"/>
 		<property name="resourceType" value="org.hl7.fhir.dstu3.model.Encounter"/>
-		<property name="context" ref="myFhirContextDstu2"/>
+		<property name="context" ref="myFhirContextDstu3"/>
 		<property name="baseFhirDao" ref="myBaseDao"></property>
 	</bean>
 	<bean id="myEncounterRpDstu3" class="edu.gatech.i3l.fhir.jpa.providers.EncounterResourceProvider">
